@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSL Central DB - Deep Tactical Analytics</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #0c0c0c;
+            color: #00ff00;
+            margin: 20px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            border: 1px solid #00ff00;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            background-color: #111;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex-grow: 1;
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 12px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        button {
+            background-color: #222;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        button:hover {
+            background-color: #00ff00;
+            color: #0c0c0c;
+        }
+        button.secondary-btn {
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+        }
+        button.secondary-btn:hover {
+            background-color: #ffaa00;
+            color: #0c0c0c;
+        }
+        .status-msg {
+            font-style: italic;
+            color: #88ff88;
+            margin-bottom: 15px;
+        }
+        .cache-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 1px solid #00ff00;
+        }
+        .cache-hit {
+            border-color: #00ff00;
+            color: #00ff00;
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+        .cache-miss {
+            border-color: #ffaa00;
+            color: #ffaa00;
+            background-color: rgba(255, 170, 0, 0.1);
+        }
+        .output-box {
+            display: none;
+            margin-top: 25px;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            background: #1a1a1a;
+            border: 1px solid #005500;
+            color: #008800;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #222;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card {
+            border: 1px dashed #00ff00;
+            padding: 15px;
+            background-color: #151515;
+        }
+        .card h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .metric-row {
+            border-bottom: 1px solid #222;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #88ff88;
+        }
+        .metric-rank {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>[TSL_CENTRAL_DATABASE_v2.0]</h2>
+    <p>Comprehensive Strategic Intelligence Array Platform</p>
+    
+    <p><a href="analytics.html" target="_blank" style="color: #ffaa00; text-decoration: none; font-weight: bold;">[LAUNCH CONVERTED STATISTICS MODULE →]</a></p>    
+    <div class="input-group">
+        <input type="text" id="nationInput" placeholder="Enter Target Identifier Designation" value="Union of Silver States Union">
+        <button onclick="executeScan(false)">EXECUTE DEEP SCAN</button>
+        <button onclick="executeScan(true)" class="secondary-btn" id="refreshBtn" style="display:none;">FORCE API SYNC</button>
+    </div>
+
+    <div id="status" class="status-msg">Initializing background local storage engines... Ready.</div>
+    <div id="cacheStatus" class="cache-badge" style="display: none;"></div>
+
+    <div id="output" class="output-box">
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('core')">00 // CORE SUMMARY</button>
+            <button class="tab-btn" onclick="switchTab('industries')">01 // INDUSTRIES</button>
+            <button class="tab-btn" onclick="switchTab('freedom')">02 // FREEDOM INDEX</button>
+            <button class="tab-btn" onclick="switchTab('economy')">03 // ECONOMIC FORCES</button>
+            <button class="tab-btn" onclick="switchTab('people')">04 // POPULATION METRICS</button>
+            <button class="tab-btn" onclick="switchTab('nation')">05 // NATIONAL STATS</button>
+            <button class="tab-btn" onclick="switchTab('government')">06 // GOVERNMENT OPERATIONS</button>
+        </div>
+
+        <div id="core" class="tab-content active">
+            <div class="data-grid">
+                <div class="card full-width">
+                    <h3>IDENTITY INTELLIGENCE VECTOR</h3>
+                    <div class="metric-row"><div class="metric-header"><span>Official Name:</span> <span id="m-name">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>Government Structure:</span> <span id="m-gov">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>Sector Matrix Assignment:</span> <span id="m-region">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>National Motto:</span> <span id="m-motto" style="font-style:italic; color:#aaa;">-</span></div></div>
+                </div>
+                <div class="card">
+                    <h3>PRIMARY BASELINE</h3>
+                    <div class="metric-row"><div class="metric-header"><span>Population Baseline:</span> <span id="m-pop">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>National Animal:</span> <span id="m-animal">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>Predominant Faith:</span> <span id="m-religion">-</span></div></div>
+                </div>
+                <div class="card">
+                    <h3>FINANCIAL ANCHORS</h3>
+                    <div class="metric-row"><div class="metric-header"><span>Total GDP Output:</span> <span id="m-gdp">-</span></div></div>
+                    <div class="metric-row"><div class="metric-header"><span>Operational Currency:</span> <span id="m-currency">-</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="industries" class="tab-content"><div class="card"><div id="list-industries"></div></div></div>
+        <div id="freedom" class="tab-content"><div class="card"><div id="list-freedom"></div></div></div>
+        <div id="economy" class="tab-content"><div class="card"><div id="list-economy"></div></div></div>
+        <div id="people" class="tab-content"><div class="card"><div id="list-people"></div></div></div>
+        <div id="nation" class="tab-content"><div class="card"><div id="list-nation"></div></div></div>
+        <div id="government" class="tab-content"><div class="card"><div id="list-government"></div></div></div>
+
+    </div>
+</div>
+
+<script>
+    const censusMapping = {
+        industries: [
+            { id: 16, label: "Arms Manufacturing" }, { id: 10, label: "Automobile Manufacturing" },
+            { id: 12, label: "Basket Weaving" }, { id: 18, label: "Beverage Sales" },
+            { id: 24, label: "Book Publishing" }, { id: 11, label: "Cheese Exports" },
+            { id: 22, label: "Furniture Restoration" }, { id: 25, label: "Gambling" },
+            { id: 13, label: "Information Technology" }, { id: 21, label: "Insurance" },
+            { id: 20, label: "Mining" }, { id: 14, label: "Pizza Delivery" },
+            { id: 23, label: "Retail" }, { id: 19, label: "Timber Woodchipping" },
+            { id: 15, label: "Trout Fishing" }, { id: 17, label: "Agriculture Sector" },
+            { id: 26, label: "Manufacturing Sector" }, { id: 58, label: "Tourism" }
+        ],
+        freedom: [
+            { id: 0, label: "Civil Rights" }, { id: 2, label: "Political Freedom" },
+            { id: 48, label: "Economic Freedom" }, { id: 53, label: "Authoritarianism" },
+            { id: 8, label: "Social Conservatism" }
+        ],
+        economy: [
+            { id: 72, label: "Average Income" }, { id: 85, label: "Average Disposable Income" },
+            { id: 73, label: "Average Income of Poor" }, { id: 74, label: "Average Income of Rich" },
+            { id: 79, label: "Black Market" }, { id: 31, label: "Business Subsidization" },
+            { id: 76, label: "Economic Output" }, { id: 1, label: "Economic Efficiency" },
+            { id: 33, label: "Income Equality" }, { id: 4, label: "Wealth Gaps" },
+            { id: 56, label: "Employment" }
+        ],
+        people: [
+            { id: 40, label: "Cheerfulness" }, { id: 6, label: "Compassion" }, { id: 42, label: "Compliance" },
+            { id: 77, label: "Crime" }, { id: 55, label: "Culture" }, { id: 5, label: "Death Rate" },
+            { id: 44, label: "Lifespan" }, { id: 39, label: "Health" }, { id: 68, label: "HDI" },
+            { id: 37, label: "Ignorance" }, { id: 36, label: "Intelligence" }, { id: 71, label: "Inclusiveness" },
+            { id: 34, label: "Niceness" }, { id: 35, label: "Rudeness" }, { id: 9, label: "Nudity" },
+            { id: 61, label: "Obesity" }, { id: 38, label: "Political Apathy" }, { id: 60, label: "Recreational Drug Use" },
+            { id: 32, label: "Religiousness" }, { id: 62, label: "Secularism" }, { id: 59, label: "Weaponization" },
+            { id: 54, label: "Youth Rebelliousness" }
+        ],
+        nation: [
+            { id: 67, label: "Averageness" }, { id: 45, label: "Ideological Radicality" },
+            { id: 64, label: "Charmlessness" }, { id: 63, label: "Environmental Beauty" },
+            { id: 41, label: "Weather" }, { id: 65, label: "Influence" },
+            { id: 66, label: "WA Endorsements" }, { id: 80, label: "Residency" },
+            { id: 3, label: "Population" }, { id: 69, label: "Primitiveness" },
+            { id: 70, label: "Scientific Advancement" }
+        ],
+        government: [
+            { id: 51, label: "Corruption" }, { id: 52, label: "Integrity" }, { id: 46, label: "Defense Forces" },
+            { id: 47, label: "Pacifism" }, { id: 7, label: "Eco-Friendliness" }, { id: 78, label: "Foreign Aid" },
+            { id: 27, label: "Government Size" }, { id: 50, label: "Freedom From Taxation" },
+            { id: 49, label: "Taxation" }, { id: 30, label: "Law Enforcement" }, { id: 75, label: "Public Education" },
+            { id: 29, label: "Public Healthcare" }, { id: 57, label: "Public Transport" }, { id: 28, label: "Welfare" },
+            { id: 43, label: "Safety" }
+        ]
+    };
+
+    // --- INDEXEDDB STORAGE SUBSYSTEM ENGINE ---
+    let db;
+    const dbOpenRequest = indexedDB.open("TSL_NationalCacheDB", 1);
+
+    dbOpenRequest.onupgradeneeded = function(e) {
+        let databaseInstance = e.target.result;
+        if (!databaseInstance.objectStoreNames.contains("nations")) {
+            databaseInstance.createObjectStore("nations", { keyPath: "id" });
+        }
+    };
+
+    dbOpenRequest.onsuccess = function(e) {
+        db = e.target.result;
+        console.log("IndexedDB tactical framework online.");
+    };
+
+    dbOpenRequest.onerror = function(e) {
+        console.error("Database connection fault initialization.", e);
+    };
+
+    function getCachedNation(nationId) {
+        return new Promise((resolve) => {
+            if (!db) return resolve(null);
+            const transaction = db.transaction(["nations"], "readonly");
+            const store = transaction.objectStore("nations");
+            const request = store.get(nationId);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => resolve(null);
+        });
+    }
+
+    function saveNationToCache(nationData) {
+        if (!db) return;
+        const transaction = db.transaction(["nations"], "readwrite");
+        const store = transaction.objectStore("nations");
+        store.put(nationData);
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // --- MAIN CORE CONTROL SCAN CONTROLLER ---
+    async function executeScan(forceRefresh = false) {
+        const nationInputVal = document.getElementById('nationInput').value;
+        const statusDiv = document.getElementById('status');
+        const outputDiv = document.getElementById('output');
+        const cacheStatusBadge = document.getElementById('cacheStatus');
+        const refreshBtn = document.getElementById('refreshBtn');
+        
+        if (!nationInputVal) {
+            alert('Valid target validation criteria string parameter required.');
+            return;
+        }
+
+        const formattedId = nationInputVal.toLowerCase().replace(/ /g, '_');
+        outputDiv.style.display = "none";
+        cacheStatusBadge.style.display = "none";
+
+        // Check the local storage database block first if not forcing a network overwrite
+        if (!forceRefresh) {
+            statusDiv.innerHTML = "Querying internal mainframe database grids...";
+            const cachedRecord = await getCachedNation(formattedId);
+            
+            if (cachedRecord) {
+                cacheStatusBadge.className = "cache-badge cache-hit";
+                cacheStatusBadge.innerText = `DATABASE CACHE HIT // LOCAL ENCRYPTED DATA PRINT`;
+                cacheStatusBadge.style.display = "inline-block";
+                refreshBtn.style.display = "inline-block"; // Reveal synchronization option beside it
+                
+                renderSystemInterface(cachedRecord.payload);
+                statusDiv.innerHTML = `[SUCCESS] Pulled matching entry instantly from local IndexedDB background storage.`;
+                outputDiv.style.display = "block";
+                return; 
+            }
+        }
+
+        // Cache Miss or Force Refresh triggered: Poll Network Interface Pipe
+        statusDiv.innerHTML = "Cache bypass active. Polling live API matrix nodes... please stand by...";
+        cacheStatusBadge.className = "cache-badge cache-miss";
+        cacheStatusBadge.innerText = `DATABASE CACHE MISS // INTERFACING NATIONSTATES API PIPELINE`;
+        cacheStatusBadge.style.display = "inline-block";
+
+        const allScaleIds = Object.values(censusMapping).flatMap(arr => arr.map(item => item.id)).join('+');
+        const url = `https://www.nationstates.net/cgi-bin/api.cgi?nation=${formattedId}&q=name+population+gdp+currency+region+category+motto+animal+religion+census&scale=${allScaleIds}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network gateway handshake execution rejection.');
+            
+            const xmlText = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            const getTagData = (tagName) => {
+                let elements = xmlDoc.getElementsByTagName(tagName.toUpperCase());
+                if (!elements.length || !elements[0].childNodes.length) {
+                    elements = xmlDoc.getElementsByTagName(tagName.toLowerCase());
+                }
+                return (elements.length && elements[0].childNodes.length) ? elements[0].childNodes[0].nodeValue : "N/A";
+            };
+
+            // Assemble compiled structured dataset model mapping object
+            const datasetPayload = {
+                core: {
+                    name: getTagData("name"),
+                    category: getTagData("category"),
+                    region: getTagData("region"),
+                    motto: getTagData("motto"),
+                    population: getTagData("population"),
+                    animal: getTagData("animal"),
+                    religion: getTagData("religion"),
+                    gdp: getTagData("gdp"),
+                    currency: getTagData("currency")
+                },
+                scales: {}
+            };
+
+            const allScaleNodes = xmlDoc.querySelectorAll('scale, SCALE');
+            allScaleNodes.forEach(node => {
+                const idAttr = node.getAttribute("id");
+                if (!idAttr) return;
+
+                const scoreNode = node.querySelector('score, SCORE');
+                const rankNode = node.querySelector('rank, RANK');
+                const rRankNode = node.querySelector('rrank, RRANK');
+
+                datasetPayload.scales[idAttr] = {
+                    score: scoreNode ? parseFloat(scoreNode.textContent).toFixed(2) : "0.00",
+                    rank: rankNode ? parseInt(rankNode.textContent).toLocaleString() : "N/A",
+                    regionRank: rRankNode ? parseInt(rRankNode.textContent).toLocaleString() : "N/A"
+                };
+            });
+
+            // Write dataset right to internal IndexedDB architecture map
+            saveNationToCache({
+                id: formattedId,
+                payload: datasetPayload,
+                timestamp: Date.now()
+            });
+
+            // Output data onto terminal grid
+            renderSystemInterface(datasetPayload);
+            refreshBtn.style.display = "inline-block";
+            statusDiv.innerHTML = `[SUCCESS] Direct pipeline execution absolute. Sync data point added to internal DB archive.`;
+            outputDiv.style.display = "block";
+
+        } catch (error) {
+            statusDiv.innerHTML = `<span style="color:#ff0000;">[CRITICAL ERROR] Core pipeline structural failure: ${error.message}</span>`;
+            console.error(error);
+        }
+    }
+
+    // --- DOM SCREEN RENDER RENDERING DRIVER ---
+    function renderSystemInterface(payload) {
+        // Render Identity Header Card
+        document.getElementById('m-name').innerText = payload.core.name;
+        document.getElementById('m-gov').innerText = payload.core.category;
+        document.getElementById('m-region').innerText = payload.core.region;
+        document.getElementById('m-motto').innerText = `"${payload.core.motto}"`;
+        
+        const rawPop = parseFloat(payload.core.population);
+        document.getElementById('m-pop').innerText = isNaN(rawPop) ? "N/A" : (rawPop >= 1000 ? `${(rawPop / 1000).toFixed(2)} Billion` : `${rawPop} Million`);
+        document.getElementById('m-animal').innerText = payload.core.animal;
+        document.getElementById('m-religion').innerText = payload.core.religion;
+        
+        const rawGdp = parseFloat(payload.core.gdp);
+        document.getElementById('m-gdp').innerText = isNaN(rawGdp) ? "N/A" : rawGdp.toLocaleString();
+        document.getElementById('m-currency').innerText = payload.core.currency;
+
+        // Render Individual Tab Arrays Loop
+        Object.keys(censusMapping).forEach(categoryKey => {
+            const targetContainer = document.getElementById(`list-${categoryKey}`);
+            let innerHtmlMarkup = `<h3>${categoryKey.toUpperCase()} METRICS VECTOR</h3>`;
+            
+            censusMapping[categoryKey].forEach(item => {
+                const data = payload.scales[item.id] || { score: "0.00", rank: "N/A", regionRank: "N/A" };
+                innerHtmlMarkup += `
+                    <div class="metric-row">
+                        <div class="metric-header"><span>${item.label}:</span> <span>${data.score}</span></div>
+                        <div class="metric-rank">World Rank: #${data.rank} | Regional Rank: #${data.regionRank}</div>
+                    </div>`;
+            });
+            
+            targetContainer.innerHTML = innerHtmlMarkup;
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overdrive Synthwave Dashboard Visualizer</title>
+    <style>
+        :root {
+            --glow-color: #ff007f;
+            --neon-blue: #00f0ff;
+            --neon-green: #39ff14;
+            --dash-bg: #12131a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #05050a;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* --- THE WINDSHIELD (UPPER ENVIRONMENT) --- */
+        #windshield {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(to bottom, #05010a 0%, #1a0326 50%, #300636 100%);
+            overflow: hidden;
+        }
+
+        #sun {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 260px;
+            height: 260px;
+            background: linear-gradient(to bottom, #ff007f 0%, #ffaa00 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255, 0, 127, 0.6);
+            z-index: 1;
+            transition: transform 0.05s ease-out;
+        }
+
+        #sun::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, 
+                #300636 60%, #300636 64%, 
+                rgba(0,0,0,0) 64%, rgba(0,0,0,0) 75%, 
+                #300636 75%, #300636 80%, 
+                rgba(0,0,0,0) 80%, rgba(0,0,0,0) 90%, 
+                #300636 90%, #300636 100%
+            );
+            border-radius: 50%;
+        }
+
+        #envCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        /* --- THE COCKPIT DASHBOARD (LOWER AREA) --- */
+        #dashboard {
+            height: 320px;
+            background: linear-gradient(to bottom, #181926 0%, var(--dash-bg) 20%, #08090d 100%);
+            border-top: 5px solid #282a3a;
+            box-shadow: inset 0 15px 40px rgba(0,0,0,0.9), 0 -10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 10;
+            position: relative;
+            transition: transform 0.05s ease-out; 
+        }
+
+        /* --- INSTRUMENT CLUSTERS --- */
+        .gauge-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #181a26 0%, #08090f 80%);
+            border: 4px solid #323547;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.7), inset 0 0 25px rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: border-color 0.4s;
+        }
+
+        .gauge-container.active {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 25px rgba(0,0,0,0.9);
+        }
+
+        .gauge-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .needle {
+            position: absolute;
+            width: 4px;
+            height: 75px;
+            background: linear-gradient(to top, transparent 15%, #ff2244 15%, #ff0000 100%);
+            bottom: 50%;
+            left: calc(50% - 2px);
+            transform-origin: bottom center;
+            transform: rotate(-120deg);
+            transition: transform 0.08s cubic-bezier(0.1, 0.8, 0.3, 1);
+            z-index: 4;
+            border-radius: 2px;
+            box-shadow: 0 0 6px rgba(255,0,0,0.7);
+        }
+
+        .needle-cap {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .gauge-label {
+            position: absolute;
+            bottom: 35px;
+            font-size: 11px;
+            color: #6c7393;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .gauge-value {
+            position: absolute;
+            bottom: 55px;
+            font-size: 15px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* --- CENTER CONSOLE STACK --- */
+        .center-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: #0b0c12;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid #1f212e;
+        }
+
+        .led-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 9px;
+            color: #4b4e63;
+            gap: 4px;
+        }
+
+        .led {
+            width: 10px;
+            height: 10px;
+            background-color: #1a1a1a;
+            border-radius: 50%;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+            transition: all 0.2s;
+        }
+
+        .led.active-green { background-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green), inset 0 1px 2px white; }
+        .led.active-orange { background-color: #ffaa00; box-shadow: 0 0 10px #ffaa00, inset 0 1px 2px white; }
+        .led.active-red { background-color: #ff003c; box-shadow: 0 0 10px #ff003c, inset 0 1px 2px white; }
+
+        #gear-box {
+            font-size: 34px;
+            font-weight: bold;
+            color: #1f212e;
+            background: #040406;
+            padding: 4px 22px;
+            border-radius: 6px;
+            border: 2px solid #161822;
+            transition: all 0.2s;
+        }
+        #gear-box.active {
+            color: var(--neon-blue);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
+        }
+
+        /* Ignition Switch Button */
+        .switch-btn {
+            width: 52px;
+            height: 52px;
+            background: radial-gradient(circle, #2b0e14 0%, #140406 100%);
+            border: 3px solid #3b121a;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .switch-btn::before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            background: #222;
+            border-radius: 50%;
+            border: 2px solid #444;
+            transition: all 0.2s;
+        }
+        .switch-btn.ignited {
+            background: radial-gradient(circle, #ff003c 0%, #8c0021 100%);
+            border-color: #ff2a55;
+            box-shadow: 0 0 20px var(--glow-color);
+        }
+        .switch-btn.ignited::before {
+            background: #fff;
+            border-color: #ff99bb;
+            box-shadow: 0 0 8px #fff;
+        }
+
+        /* --- FLOATING COCKPIT PEDALS --- */
+        .pedal-board {
+            display: flex;
+            gap: 25px;
+            align-items: flex-end;
+            height: 120px;
+        }
+        .pedal {
+            width: 46px;
+            background: linear-gradient(to bottom, #2a2c3a 0%, #12131a 100%);
+            border: 2px solid #3e4054;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+            transform-origin: bottom center;
+            box-shadow: 0 8px 0 #08090d, 0 10px 12px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+        .pedal::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(0,0,0,0.4) 6px, rgba(0,0,0,0.4) 12px);
+            border-radius: 4px;
+        }
+        .pedal-label { font-size: 9px; color: #7e84a6; z-index: 2; font-weight: bold; }
+        #brake-pedal { height: 85px; width: 62px; }
+        #gas-pedal { height: 105px; }
+
+        .pedal.glow-prompt {
+            animation: pedalGlowPulse 1.2s infinite alternate;
+        }
+        @keyframes pedalGlowPulse {
+            0% { border-color: #3e4054; box-shadow: 0 8px 0 #08090d, 0 10px 12px rgba(0,0,0,0.6); }
+            100% { border-color: var(--neon-green); box-shadow: 0 8px 0 #08090d, 0 0 18px rgba(57, 255, 20, 0.7); }
+        }
+        .pedal.pressed {
+            transform: scaleY(0.82) scaleX(0.96);
+            box-shadow: 0 2px 0 #08090d, 0 4px 6px rgba(0,0,0,0.7);
+        }
+        #gas-pedal.pressed { border-color: var(--neon-green); box-shadow: 0 2px 0 #08090d, 0 0 20px rgba(57, 255, 20, 0.4); }
+        #brake-pedal.pressed { border-color: #ff003c; box-shadow: 0 2px 0 #08090d, 0 0 20px rgba(255, 0, 60, 0.4); }
+
+        /* Shwoom Shockwave element */
+        .shwoom-wave {
+            position: absolute;
+            border: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: shwoomAnimation 0.5s cubic-bezier(0.08, 0.8, 0.2, 1) forwards;
+            opacity: 1;
+            z-index: 100;
+        }
+        @keyframes shwoomAnimation {
+            0% { width: 0; height: 0; opacity: 1; transform: translate(-50%, -50%); border-color: var(--neon-blue); }
+            100% { width: 350px; height: 350px; opacity: 0; transform: translate(-50%, -50%); border-color: var(--glow-color); }
+        }
+
+        /* --- MECHANICAL V4 ENGINE INTERFACE --- */
+        .engine-bay {
+            width: 140px;
+            height: 160px;
+            background: #090a0e;
+            border: 2px solid #1f2230;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .engine-title { font-size: 9px; color: #4e5169; margin-bottom: 8px; font-weight: bold; }
+        .block-graphic {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            background: #10121a;
+            border-radius: 4px;
+            padding: 5px;
+            box-sizing: border-box;
+            border-bottom: 6px solid #242736;
+            position: relative;
+        }
+        .piston-chamber {
+            width: 22%;
+            height: 80%;
+            background: #06070a;
+            position: relative;
+            overflow: hidden;
+        }
+        .piston {
+            width: 100%;
+            height: 16px;
+            background: linear-gradient(to bottom, #999, #333);
+            position: absolute;
+            top: 0; left: 0;
+            border-bottom: 2px solid #111;
+        }
+        .piston-rod { width: 4px; height: 100%; background: #444; margin: 14px auto 0 auto; }
+        .fan-assembly {
+            position: absolute;
+            top: 40px; right: -14px;
+            width: 32px; height: 32px;
+            border: 2px solid #323547;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+        .fan-blade { position: absolute; width: 4px; height: 28px; background: #3e4054; }
+        .fan-blade:nth-child(2) { transform: rotate(60deg); }
+        .fan-blade:nth-child(3) { transform: rotate(120deg); }
+
+        #file-input { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="windshield">
+        <div id="sun"></div>
+        <canvas id="envCanvas"></canvas>
+    </div>
+
+    <div id="dashboard">
+        
+        <div class="engine-bay">
+            <div class="engine-title">MOTOR CORE V4</div>
+            <div class="block-graphic">
+                <div class="piston-chamber"><div class="piston" id="piston-0"><div class="piston-rod"></div></div></div>
+                <div class="piston-chamber"><div class="piston" id="piston-1"><div class="piston-rod"></div></div></div>
+                <div class="piston-chamber"><div class="piston" id="piston-2"><div class="piston-rod"></div></div></div>
+                <div class="piston-chamber"><div class="piston" id="piston-3"><div class="piston-rod"></div></div></div>
+                <div class="fan-assembly" id="radiator-fan">
+                    <div class="fan-blade"></div>
+                    <div class="fan-blade"></div>
+                    <div class="fan-blade"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gauge-container" id="gauge-rpm-wrap">
+            <canvas class="gauge-canvas" id="canvas-rpm"></canvas>
+            <div class="needle" id="needle-rpm"></div>
+            <div class="needle-cap"></div>
+            <div class="gauge-value" id="val-rpm">0</div>
+            <div class="gauge-label">RPM x1000</div>
+        </div>
+
+        <div class="center-stack">
+            <div class="system-status">
+                <div class="led-group"><div class="led" id="led-diag"></div><span>DIAG</span></div>
+                <div class="led-group"><div class="led" id="led-rdy"></div><span>READY</span></div>
+                <div class="led-group"><div class="led" id="led-booster"></div><span>BOOST</span></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <span style="font-size: 9px; color: #ff3366; font-weight: bold; letter-spacing: 1px;">IGNITION</span>
+                <div class="switch-btn" id="ignition-switch"></div>
+            </div>
+
+            <div id="gear-box">P</div>
+        </div>
+
+        <div class="gauge-container" id="gauge-speed-wrap">
+            <canvas class="gauge-canvas" id="canvas-speed"></canvas>
+            <div class="needle" id="needle-speed"></div>
+            <div class="needle-cap"></div>
+            <div class="gauge-value" id="val-speed">0</div>
+            <div class="gauge-label">KM/H</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div class="gauge-container" id="gauge-turbo-wrap" style="width:85px; height:85px;">
+                <canvas class="gauge-canvas" id="canvas-turbo"></canvas>
+                <div class="needle" id="needle-turbo" style="height:32px;"></div>
+                <div class="needle-cap" style="width:10px; height:10px;"></div>
+                <div class="gauge-label" style="bottom:10px; font-size:7px;">TURBO BAR</div>
+            </div>
+            <div class="gauge-container" style="width:85px; height:85px;">
+                <canvas class="gauge-canvas" id="canvas-fuel"></canvas>
+                <div class="needle" id="needle-fuel" style="height:32px;"></div>
+                <div class="needle-cap" style="width:10px; height:10px;"></div>
+                <div class="gauge-label" style="bottom:10px; font-size:7px;">FUEL TANK</div>
+            </div>
+        </div>
+
+        <div class="pedal-board">
+            <div class="pedal" id="brake-pedal">
+                <div class="pedal-label">BRAKE</div>
+                <div class="pedal-label">STOP</div>
+            </div>
+            <div class="pedal" id="gas-pedal">
+                <div class="pedal-label">GAS</div>
+                <div class="pedal-label">DRIVE</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<input type="file" id="file-input" accept="audio/*">
+
+<script>
+    // --- APP CORE MATRIX STATES ---
+    let systemOnline = false;
+    let systemReady = false;
+    let isFlickering = false;
+    let isPlaying = false;
+    
+    // Physics Engine Nodes
+    let currentSpeed = 0;
+    let targetSpeed = 0;
+    let currentRpm = 0;
+    let currentGear = 0; 
+    let turboPressure = 0;
+    let fuelLevel = 1.0;
+
+    // Environmental Animations
+    let gridOffset = 0;
+    let fanRotation = 0;
+    let stars = [];
+    let lightPillars = [];
+    
+    // Road Crash/Bump Physics System variables
+    let chassisYShift = 0;
+    let crashShockIntensity = 0;
+    let trackDropTimestamps = []; 
+    let activeDropPointer = 0;
+
+    // Advanced Aesthetics Parameters
+    let roadCurveAngle = 0; 
+    let colorShiftHue = 290; // Standard purple cycle frame
+    let sonicBoomRadius = 0;
+    let sonicBoomMaxRadius = 0;
+
+    // Web Audio Variables
+    let audioCtx, audioBuffer, audioSourceNode, analyzerNode, dataArray;
+    let trackStartTime = 0;
+    let trackOffsetTime = 0; 
+
+    // DOM selectors
+    const ignitionBtn = document.getElementById('ignition-switch');
+    const fileInput = document.getElementById('file-input');
+    const gasPedal = document.getElementById('gas-pedal');
+    const brakePedal = document.getElementById('brake-pedal');
+    const gearBox = document.getElementById('gear-box');
+    const mainDashboard = document.getElementById('dashboard');
+    const sunNode = document.getElementById('sun');
+
+    const envCanvas = document.getElementById('envCanvas');
+    const ctxEnv = envCanvas.getContext('2d');
+
+    const cRpm = document.getElementById('canvas-rpm');
+    const cSpeed = document.getElementById('canvas-speed');
+    const cTurbo = document.getElementById('canvas-turbo');
+    const cFuel = document.getElementById('canvas-fuel');
+
+    // --- APPLICATION RUNTIME BOOT ---
+    function init() {
+        resizeEnvironments();
+        window.addEventListener('resize', resizeEnvironments);
+        generateStarfield(85);
+        generateRoadsidePillars();
+        drawAnalogStaticGauges();
+        executeEngineFrameLoop();
+    }
+
+    function resizeEnvironments() {
+        envCanvas.width = envCanvas.parentElement.clientWidth;
+        envCanvas.height = envCanvas.parentElement.clientHeight;
+        [cRpm, cSpeed].forEach(c => { c.width = 180; c.height = 180; });
+        [cTurbo, cFuel].forEach(c => { c.width = 85; c.height = 85; });
+        drawAnalogStaticGauges();
+    }
+
+    function generateStarfield(count) {
+        stars = [];
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * envCanvas.width,
+                y: Math.random() * (envCanvas.height * 0.7),
+                r: Math.random() * 1.5 + 0.5,
+                zSpeed: Math.random() * 1.5 + 0.5
+            });
+        }
+    }
+
+    function generateRoadsidePillars() {
+        lightPillars = [
+            { side: -1, z: 0.1 }, { side: -1, z: 0.4 }, { side: -1, z: 0.7 },
+            { side: 1, z: 0.25 }, { side: 1, z: 0.55 }, { side: 1, z: 0.85 }
+        ];
+    }
+
+    function triggerShwoomWave(e, target) {
+        const wave = document.createElement('div');
+        wave.classList.add('shwoom-wave');
+        wave.style.left = `${e.clientX}px`;
+        wave.style.top = `${e.clientY}px`;
+        document.body.appendChild(wave);
+        wave.addEventListener('animationend', () => wave.remove());
+    }
+
+    // --- PRE-DRIVE DIGITAL ASSET ANALYZER (No False Alarms) ---
+    function parseAudioBufferForDrops(buffer) {
+        const sampleRate = buffer.sampleRate;
+        const rawSamples = buffer.getChannelData(0); 
+        const windowSize = Math.floor(sampleRate * 0.05); 
+        const stepSize = Math.floor(sampleRate * 0.025); 
+        
+        let historicalBlockEnergy = [];
+        trackDropTimestamps = [];
+        activeDropPointer = 0;
+
+        for (let i = 0; i < rawSamples.length - windowSize; i += stepSize) {
+            let sumSquared = 0;
+            for (let j = 0; j < windowSize; j++) {
+                sumSquared += rawSamples[i + j] * rawSamples[i + j];
+            }
+            let rms = Math.sqrt(sumSquared / windowSize);
+            historicalBlockEnergy.push({ time: i / sampleRate, energy: rms });
+        }
+
+        let energyThresholdFactor = 2.2; 
+        for (let k = 30; k < historicalBlockEnergy.length - 30; k++) {
+            let currentEnergy = historicalBlockEnergy[k].energy;
+            
+            let localSum = 0;
+            for (let m = k - 20; m < k; m++) localSum += historicalBlockEnergy[m].energy;
+            let localAverage = localSum / 20;
+
+            if (currentEnergy > localAverage * energyThresholdFactor && currentEnergy > 0.25) {
+                let currentDropTime = historicalBlockEnergy[k].time;
+                if (trackDropTimestamps.length === 0 || 
+                    currentDropTime - trackDropTimestamps[trackDropTimestamps.length - 1] > 6.0) {
+                    trackDropTimestamps.push(currentDropTime);
+                }
+                k += 100; 
+            }
+        }
+    }
+
+    // --- INTERACTIVE IGNITION ENGINE BOOT ---
+    ignitionBtn.addEventListener('click', (e) => {
+        triggerShwoomWave(e, ignitionBtn);
+        if (!systemOnline && !isFlickering) {
+            isFlickering = true;
+            ignitionBtn.classList.add('ignited');
+            document.getElementById('led-diag').classList.add('active-orange');
+
+            let processIndex = 0;
+            const bootSequenceTargets = ['gauge-rpm-wrap', 'gauge-speed-wrap', 'gauge-turbo-wrap', 'gear-box'];
+            
+            let bootTimer = setInterval(() => {
+                if (processIndex < bootSequenceTargets.length) {
+                    document.getElementById(bootSequenceTargets[processIndex]).classList.toggle('active');
+                    if (Math.random() > 0.65) processIndex++;
+                } else {
+                    clearInterval(bootTimer);
+                    systemOnline = true;
+                    isFlickering = false;
+                    bootSequenceTargets.forEach(id => document.getElementById(id).classList.add('active'));
+                    document.getElementById('led-diag').classList.remove('active-orange');
+                    document.getElementById('led-diag').classList.add('active-green');
+                    fileInput.click();
+                }
+            }, 70);
+        }
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (!this.files[0]) return;
+        document.getElementById('led-rdy').classList.add('active-orange');
+
+        targetSpeed = 250; currentRpm = 8.0; turboPressure = 2.0;
+
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const fileReader = new FileReader();
+        fileReader.onload = function(e) {
+            audioCtx.decodeAudioData(e.target.result, function(buffer) {
+                audioBuffer = buffer;
+                parseAudioBufferForDrops(audioBuffer);
+                
+                targetSpeed = 0; currentRpm = 0.8; turboPressure = 0;
+                systemReady = true;
+                document.getElementById('led-rdy').classList.remove('active-orange');
+                document.getElementById('led-rdy').classList.add('active-green');
+                gasPedal.classList.add('glow-prompt');
+            });
+        };
+        fileReader.readAsArrayBuffer(this.files[0]);
+    });
+
+    gasPedal.addEventListener('click', (e) => {
+        triggerShwoomWave(e, gasPedal);
+        if (!systemReady || isPlaying) return;
+
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        audioSourceNode = audioCtx.createBufferSource();
+        audioSourceNode.buffer = audioBuffer;
+
+        analyzerNode = audioCtx.createAnalyser();
+        analyzerNode.fftSize = 256;
+        bufferLength = analyzerNode.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        audioSourceNode.connect(analyzerNode);
+        analyzerNode.connect(audioCtx.destination);
+
+        audioSourceNode.start(0, trackOffsetTime);
+        trackStartTime = audioCtx.currentTime - trackOffsetTime;
+
+        isPlaying = true;
+        gasPedal.classList.remove('glow-prompt');
+        gasPedal.classList.add('pressed');
+        brakePedal.classList.remove('pressed');
+    });
+
+    brakePedal.addEventListener('click', (e) => {
+        triggerShwoomWave(e, brakePedal);
+        if (!isPlaying) return;
+
+        trackOffsetTime = audioCtx.currentTime - trackStartTime;
+        audioSourceNode.stop();
+        
+        isPlaying = false;
+        gasPedal.classList.add('glow-prompt');
+        gasPedal.classList.remove('pressed');
+        brakePedal.classList.add('pressed');
+    });
+
+    // --- MAIN ENGINE MATRIX LOOP ---
+    function executeEngineFrameLoop() {
+        requestAnimationFrame(executeEngineFrameLoop);
+        
+        let bassFreq = 0, midFreq = 0, highFreq = 0;
+
+        if (isPlaying && analyzerNode) {
+            analyzerNode.getByteFrequencyData(dataArray);
+            for (let i = 0; i < 10; i++) bassFreq += dataArray[i];
+            for (let i = 15; i < 40; i++) midFreq += dataArray[i];
+            for (let i = 45; i < 80; i++) highFreq += dataArray[i];
+            bassFreq /= 10; midFreq /= 25; highFreq /= 35;
+
+            let currentTrackTimelinePosition = audioCtx.currentTime - trackStartTime;
+            
+            // Check current timeline alignment against verified drops array
+            if (activeDropPointer < trackDropTimestamps.length && 
+                currentTrackTimelinePosition >= trackDropTimestamps[activeDropPointer]) {
+                crashShockIntensity = 38; // Structural displacement impulse trigger
+                sonicBoomRadius = 1;      // Fire the sonic shockwave ring animation
+                activeDropPointer++;
+            }
+
+            if (currentTrackTimelinePosition >= audioBuffer.duration) {
+                isPlaying = false;
+                trackOffsetTime = 0;
+                activeDropPointer = 0;
+                gasPedal.classList.add('glow-prompt');
+                gasPedal.classList.remove('pressed');
+            }
+            fuelLevel = 1.0 - (currentTrackTimelinePosition / audioBuffer.duration);
+        }
+
+        // Apply Spring Decaying Damping Vectors for Drops
+        chassisYShift = Math.sin(Date.now() * 0.08) * crashShockIntensity;
+        crashShockIntensity *= 0.89; 
+
+        // Update Sonic Shockwave Calculations
+        if (sonicBoomRadius > 0) {
+            sonicBoomRadius += (currentSpeed * 0.15 + 8);
+            if (sonicBoomRadius > envCanvas.width * 1.2) {
+                sonicBoomRadius = 0; // Destroy frame instance
+            }
+        }
+
+        // Apply Parallax Chassis Swivel Shifts (Using speed & mid frequency melodies to simulate carving corners)
+        if (isPlaying) {
+            roadCurveAngle = Math.sin(Date.now() * 0.001) * 80 * (currentSpeed / 250);
+        } else {
+            roadCurveAngle += (0 - roadCurveAngle) * 0.05;
+        }
+
+        // Transform Structural Dashboard Layouts
+        mainDashboard.style.transform = `translateY(${chassisYShift * 0.4}px)`;
+        sunNode.style.transform = `translate(calc(-50% + ${roadCurveAngle * 0.15}px), ${-chassisYShift * 0.2}px)`;
+
+        renderWindshieldScenery(bassFreq, midFreq, highFreq);
+        calculatePowertrainPhysics(bassFreq, midFreq);
+        updateDashboardInstruments(highFreq);
+    }
+
+    // --- RENDERING ENVIRONMENT LAYER MATRIX ---
+    function renderWindshieldScenery(bass, mids, highs) {
+        ctxEnv.clearRect(0, 0, envCanvas.width, envCanvas.height);
+        
+        let w = envCanvas.width;
+        let h = envCanvas.height;
+        let centerPointX = w / 2 + roadCurveAngle; // Dynamic horizontal center point shift
+        let horizonY = h * 0.85 + chassisYShift; 
+
+        // Layer A: Mid-Range Frequency Sky Nebula Dust
+        let nebulaGlowIntensity = isPlaying ? (mids / 255) * 0.35 : 0.05;
+        let nebulaGradient = ctxEnv.createRadialGradient(centerPointX, horizonY - 40, 10, centerPointX, horizonY - 40, w * 0.6);
+        nebulaGradient.addColorStop(0, `rgba(255, 0, 128, ${nebulaGlowIntensity})`);
+        nebulaGradient.addColorStop(0.5, `rgba(0, 240, 255, ${nebulaGlowIntensity * 0.4})`);
+        nebulaGradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctxEnv.fillStyle = nebulaGradient;
+        ctxEnv.fillRect(0, 0, w, h);
+
+        // Layer B: Warp Field Star Systems
+        let warpFactor = currentSpeed / 18;
+        ctxEnv.fillStyle = '#ffffff';
+        stars.forEach(star => {
+            if (warpFactor > 0.6) {
+                let dx = star.x - centerPointX;
+                let dy = star.y - (horizonY - 20);
+                let d = Math.sqrt(dx*dx + dy*dy);
+                if (d === 0) d = 1;
+                let ox = (dx / d) * warpFactor * star.zSpeed;
+                let oy = (dy / d) * warpFactor * star.zSpeed;
+
+                ctxEnv.strokeStyle = `rgba(255, 255, 255, ${Math.min(1, warpFactor/6)})`;
+                ctxEnv.lineWidth = star.r;
+                ctxEnv.beginPath(); ctxInverseLine(star.x, star.y, star.x + ox, star.y + oy); ctxEnv.stroke();
+                
+                star.x += ox * 0.25; star.y += oy * 0.25;
+            } else {
+                ctxEnv.beginPath(); ctxEnv.arc(star.x, star.y, star.r, 0, Math.PI*2); ctxEnv.fill();
+                star.x -= star.zSpeed * 0.08;
+            }
+            if (star.x < 0 || star.x > w || star.y < 0 || star.y > h * 0.82) {
+                star.x = Math.random() * w; star.y = Math.random() * (h * 0.68);
+            }
+        });
+
+        // Layer C: Chromatic Hue Progression
+        if (isPlaying) {
+            colorShiftHue += 0.15 + (bass * 0.01);
+            if (colorShiftHue > 360) colorShiftHue = 0;
+        }
+        let runtimeGridColor = `hsl(${colorShiftHue}, 100%, 55%)`;
+        let standardPillarColor = `hsl(${(colorShiftHue + 120) % 360}, 100%, 50%)`;
+
+        // Layer D: Audio-Reactive Geometry Mountains
+        ctxEnv.strokeStyle = `hsl(${(colorShiftHue + 240) % 360}, 60%, 20%)`;
+        ctxEnv.lineWidth = 2;
+        // Left Ridge Array
+        ctxEnv.beginPath(); ctxEnv.moveTo(0, horizonY);
+        for(let x=0; x <= w * 0.5; x += 35) {
+            let evalX = x - roadCurveAngle * 0.4;
+            let mountainHeightEval = (Math.sin(x*0.01) * 60 + 35) + (bass * 0.3 * Math.sin(Date.now()*0.008 + x));
+            ctxEnv.lineTo(evalX, horizonY - mountainHeightEval);
+        }
+        ctxEnv.lineTo(centerPointX, horizonY); ctxEnv.stroke();
+        // Right Ridge Array
+        ctxEnv.beginPath(); ctxEnv.moveTo(w, horizonY);
+        for(let x=w; x >= w * 0.5; x -= 35) {
+            let evalX = x - roadCurveAngle * 0.4;
+            let mountainHeightEval = (Math.cos(x*0.01) * 55 + 40) + (mids * 0.35 * Math.cos(Date.now()*0.012 + x));
+            ctxEnv.lineTo(evalX, horizonY - mountainHeightEval);
+        }
+        ctxEnv.lineTo(centerPointX, horizonY); ctxEnv.stroke();
+
+        // Layer E: Matrix Perspective Ground Grid Runway
+        if (isPlaying) {
+            gridOffset += (currentSpeed * 0.16);
+            if (gridOffset >= 40) gridOffset = 0;
+        }
+        ctxEnv.strokeStyle = runtimeGridColor;
+        ctxEnv.lineWidth = 1.5;
+        let gridDivs = 34;
+        for (let i = -gridDivs/2; i <= gridDivs/2; i++) {
+            ctxEnv.beginPath();
+            ctxEnv.moveTo(centerPointX, horizonY);
+            // Curves calculations embedded into structural perspective tracking logic
+            let perspectiveEndpointX = w / 2 + (i * (w / gridDivs) * 3.6) + roadCurveAngle * 2.2;
+            ctxEnv.lineTo(perspectiveEndpointX, h);
+            ctxEnv.stroke();
+        }
+        let horizontalDivs = 12;
+        for (let i = 0; i < horizontalDivs; i++) {
+            let targetY = horizonY + (Math.pow(i / horizontalDivs, 2) * (h - horizonY));
+            targetY += (gridOffset * ((targetY - horizonY) / (h - horizonY))) * 0.35;
+            
+            // Drop crash mechanical distortion wave ripple line injects here
+            if (crashShockIntensity > 0.5) {
+                targetY += Math.sin((targetY * 0.08) - (Date.now() * 0.025)) * (crashShockIntensity * 0.35);
+            }
+
+            if (targetY <= h && targetY >= horizonY) {
+                ctxEnv.strokeStyle = `hsla(${colorShiftHue}, 100%, 60%, ${(targetY - horizonY) / (h - horizonY)})`;
+                ctxEnv.beginPath(); ctxEnv.moveTo(0, targetY); ctxEnv.lineTo(w, targetY); ctxEnv.stroke();
+            }
+        }
+
+        // Layer F: Snare-Reactive Rapid Passing Light Pillars
+        if (isPlaying) {
+            lightPillars.forEach(p => {
+                p.z -= (currentSpeed * 0.00012); 
+                if (p.z <= 0.01) p.z = 1.0; 
+            });
+        }
+        lightPillars.forEach(p => {
+            let screenX = centerPointX + p.side * (w * 0.48) * (1.0 - p.z) + (roadCurveAngle * (1.0 - p.z));
+            let screenY = horizonY + (h - horizonY) * (1.0 - p.z);
+            let pillarHeight = (50 / p.z) * ((screenY - horizonY)/(h - horizonY));
+
+            // Dynamic Strobe intensity tracking connected directly to high-frequencies data arrays
+            let snareBrightnessFactor = isPlaying ? 0.3 + (highs / 255) * 0.7 : 0.6;
+
+            if (screenY > horizonY && screenY < h) {
+                ctxEnv.strokeStyle = p.side === -1 ? `hsla(${(colorShiftHue + 120)%360}, 100%, 50%, ${snareBrightnessFactor})` : `hsla(${(colorShiftHue + 200)%360}, 100%, 50%, ${snareBrightnessFactor})`;
+                ctxEnv.lineWidth = Math.max(1, 4.0 / p.z);
+                ctxEnv.beginPath();
+                ctxEnv.moveTo(screenX, screenY);
+                ctxEnv.lineTo(screenX, screenY - pillarHeight);
+                ctxEnv.stroke();
+            }
+        });
+
+        // Layer G: Sonic Boom Shockwave Ring Effect Overlay
+        if (sonicBoomRadius > 0) {
+            ctxEnv.strokeStyle = `rgba(255, 255, 255, ${1.0 - (sonicBoomRadius / (w * 1.2))})`;
+            ctxEnv.lineWidth = 6;
+            ctxEnv.shadowBlur = 20;
+            ctxEnv.shadowColor = '#ffffff';
+            ctxEnv.beginPath();
+            ctxEnv.arc(centerPointX, horizonY, sonicBoomRadius, 0, Math.PI * 2);
+            ctxEnv.stroke();
+            ctxEnv.shadowBlur = 0; // Terminate shadows globally quickly
+        }
+    }
+
+    function ctxInverseLine(x1, y1, x2, y2) {
+        // Intercepting inverse function logic to bypass shock collisions
+        if (sonicBoomRadius > 0) {
+            let dx = x1 - (envCanvas.width/2 + roadCurveAngle);
+            let dy = y1 - (envCanvas.height * 0.8);
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (Math.abs(dist - sonicBoomRadius) < 30) {
+                // Flash invert spectrum inside wave radius space boundaries
+                ctxEnv.strokeStyle = '#ff0055';
+            }
+        }
+        ctxEnv.moveTo(x1, y1);
+        ctxEnv.lineTo(x2, y2);
+    }
+
+    // --- INTEGRATED POWERTRAIN PHYSICS INTERFACE ---
+    function calculatePowertrainPhysics(bass, mids) {
+        let cycleSpeed = 0.05 + (currentRpm * 0.15);
+        fanRotation += (cycleSpeed * 18);
+        document.getElementById('radiator-fan').style.transform = `rotate(${fanRotation}deg)`;
+        for (let i = 0; i < 4; i++) {
+            let phase = i * Math.PI * 0.5;
+            let strokeY = Math.sin(Date.now() * cycleSpeed * 0.09 + phase) * 18 + 18;
+            document.getElementById(`piston-${i}`).style.transform = `translateY(${strokeY}px)`;
+        }
+
+        if (isPlaying) {
+            let rawDriveForce = (bass * 0.55) + (mids * 0.45);
+            targetSpeed = (rawDriveForce / 255) * 250;
+            
+            currentSpeed += (targetSpeed - currentSpeed) * 0.014;
+            currentRpm = 0.8 + (currentSpeed / 250) * 6.4 + (bass / 255) * 1.3;
+
+            if (currentSpeed < 45) currentGear = 1;
+            else if (currentSpeed >= 45 && currentSpeed < 90) currentGear = 2;
+            else if (currentSpeed >= 90 && currentSpeed < 140) currentGear = 3;
+            else if (currentSpeed >= 140 && currentSpeed < 195) currentGear = 4;
+            else if (currentSpeed >= 195) currentGear = 5;
+
+            gearBox.textContent = currentGear;
+            if (currentRpm > 8.0) currentRpm = 7.7 + Math.random() * 0.3; 
+        } else {
+            currentSpeed += (0 - currentSpeed) * 0.04;
+            if (systemOnline) {
+                currentRpm += (0.8 - currentRpm) * 0.04; 
+                gearBox.textContent = 'N';
+            } else {
+                currentRpm += (0 - currentRpm) * 0.04;
+                gearBox.textContent = 'P';
+            }
+            turboPressure += (0 - turboPressure) * 0.08;
+        }
+
+        document.getElementById('val-speed').textContent = Math.floor(currentSpeed);
+        document.getElementById('val-rpm').textContent = currentRpm.toFixed(1);
+    }
+
+    // --- GAUGE CONTROLLER INTERFACES ---
+    function updateDashboardInstruments(highs) {
+        let rpmDeg = -120 + (currentRpm / 8) * 240;
+        let speedDeg = -120 + (currentSpeed / 250) * 240;
+        
+        if (isPlaying) {
+            turboPressure = (highs / 255) * 2.0;
+            if (turboPressure > 1.35) document.getElementById('led-booster').classList.add('active-red');
+            else document.getElementById('led-booster').classList.remove('active-red');
+        }
+        let turboDeg = -120 + (turboPressure / 2.0) * 240;
+        let fuelDeg = -60 + (fuelLevel * 120);
+
+        document.getElementById('needle-rpm').style.transform = `rotate(${rpmDeg}deg)`;
+        document.getElementById('needle-speed').style.transform = `rotate(${speedDeg}deg)`;
+        document.getElementById('needle-turbo').style.transform = `rotate(${turboDeg}deg)`;
+        document.getElementById('needle-fuel').style.transform = `rotate(${fuelDeg}deg)`;
+
+        if (isPlaying && dataArray) {
+            renderCircularAudioRingSpectrum(cRpm, 180, 10, dataArray, 0, 32, `hsl(${colorShiftHue}, 100%, 55%)`);
+            renderCircularAudioRingSpectrum(cSpeed, 180, 10, dataArray, 32, 90, `hsl(${(colorShiftHue + 120)%360}, 100%, 55%)`);
+        }
+    }
+
+    function renderCircularAudioRingSpectrum(canvas, size, thickness, audioData, startBin, endBin, color) {
+        const ctx = canvas.getContext('2d');
+        const center = size / 2;
+        const radius = center - 5;
+        
+        ctx.clearRect(center - radius - 2, center - radius - 2, radius * 2 + 4, radius * 2 + 4);
+        let activeRange = endBin - startBin;
+        let angleStep = 240 / activeRange;
+
+        for (let i = 0; i < activeRange; i++) {
+            let power = audioData[startBin + i] / 255;
+            let angle = -120 + (i * angleStep);
+            let rad = (angle - 90) * Math.PI / 180;
+            
+            let x1 = center + radius * Math.cos(rad);
+            let y1 = center + radius * Math.sin(rad);
+            let x2 = center + (radius + (power * thickness)) * Math.cos(rad);
+            let y2 = center + (radius + (power * thickness)) * Math.sin(rad);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        }
+    }
+
+    function drawAnalogStaticGauges() {
+        buildStaticTicks(cRpm, 180, -120, 120, 8, '#ff3366');
+        buildStaticTicks(cSpeed, 180, -120, 120, 10, '#00f0ff');
+        buildStaticTicks(cTurbo, 85, -120, 120, 4, '#ffaa00');
+        buildStaticTicks(cFuel, 85, -60, 60, 4, '#39ff14');
+    }
+
+    function buildStaticTicks(canvas, size, startAngle, endAngle, totalTicks, color) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,size,size);
+        const center = size / 2, radius = center - 10;
+
+        ctx.strokeStyle = '#323547';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(center, center, radius, (startAngle - 90) * Math.PI / 180, (endAngle - 90) * Math.PI / 180);
+        ctx.stroke();
+
+        for(let i=0; i <= totalTicks; i++) {
+            let angle = startAngle + (i * (endAngle - startAngle) / totalTicks);
+            let rad = (angle - 90) * Math.PI / 180;
+            let x1 = center + (radius - 2) * Math.cos(rad);
+            let y1 = center + (radius - 2) * Math.sin(rad);
+            let x2 = center + (radius - 9) * Math.cos(rad);
+            let y2 = center + (radius - 9) * Math.sin(rad);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        }
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>

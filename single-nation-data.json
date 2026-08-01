@@ -1,0 +1,30 @@
+[
+  {
+    "nation": "Silver Republics",
+    "capital": {
+      "name": "Capital City",
+      "x": 1135,
+      "y": 566
+    },
+    "border": [
+      [
+        1000,
+        500
+      ],
+      [
+        1200,
+        500
+      ],
+      [
+        1200,
+        650
+      ],
+      [
+        1000,
+        650
+      ]
+    ],
+    "government": "Militaristic Republic",
+    "population": "500 Million"
+  }
+]
