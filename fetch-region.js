@@ -1,5 +1,6 @@
 const fs = require('fs');
 const https = require('https');
+const TSL_Integrity = require('./utils/integrity.js');
 
 const REGION_NAME = 'the_southern_lands';
 const USER_AGENT = 'TSL Regional Map Generator - Maintained by Silver Republics';
@@ -116,24 +117,67 @@ async function buildRegionMap() {
             }
 
             // NEW BULLETPROOF PARSER:
+            // Dynamic Parser inside fetch-region_2.js:
             try {
-                const nationData = JSON.parse(codeMatch[1].trim());
+                const codeBlock = codeMatch[1].trim();
+                const lines = codeBlock.split('\n');
+                
+                const meta = {};
+                let rawData = "";
 
-                // Validate borders (Supports both single array of points OR array of multiple islands)
-                const isValidBorder = nationData.border && Array.isArray(nationData.border) && (
-                    (nationData.border.length >= 3 && typeof nationData.border[0][0] === 'number') || 
-                    (Array.isArray(nationData.border[0]) && nationData.border[0].length >= 3)
-                );
+                // Parse key-value pairs line by line
+                lines.forEach(line => {
+                    const colonIdx = line.indexOf(':');
+                    if (colonIdx !== -1) {
+                        const key = line.slice(0, colonIdx).trim().toLowerCase();
+                        const val = line.slice(colonIdx + 1).trim();
 
-                if (isValidBorder) {
+                        if (key === 'data') {
+                            rawData = val;
+                        } else {
+                            meta[key] = val;
+                        }
+                    }
+                });
+
+                // Fallback if data was on its own line or fallback structure
+                if (!rawData) {
+                    const dataMatch = codeBlock.match(/Data:\s*([A-Za-z0-9+/=]+)/i);
+                    rawData = dataMatch ? dataMatch[1].trim() : codeBlock.trim();
+                }
+
+                // Verify spatial coordinates
+                const verification = TSL_Integrity.verifyAndParse(rawData, 2271, 1133);
+
+                if (verification.valid) {
+                    const nationData = verification.data;
+
+                    // Combine spatial data with flexible metadata
+                    nationData.nation = meta['nation'] || nation;
+                    
+                    if (!nationData.capital) nationData.capital = {};
+                    nationData.capital.name = meta['capital'] || "Capital City";
+
+                    // Expandable stats mapped dynamically
+                    nationData.government = meta['government'] || "Unknown";
+                    nationData.population = meta['population'] || "Unknown";
+
+                    // Dynamically attach ANY extra stats added in the future!
+                    // (e.g. Economy, Religion, Tech Level, etc.)
+                    for (const [k, v] of Object.entries(meta)) {
+                        if (!['nation', 'capital', 'government', 'population', 'data'].includes(k)) {
+                            nationData[k] = v;
+                        }
+                    }
+
                     nationData.color = nationData.color || getRandomTacticalColor();
                     compiledMapData.push(nationData);
-                    console.log(`  └─ ✅ SUCCESS! Parsed map data for ${nation}.`);
+                    console.log(`  └─ ✅ SUCCESS! Parsed & Verified map data for ${nation}.`);
                 } else {
-                    console.log(`  └─ ⚠️  SKIPPED ${nation}: Border coordinate array missing or incomplete (<3 points).`);
+                    console.log(`  └─ ⚠️  REJECTED ${nation}: ${verification.error}`);
                 }
             } catch (e) {
-                console.log(`  └─ ⚠️  SKIPPED ${nation}: Syntax error in dispatch JSON. (${e.message})`);
+                console.log(`  └─ ⚠️  SKIPPED ${nation}: Invalid dispatch code formatting.`);
             }
         }
 

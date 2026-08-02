@@ -772,7 +772,7 @@
     </style>
 </head>
 <body>
-    <audio id="bg-audio" src="background_test.mp3" loop preload="auto" crossorigin="anonymous"></audio>
+    <audio id="bg-audio" src="background_audio.mp3" loop preload="auto" crossorigin="anonymous" volume="0.7"></audio>
 
     <!-- Entry Modal -->
     <div id="entry-modal">
@@ -812,8 +812,8 @@
 
             <!-- LEFT: Lore & TV -->
             <div class="left-panel">
-                <div class="lore-title">3005</div>
-                <div class="lore-sub">How will you survive in the wake of extinction?</div>
+                <div class="lore-title">Year 3005</div>
+                <div class="lore-sub">How will you survive...?</div>
 
                 <div class="tv-frame">
                     <canvas id="static-canvas"></canvas>
@@ -865,7 +865,7 @@
                 <a href="analytics.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="stats">OPEN CONVERTED STATS ↗</a>
                 <a href="battle.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="battle">OPEN BATTLE SYSTEM ↗</a>
                 <a href="map.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="map">OPEN STRATEGIC MAP ↗</a>
-                <a href="visualizer.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="lore">OPEN REGIONAL LORE ↗</a>
+                <a href="faq.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="faq" style="border-color: var(--hell-red); color: #fff; text-shadow: 0 0 6px var(--hell-red);">FAQ [DOCS] ↗</a>
             </div>
 
         </div>
@@ -1158,6 +1158,9 @@
                     dataArray = new Uint8Array(analyser.frequencyBinCount);
 
                     if (audioElement.src) {
+                        // ADD THE VOLUME LINE HERE
+                        audioElement.volume = 0.25; 
+
                         const source = audioCtx.createMediaElementSource(audioElement);
                         source.connect(analyser);
                         analyser.connect(audioCtx.destination);

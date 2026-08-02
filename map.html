@@ -226,6 +226,21 @@
         #map-tooltip .tooltip-label {
             color: #aaa;
         }
+        /* Keeps nation borders thin and crisp regardless of zoom level */
+        .nation-border, #draft-layer polygon {
+            vector-effect: non-scaling-stroke;
+        }
+
+        /* Dynamically resizes dots so they maintain a fixed visual pixel size on screen */
+        .map-marker-dot {
+            r: calc(4px / var(--map-zoom, 1));
+            stroke-width: calc(1px / var(--map-zoom, 1));
+        }
+
+        .capital-marker-dot {
+            r: calc(6px / var(--map-zoom, 1));
+            stroke-width: calc(1.5px / var(--map-zoom, 1));
+        }
     </style>
 </head>
 <body>
@@ -314,7 +329,9 @@
         <div class="tooltip-row"><span class="tooltip-label">POPULATION:</span> <span id="tt-pop">-</span></div>
     </div>
     </div>
-
+    <!-- Integrity checker  -->
+    <script src="utils/integrity.js"></script>
+    
     <script>
         // Original SVG dimensions
         const MAP_W = 2271;
@@ -333,6 +350,10 @@
 
         function applyTransform() {
             viewport.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.zoom})`;
+            
+            // Pass the zoom scale to CSS variables so SVG dots stay small
+            viewport.style.setProperty('--map-zoom', state.zoom);
+            
             inputX.value = Math.round(state.x);
             inputY.value = Math.round(state.y);
             inputZoom.value = state.zoom.toFixed(1);
@@ -546,6 +567,7 @@
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', nation.capital.x);
                         circle.setAttribute('cy', nation.capital.y);
+                        circle.setAttribute('class', 'capital-marker-dot');
                         circle.setAttribute('r', '6');
                         circle.setAttribute('fill', '#ffaa00');
                         circle.setAttribute('stroke', '#000');
@@ -658,6 +680,40 @@
             islands.push([]);
             renderDraftBorder();
         }
+        function undoLastPoint() {
+            // 1. If we have points in the current island, pop the last point
+            const currentIsland = islands[islands.length - 1];
+            
+            if (currentIsland.length > 0) {
+                currentIsland.pop();
+            } else if (islands.length > 1) {
+                // 2. If the current island is empty but we have previous islands, go back to the previous island
+                islands.pop();
+                islands[islands.length - 1].pop();
+            } else if (selectedCapital) {
+                // 3. Fallback: clear capital if no border points left to undo
+                selectedCapital = null;
+            }
+
+            renderDraftBorder();
+        }
+
+        function clearDrawing() {
+            islands = [[]];
+            selectedCapital = null;
+            
+            // Clear draft render layer
+            const draftLayer = document.getElementById('draft-layer');
+            if (draftLayer) {
+                draftLayer.innerHTML = '';
+            }
+
+            // Clear output text area
+            const textarea = document.getElementById('output-json');
+            if (textarea) {
+                textarea.value = '';
+            }
+        }
 
         function renderDraftBorder() {
             let draftLayer = document.getElementById('draft-layer');
@@ -685,7 +741,7 @@
                         const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         dot.setAttribute('cx', pt[0]);
                         dot.setAttribute('cy', pt[1]);
-                        dot.setAttribute('r', '4');
+                        dot.setAttribute('class', 'map-marker-dot'); // <--- ADD THIS CLASS
                         dot.setAttribute('fill', '#ffaa00');
                         draftLayer.appendChild(dot);
                     });
@@ -697,33 +753,14 @@
                 const capMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 capMarker.setAttribute('cx', selectedCapital.x);
                 capMarker.setAttribute('cy', selectedCapital.y);
-                capMarker.setAttribute('r', '7');
+                capMarker.setAttribute('class', 'capital-marker-dot'); // <--- ADD THIS CLASS
                 capMarker.setAttribute('fill', '#ffea00');
                 capMarker.setAttribute('stroke', '#000');
-                capMarker.setAttribute('stroke-width', '2');
                 draftLayer.appendChild(capMarker);
             }
         }
 
-        function undoLastPoint() {
-            const currentIsland = islands[islands.length - 1];
-            if (currentIsland.length > 0) {
-                currentIsland.pop();
-            } else if (islands.length > 1) {
-                islands.pop();
-            }
-            renderDraftBorder();
-        }
-
-        function clearDrawing() {
-            islands = [[]];
-            selectedCapital = null;
-            renderDraftBorder();
-            document.getElementById('output-json').value = '';
-        }
-
         function generateDispatchJSON() {
-            // Filter valid islands with 3 or more points
             const validIslands = islands.filter(i => i.length >= 3);
 
             if (validIslands.length === 0) {
@@ -731,7 +768,6 @@
                 return;
             }
 
-            // Determine capital position (User selected or auto-centered from 1st island)
             let capitalX, capitalY;
             if (selectedCapital) {
                 capitalX = selectedCapital.x;
@@ -742,24 +778,31 @@
                 capitalY = Math.round(firstIsland.reduce((sum, p) => sum + p[1], 0) / firstIsland.length);
             }
 
-            // Use simple array for single island, nested arrays for multi-islands
             const borderOutput = validIslands.length === 1 ? validIslands[0] : validIslands;
 
-            const template = {
-                nation: "YOUR_NATION_NAME",
-                capital: { name: "Capital City", x: capitalX, y: capitalY },
-                border: borderOutput,
-                government: "Republic",
-                population: "100 Million"
+            // ONLY encode spatial coordinates that need tamper protection
+            const spatialPayload = {
+                capital: { x: capitalX, y: capitalY },
+                border: borderOutput
             };
 
-            const formattedOutput = `[code]\n${JSON.stringify(template, null, 2)}\n[/code]`;
+            const secureData = window.TSL_Integrity.generateCode(spatialPayload);
+
+            // Easily expandable plaintext fields
+            const formattedOutput = `[code]
+        Nation: Your Nation
+        Capital: Your Capital
+        Government: Your Government
+        Population: XX Million
+        Data: ${secureData}
+        [/code]`;
+            
             const textarea = document.getElementById('output-json');
             textarea.value = formattedOutput;
             textarea.select();
             
             navigator.clipboard.writeText(formattedOutput);
-            alert("Copied JSON snippet to clipboard!");
+            alert("Copied secured map code to clipboard!");
         }
     </script>
     <script>

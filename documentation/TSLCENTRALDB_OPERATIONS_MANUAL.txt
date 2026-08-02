@@ -1,0 +1,113 @@
+# TSLCENTRALDB - Automated Map Data Pipeline & Architecture Documentation
+===============================================================================
+System Overview & Operations Manual
+Maintainer: Abdallah Ahmed / Silver Republics
+Last Updated: August 2026
+
+-------------------------------------------------------------------------------
+1. ARCHITECTURE OVERVIEW & DATA FLOW
+-------------------------------------------------------------------------------
+This project hosts the TSLCENTRALDB interactive regional map for The Southern Lands
+on NationStates. The system uses an automated static site build pipeline to refresh
+regional nation dispatches and geospatial coordinates without requiring client-side
+cross-origin API hammering or manual site redeployments.
+
++-------------------+          POST Request          +----------------------+
+|   cron-job.org    | -----------------------------> |  Netlify Build Hook  |
+| (Scheduled Pinger)|       (Every 6 Hours)          | (Cloud Build Server) |
++-------------------+                                +----------------------+
+                                                                |
+                                                                v
++-------------------+       HTTP API Requests        +----------------------+
+|  NationStates API | <----------------------------- | node fetch-region.js |
+| (Data Source)     | -----------------------------> |  (Build Step Exec)   |
++-------------------+      (XML Dispatches)          +----------------------+
+                                                                |
+                                                                v
++-------------------+                                +----------------------+
+| Browser / User    | <----------------------------- | region-map-data.json |
+| (map.html View)   |         HTTP GET Fetch         | (Static Asset CDN)   |
++-------------------+                                +----------------------+
+
+-------------------------------------------------------------------------------
+2. COMPONENT BREAKDOWN & RESPONSIBILITIES
+-------------------------------------------------------------------------------
+
+A. SOURCE CODE REPOSITORY (GitHub)
+   * URL: https://github.com/SilverCoderTSL/TSLCENTRALDB
+   * Role: Serves as the single source of truth for code, configurations, and scripts.
+   * Key Files:
+     - fetch-region.js: Core ETL script that queries NationStates XML APIs, parses
+       nation dispatches tagged 'MAP' or 'REGIONAL MAP', extracts JSON codeblocks,
+       and compiles them into region-map-data.json.
+     - netlify.toml: Build configuration defining build commands and publish directories.
+     - map.html: Frontend Leaflet/SVG interactive map canvas rendering regional data.
+     - region-map-data.json: Statically served payload containing parsed nation data.
+
+B. HOSTING & BUILD ENGINE (Netlify)
+   * Linked Provider: Connected directly to GitHub repository (main branch).
+   * Build Command: `node fetch-region.js`
+   * Publish Directory: `.` (Root)
+   * Build Hooks: Unique endpoint (`https://api.netlify.com/build_hooks/...`) that,
+     when hit via HTTP POST, spins up an isolated Node.js container, executes
+     `node fetch-region.js`, updates `region-map-data.json`, and deploys to Netlify CDN.
+
+C. EXTERNAL SCHEDULER (cron-job.org)
+   * Schedule: Every 6 hours (`0 */6 * * *`).
+   * Action: Sends an HTTP POST ping to Netlify's secret Build Hook URL.
+   * Function: Replaces localized Node process background timers with cloud triggers.
+
+-------------------------------------------------------------------------------
+3. DAILY MAINTENANCE & WORKFLOWS
+-------------------------------------------------------------------------------
+
+A. Pushing Code Updates from Terminal:
+   1. Open terminal and navigate to project directory:
+      `cd ~/Documents/FSR/TSLCENTRALDB`
+   2. Make changes to local scripts or HTML pages.
+   3. Stage and commit:
+      `git add .`
+      `git commit -m "Update map visualizer layout"`
+   4. Push to GitHub:
+      `git push origin main`
+   *(Netlify automatically detects pushes and builds the site immediately).*
+
+B. Monitoring Scheduled Map Runs:
+   * Log into cron-job.org to view execution history and ping response status codes (HTTP 200/202).
+   * Log into Netlify Dashboard -> "Deploys" tab to view live build execution logs for `node fetch-region.js`.
+
+-------------------------------------------------------------------------------
+4. TROUBLESHOOTING & EMERGENCY MANUAL FIXES
+-------------------------------------------------------------------------------
+
+PROBLEM 1: Map Data Is Stale / Not Updating
+   * Cause 1: cron-job.org ping failed or exceeded timeout.
+     -> Fix: Log into cron-job.org, click "Run Now" on `TSL Map Automation`.
+   * Cause 2: Netlify Build Hook disabled or deleted.
+     -> Fix: Netlify Dashboard -> Project Configuration -> Build & Deploy -> Continuous Deployment -> Build Hooks.
+             Re-copy URL and update cron-job.org target address.
+   * Cause 3: NationStates API rate-limited or API format changed.
+     -> Fix: Check Netlify deploy log output. Ensure `User-Agent` header in `fetch-region.js` complies with NationStates rules.
+
+PROBLEM 2: Git Push Fails (Authentication / SSL Errors)
+   * CA Certificate Error:
+     Run: `git config --global http.https://github.com/.sslVerify false`
+     (Or point `http.sslCAInfo` to custom network root `.crt` file).
+   * Password Authentication Error:
+     GitHub requires SSH keys or Personal Access Tokens (PAT).
+     If using PAT: enter `SilverCoderTSL` as username and paste `ghp_...` token as password.
+     If using SSH: set remote URL with `git remote set-url origin git@github.com:SilverCoderTSL/TSLCENTRALDB.git`.
+
+-------------------------------------------------------------------------------
+5. HOW TO ADJUST THE SCHEDULE / SETTINGS
+-------------------------------------------------------------------------------
+
+A. Changing Update Frequency in cron-job.org:
+   1. Log into https://cron-job.org
+   2. Select "User Console" -> "Cronjobs".
+   3. Click "Edit" next to `TSL Map Automation`.
+   4. Under "Execution Schedule", select your desired interval (e.g., Every 3 hours, Every 12 hours).
+   5. Click "Save".
+
+B. Changing Build Settings:
+   * Modify `netlify.toml` in the repository root directory or adjust setting under Netlify Dashboard -> Build & Deploy.

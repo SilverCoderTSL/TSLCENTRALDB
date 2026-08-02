@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSL Command — System Operations FAQ</title>
+    <style>
+        :root {
+            --hell-red: #ff1100;
+            --hell-orange: #ff5500;
+            --fire-yellow: #ffaa00;
+            --dark-metal: #0c0505;
+            --deep-black: #040101;
+            --glow-red: rgba(255, 17, 0, 0.4);
+            --glow-orange: rgba(255, 85, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--deep-black);
+            color: var(--fire-yellow);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 30%, #150505 0%, var(--deep-black) 70%);
+        }
+
+        /* Ambient CRT Scanline overlay */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 0, 0, 0.01), rgba(255, 85, 0, 0.02));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Top Navigation Header */
+        #nav-header {
+            height: 50px;
+            background: rgba(12, 3, 3, 0.9);
+            border-bottom: 2px solid var(--hell-orange);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 40;
+            box-shadow: 0 2px 15px rgba(255, 85, 0, 0.15);
+            backdrop-filter: blur(6px);
+        }
+
+        .nav-links-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--fire-yellow);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--hell-orange);
+            padding: 6px 14px;
+            background: rgba(25, 5, 5, 0.8);
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--hell-orange);
+            color: #000;
+            box-shadow: 0 0 10px var(--hell-orange);
+        }
+
+        .title {
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--hell-red);
+            font-weight: bold;
+            text-shadow: 0 0 8px var(--glow-red);
+        }
+
+        /* Main Workspace & FAQ Layout */
+        #faq-container {
+            max-width: 950px;
+            width: 90%;
+            margin: 40px auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .faq-header {
+            border: 1px solid var(--hell-red);
+            background: rgba(15, 3, 3, 0.85);
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(255, 17, 0, 0.15);
+            position: relative;
+        }
+
+        .faq-header h1 {
+            color: var(--hell-red);
+            font-size: 24px;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .faq-header p {
+            color: var(--fire-yellow);
+            font-size: 12px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* CRITICAL ANNOUNCEMENT BANNER */
+        .critical-banner {
+            border: 2px solid var(--hell-red);
+            background: rgba(30, 0, 0, 0.9);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 35px var(--glow-red);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flash-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: pulseWarning 0.9s infinite alternate;
+        }
+
+        @keyframes pulseWarning {
+            0% {
+                color: var(--fire-yellow);
+                text-shadow: 0 0 8px var(--hell-red);
+                transform: scale(0.99);
+            }
+            100% {
+                color: #ffffff;
+                text-shadow: 0 0 25px var(--hell-red), 0 0 40px var(--hell-orange);
+                transform: scale(1.02);
+            }
+        }
+
+        /* Accordion FAQ Component */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            border: 1px solid rgba(255, 85, 0, 0.4);
+            background: rgba(10, 2, 2, 0.85);
+            transition: border-color 0.2s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--fire-yellow);
+        }
+
+        .faq-item.active {
+            border-color: var(--hell-orange);
+            box-shadow: 0 0 15px rgba(255, 85, 0, 0.15);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 16px 20px;
+            background: none;
+            border: none;
+            color: var(--fire-yellow);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 16px;
+            color: var(--hell-orange);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question::after {
+            content: '−';
+            transform: rotate(180deg);
+            color: var(--hell-red);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s ease;
+            padding: 0 20px;
+            color: #ddd;
+            font-size: 12px;
+            line-height: 1.7;
+            border-top: 1px dashed transparent;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 15px 20px 20px 20px;
+            border-top-color: rgba(255, 85, 0, 0.3);
+        }
+
+        .faq-answer code {
+            background: #1f0505;
+            color: var(--fire-yellow);
+            padding: 2px 6px;
+            border: 1px solid rgba(255, 85, 0, 0.4);
+            font-family: monospace;
+        }
+
+        .faq-answer ol, .faq-answer ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+
+    <div id="nav-header">
+        <div class="nav-links-left">
+            <a href="index.html" class="nav-link">&lt; COMMAND SYSTEM</a>
+            <a href="map.html" class="nav-link">STRATEGIC MAP</a>
+        </div>
+        <div class="title">// TSL_TACTICAL_FAQ_v1.0</div>
+    </div>
+
+    <div id="faq-container">
+        
+        <!-- Header Info -->
+        <div class="faq-header">
+            <h1>SYSTEM OPERATIONS &amp; PROTOCOLS FAQ</h1>
+            <p>Welcome to the Tactical Mapping documentation hub. Below are standard operating procedures for regional registrations, border dispatch codes, and map updates.</p>
+        </div>
+
+        <!-- MANDATORY FLASHING RULE BANNER -->
+        <div class="critical-banner">
+            <div class="flash-text">
+                ⚠️ MANDATORY RULE: EVERY NATION MUST DISPATCH A FACTBOOK POST TITLED EXACTLY "MAP" — NOTHING MORE, NOTHING LESS ⚠️
+            </div>
+        </div>
+
+        <!-- EXPANDABLE ACCORDION LIST -->
+        <div class="faq-list">
+
+            <!-- FAQ Item 1 -->
+            <div class="faq-item active">
+                <button class="faq-question" onclick="toggleFaq(this)">HOW DO I CREATE AND DISPATCH A BORDER CLAIM FOR MY NATION?</button>
+                <div class="faq-answer">
+                    <p>To register your nation on the global strategic vector map, follow these steps:</p>
+                    <ol>
+                        <li>Open the <b>STRATEGIC MAP</b> tool.</li>
+                        <li>Click <b>✏️ DRAW BORDER MODE</b> at the top menu.</li>
+                        <li>Click <b>📍 SET CAPITAL</b> to mark your capital city location.</li>
+                        <li>Click consecutive points around your border on the map grid to trace your land boundaries.</li>
+                        <li>If your nation has islands, click <b>➕ FINISH ISLAND</b> and trace additional landmasses.</li>
+                        <li>Click <b>COPY JSON</b> to encode your coordinate payload into your clipboard.</li>
+                        <li>Post the generated snippet inside your Nation Factbook thread!</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">WHERE DO I POST MY GENERATED MAP CODE?</button>
+                <div class="faq-answer">
+                    <p>Copy the code generated by the map system and paste it directly inside your nation's regional post.</p>
+                    <p><b>REMINDER:</b> As highlighted above, your post title must be strictly set to <code>MAP</code> for the automated integration script to parse your submission properly.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">WHAT IS THE SECURE 'DATA:' HASH IN THE GENERATED OUTPUT?</button>
+                <div class="faq-answer">
+                    <p>The code output contains an anti-tamper payload generated via <code>TSL_Integrity</code>. This ensures that border vectors and spatial coordinates cannot be manually forged, modified, or altered outside of the mapping tool interface.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Item 4 (Template for future questions) -->
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">HOW DO I UPDATE MY NATION BORDERS OR CAPITAL LATER?</button>
+                <div class="faq-answer">
+                    <p>Simply return to the <b>STRATEGIC MAP</b> tool, redraw your requested borders or move your capital marker, generate a fresh payload snippet using <b>COPY JSON</b>, and edit your existing <code>MAP</code> post with the updated data payload.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Accordion Toggle function
+        function toggleFaq(buttonElement) {
+            const currentItem = buttonElement.parentElement;
+            const isActive = currentItem.classList.contains('active');
+
+            // Close all items optional: (uncomment if you want accordion mode where only 1 stays open)
+            /*
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            */
+
+            if (!isActive) {
+                currentItem.classList.add('active');
+            } else {
+                currentItem.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
