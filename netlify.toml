@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  command = "node fetch-region.js"
+  command = ""
 
 [functions]
   directory = "netlify/functions"
