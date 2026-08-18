@@ -2,9 +2,13 @@ name: Update Regional Map Data
 
 on:
   schedule:
-    # Runs every Monday at 03:00 UTC (7:00 AM UAE Time / GST)
     - cron: '0 3 * * 1'
   workflow_dispatch:
+
+# Prevents multiple workflow runs from executing at the exact same time
+concurrency:
+  group: update-map-data
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -27,12 +31,22 @@ jobs:
       - name: Run Fetch Script
         run: node fetch-region.js
 
-      - name: Commit and Push Updated Data
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: auto-update map data [skip ci]"
-          file_pattern: "region-map-data.json"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
-          commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          git_pull_args: '--rebase --autostash'
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add region-map-data.json
+          
+          # Only attempt to commit and push if the JSON file actually changed
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore: auto-update map data [skip ci]"
+            
+            # Fetch the absolute latest remote state right before pushing
+            git fetch origin main
+            # Rebase our new commit cleanly on top of remote
+            git pull origin main --rebase --autostash
+            # Push the changes
+            git push origin main
+          else
+            echo "No changes to map data detected. Skipping commit."
+          fi
