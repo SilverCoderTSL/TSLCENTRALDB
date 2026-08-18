@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetches full history so git push works smoothly
+          ref: main # Force checkout onto real 'main' branch, not detached HEAD
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,10 +27,7 @@ jobs:
         run: node fetch-region.js
 
       - name: Commit and Push Updated Data
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add region-map-data.json
-          git commit -m "chore: auto-update map data [skip ci]" || exit 0
-          git rebase origin/main || true
-          git push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-update map data [skip ci]"
+          file_pattern: "region-map-data.json"
