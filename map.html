@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSL Global Strategic Mapping System v2.7</title>
+    <title>TSL Global Strategic Mapping System v2.8</title>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace;
@@ -226,6 +226,98 @@
         #map-tooltip .tooltip-label {
             color: #aaa;
         }
+
+        /* Side Nation Dossier Panel */
+        #nation-dossier-panel {
+            position: absolute;
+            top: 0;
+            right: -360px;
+            width: 340px;
+            height: 100%;
+            background: rgba(12, 12, 12, 0.96);
+            border-left: 2px solid #ffaa00;
+            z-index: 250;
+            transition: right 0.3s ease-in-out;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', Courier, monospace;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        #nation-dossier-panel.open {
+            right: 0;
+        }
+        .dossier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffaa00;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .dossier-title {
+            color: #ffaa00;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .dossier-close {
+            background: none;
+            border: 1px solid #ff3300;
+            color: #ff3300;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+        .dossier-close:hover {
+            background: #ff3300;
+            color: #000;
+        }
+        .dossier-section {
+            margin-bottom: 15px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 2px;
+        }
+        .dossier-section-title {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #444;
+            padding-bottom: 4px;
+        }
+        .dossier-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin: 6px 0;
+        }
+        .dossier-label {
+            color: #888;
+        }
+        .dossier-value {
+            font-weight: bold;
+            color: #fff;
+        }
+        /* Color-coded stat bars / badges */
+        .stat-badge {
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 2px;
+            border: 1px solid currentColor;
+        }
+        .stat-high { color: #00ff00; background: rgba(0, 255, 0, 0.1); }
+        .stat-med { color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
+        .stat-low { color: #ff3300; background: rgba(255, 51, 0, 0.1); }
+
         /* Keeps nation borders thin and crisp regardless of zoom level */
         .nation-border, #draft-layer polygon {
             vector-effect: non-scaling-stroke;
@@ -253,7 +345,7 @@
             <a href="visualizer.html" class="nav-link">Music Visualizer</a>
             <button class="nav-link" id="btn-draw-mode" onclick="toggleDrawMode()">✏️ DRAW BORDER MODE</button>
         </div>
-        <div class="title">// TSL_TACTICAL_MAP_VECTOR_GRID_v2.7</div>
+        <div class="title">// TSL_TACTICAL_MAP_VECTOR_GRID_v2.8</div>
         
         <div class="map-coordinate-controls">
             <label>X-POS: <input type="number" id="ctrl-map-x" value="0" step="25" oninput="setMapX(this.value)"></label>
@@ -285,7 +377,40 @@
                     </svg>
                 </div>
 
-                <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • DOUBLE-CLICK to reset</div>
+                <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
+            </div>
+        </div>
+
+        <!-- SIDE NATION DOSSIER PANEL -->
+        <div id="nation-dossier-panel">
+            <div class="dossier-header">
+                <span class="dossier-title" id="dos-title">NATION DOSSIER</span>
+                <button class="dossier-close" onclick="closeDossier()">[X]</button>
+            </div>
+            <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px;">
+                <div class="dossier-section">
+                    <div class="dossier-section-title">General Information</div>
+                    <div class="dossier-row"><span class="dossier-label">Capital:</span> <span class="dossier-value" id="dos-capital">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Government:</span> <span class="dossier-value" id="dos-gov">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Population:</span> <span class="dossier-value" id="dos-pop">-</span></div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Power Budget Allocation</div>
+                    <div class="dossier-row"><span class="dossier-label">Economy:</span> <span id="dos-econ" class="stat-badge stat-med">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Technology:</span> <span id="dos-tech" class="stat-badge stat-med">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Resources:</span> <span id="dos-res" class="stat-badge stat-med">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Infrastructure:</span> <span id="dos-infra" class="stat-badge stat-med">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">Defense:</span> <span id="dos-def" class="stat-badge stat-med">-</span></div>
+                    <div class="dossier-row" style="margin-top: 10px; border-top: 1px dashed #333; padding-top: 6px;">
+                        <span class="dossier-label">Total Points:</span> <span class="dossier-value" id="dos-total-power">-</span>
+                    </div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Strategic Status</div>
+                    <div class="dossier-row"><span class="dossier-label">Integrity Hash:</span> <span class="dossier-value" id="dos-hash" style="font-size: 10px; word-break: break-all; color: #ffaa00;">-</span></div>
+                </div>
             </div>
         </div>
 
@@ -522,11 +647,88 @@
             if (tooltip) tooltip.style.display = 'none';
         }
 
+        // Nation Dossier Panel Logic
+        function openNationDossier(nation) {
+            const panel = document.getElementById('nation-dossier-panel');
+            
+            // Extract stats and audit objects safely
+            const stats = nation.stats || {};
+            const audit = nation.audit || {};
+
+            document.getElementById('dos-title').textContent = stats.nation || nation.nation || 'UNKNOWN STATE';
+            document.getElementById('dos-capital').textContent = stats.capital || nation.capital?.name || 'N/A';
+            document.getElementById('dos-gov').textContent = stats.government || nation.government || 'N/A';
+            document.getElementById('dos-pop').textContent = stats.population || nation.population || 'N/A';
+            document.getElementById('dos-hash').textContent = nation.dispatch_id ? `DISPATCH #${nation.dispatch_id}` : 'UNVERIFIED';
+
+            // Map stats attributes from region-stats-data.json
+            setStatBadge('dos-econ', stats.economy_grade ?? '-');
+            setStatBadge('dos-tech', stats.tech_tier ?? '-');
+            setStatBadge('dos-res', stats.resource_wealth ?? '-');
+            setStatBadge('dos-infra', stats.infrastructure ?? '-');
+            setStatBadge('dos-def', stats.defense_stance ?? '-');
+
+            // Display total power score from audit object
+            const totalPower = audit.powerScore ?? 0;
+            const totalEl = document.getElementById('dos-total-power');
+            totalEl.textContent = totalPower + ' / 7 Points';
+            totalEl.style.color = audit.isValid === false ? '#ff3300' : '#00ff00';
+
+            panel.classList.add('open');
+        }
+
+        function setStatBadge(elementId, val) {
+            const el = document.getElementById(elementId);
+            el.textContent = val;
+            el.className = 'stat-badge';
+            const num = Number(val);
+            if (isNaN(num)) {
+                el.classList.add('stat-med');
+            } else if (num >= 3) {
+                el.classList.add('stat-high');
+            } else if (num === 2) {
+                el.classList.add('stat-med');
+            } else {
+                el.classList.add('stat-low');
+            }
+        }
+
+        function closeDossier() {
+            document.getElementById('nation-dossier-panel').classList.remove('open');
+        }
+
         async function loadRegionMap() {
             try {
-                const res = await fetch('region-map-data.json?t=' + Date.now());
-                const nations = await res.json();
+                const [mapRes, statsRes] = await Promise.all([
+                    fetch('region-map-data.json?t=' + Date.now()),
+                    fetch('region-stats-data.json?t=' + Date.now())
+                ]);
                 
+                const mapData = await mapRes.json();
+                const statsData = await statsRes.json();
+
+                // Create a lookup map for stats using normalized nation names or IDs
+                const statsMap = new Map();
+                statsData.forEach(item => {
+                    const nameKey = item.stats?.nation?.trim().toLowerCase();
+                    if (nameKey) statsMap.set(nameKey, item);
+                    if (item.nation_id) statsMap.set(item.nation_id, item);
+                });
+
+                // Merge both files into a single unified array
+                const nations = mapData.map(nation => {
+                    const key = nation.nation.trim().toLowerCase();
+                    const matchedStats = statsMap.get(key) || {};
+                    
+                    return {
+                        ...nation,
+                        dispatch_id: matchedStats.dispatch_id || null,
+                        nation_id: matchedStats.nation_id || null,
+                        stats: matchedStats.stats || {},
+                        audit: matchedStats.audit || { powerScore: 0, isValid: true, violations: [] }
+                    };
+                });
+
                 const bordersLayer = document.getElementById('borders-layer');
                 const capitalsLayer = document.getElementById('capitals-layer');
 
@@ -538,7 +740,6 @@
 
                     // 1. Draw Border Polygons (Handles single islands and multi-islands)
                     if (nation.border && nation.border.length > 0) {
-                        // Check if nation.border is a multi-island array or single island
                         const isMultiIsland = Array.isArray(nation.border[0][0]);
                         const islands = isMultiIsland ? nation.border : [nation.border];
 
@@ -556,6 +757,7 @@
 
                                 polygon.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
                                 polygon.addEventListener('mouseleave', hideNationTooltip);
+                                polygon.addEventListener('click', () => openNationDossier(nation));
 
                                 bordersLayer.appendChild(polygon);
                             }
@@ -577,12 +779,13 @@
 
                         circle.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
                         circle.addEventListener('mouseleave', hideNationTooltip);
+                        circle.addEventListener('click', () => openNationDossier(nation));
 
                         capitalsLayer.appendChild(circle);
                     }
                 });
             } catch (err) {
-                console.warn("Could not load region-map-data.json:", err);
+                console.warn("Could not load region map or stats data files:", err);
             }
         }
 
@@ -681,17 +884,14 @@
             renderDraftBorder();
         }
         function undoLastPoint() {
-            // 1. If we have points in the current island, pop the last point
             const currentIsland = islands[islands.length - 1];
             
             if (currentIsland.length > 0) {
                 currentIsland.pop();
             } else if (islands.length > 1) {
-                // 2. If the current island is empty but we have previous islands, go back to the previous island
                 islands.pop();
                 islands[islands.length - 1].pop();
             } else if (selectedCapital) {
-                // 3. Fallback: clear capital if no border points left to undo
                 selectedCapital = null;
             }
 
@@ -702,13 +902,11 @@
             islands = [[]];
             selectedCapital = null;
             
-            // Clear draft render layer
             const draftLayer = document.getElementById('draft-layer');
             if (draftLayer) {
                 draftLayer.innerHTML = '';
             }
 
-            // Clear output text area
             const textarea = document.getElementById('output-json');
             if (textarea) {
                 textarea.value = '';
@@ -724,7 +922,6 @@
             }
             draftLayer.innerHTML = '';
 
-            // Render all islands
             islands.forEach(islandPoints => {
                 if (islandPoints.length > 0) {
                     const pointsString = islandPoints.map(pt => pt.join(',')).join(' ');
@@ -741,19 +938,18 @@
                         const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         dot.setAttribute('cx', pt[0]);
                         dot.setAttribute('cy', pt[1]);
-                        dot.setAttribute('class', 'map-marker-dot'); // <--- ADD THIS CLASS
+                        dot.setAttribute('class', 'map-marker-dot');
                         dot.setAttribute('fill', '#ffaa00');
                         draftLayer.appendChild(dot);
                     });
                 }
             });
 
-            // Render capital marker preview if selected
             if (selectedCapital) {
                 const capMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 capMarker.setAttribute('cx', selectedCapital.x);
                 capMarker.setAttribute('cy', selectedCapital.y);
-                capMarker.setAttribute('class', 'capital-marker-dot'); // <--- ADD THIS CLASS
+                capMarker.setAttribute('class', 'capital-marker-dot');
                 capMarker.setAttribute('fill', '#ffea00');
                 capMarker.setAttribute('stroke', '#000');
                 draftLayer.appendChild(capMarker);
@@ -780,7 +976,6 @@
 
             const borderOutput = validIslands.length === 1 ? validIslands[0] : validIslands;
 
-            // ONLY encode spatial coordinates that need tamper protection
             const spatialPayload = {
                 capital: { x: capitalX, y: capitalY },
                 border: borderOutput
@@ -788,7 +983,6 @@
 
             const secureData = window.TSL_Integrity.generateCode(spatialPayload);
 
-            // Easily expandable plaintext fields
             const formattedOutput = `[code]
         Nation: Your Nation
         Capital: Your Capital
