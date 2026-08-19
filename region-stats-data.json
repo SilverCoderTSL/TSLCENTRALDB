@@ -1,0 +1,64 @@
+[
+  {
+    "nation_id": "union_of_silver_states_union",
+    "dispatch_id": "2808233",
+    "last_updated": "2026-08-19T04:11:39.832Z",
+    "stats": {
+      "nation": "Test Nation",
+      "capital": "Bleh",
+      "government": "Pluh",
+      "population": "99.9 Million",
+      "economy_grade": "B",
+      "resource_wealth": "A",
+      "top_exports": "Test, Test, Test",
+      "top_imports": "Test, Test, Test",
+      "tech_tier": "Retro",
+      "infrastructure": "A",
+      "defense_stance": "Demilitarized",
+      "internal_stability": "Unstable",
+      "culture___influence": "D",
+      "education___r_d": "S",
+      "regional_alignment": "Testing",
+      "national_focus": "For Testing",
+      "current_regional_stance": "None"
+    },
+    "audit": {
+      "powerScore": 8,
+      "sTierCount": 1,
+      "isValid": false,
+      "violations": [
+        "Power Budget exceeded (8/7 Points)."
+      ]
+    }
+  },
+  {
+    "nation_id": "silver_republics",
+    "dispatch_id": "2808224",
+    "last_updated": "2026-08-19T04:11:58.384Z",
+    "stats": {
+      "nation": "Federation of Silver Republics",
+      "capital": "Silberstadt",
+      "government": "Federal Republic",
+      "population": "45.2 Million",
+      "economy_grade": "A",
+      "resource_wealth": "C",
+      "top_exports": "Automobiles, IT Services, Palm Oil, Processed Nickel Products, Military Equipment",
+      "top_imports": "Crude Oil, Natural Gas, Heavy Machinery, Rare Metals",
+      "tech_tier": "Modern",
+      "infrastructure": "A",
+      "defense_stance": "Peacekeeping",
+      "internal_stability": "Moderate",
+      "culture___influence": "C",
+      "education___r_d": "A",
+      "regional_alignment": "Non-Aligned",
+      "national_focus": "Industrial Modernization and Might",
+      "current_regional_stance": "Open to Trade Agreements"
+    },
+    "audit": {
+      "powerScore": 7,
+      "sTierCount": 0,
+      "isValid": true,
+      "violations": []
+    }
+  }
+]

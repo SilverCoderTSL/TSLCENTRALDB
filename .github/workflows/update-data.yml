@@ -1,20 +1,20 @@
-name: Update Regional Map Data
+name: Update Regional Data
 
 on:
   schedule:
-    - cron: '0 3 * * 1'
+    - cron: '0 3 * * 1' # Runs every Monday at 03:00 UTC
   workflow_dispatch:
 
 # Prevents multiple workflow runs from executing at the exact same time
 concurrency:
-  group: update-map-data
+  group: update-regional-data
   cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
-  update-map:
+  update-data:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -28,18 +28,26 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run Fetch Script
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Map Fetch Script
         run: node fetch-region.js
 
-      - name: Commit and Push
+      - name: Run Stats & Audit Script
+        run: node fetch-stats.js
+
+      - name: Commit and Push Updated Data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add region-map-data.json
           
-          # Only attempt to commit and push if the JSON file actually changed
+          # Stage both data files
+          git add region-map-data.json region-stats-data.json
+          
+          # Only attempt to commit and push if either JSON file actually changed
           if ! git diff-index --quiet HEAD; then
-            git commit -m "chore: auto-update map data [skip ci]"
+            git commit -m "chore: auto-update regional map & stats data [skip ci]"
             
             # Fetch the absolute latest remote state right before pushing
             git fetch origin main
@@ -48,5 +56,5 @@ jobs:
             # Push the changes
             git push origin main
           else
-            echo "No changes to map data detected. Skipping commit."
+            echo "No changes to map or stats data detected. Skipping commit."
           fi

@@ -3,384 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSL Converted National Analytics</title>
+    <title>TSL Central - Regional Nation Analysis & Comparison</title>
     <style>
+        :root {
+            --fire-yellow: #ffaa00;
+            --terminal-green: #00ff00;
+            --cyber-cyan: #00e5ff;
+            --deep-black: #0c0c0c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #0c0c0c;
-            color: #00ff00;
-            margin: 20px;
-            line-height: 1.4;
+            background-color: var(--deep-black);
+            color: var(--terminal-green);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 170, 0, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 0, 0.02) 0%, transparent 40%);
         }
-        .container {
-            max-width: 1150px;
-            margin: 0 auto;
-            border: 1px solid #ffaa00;
-            padding: 25px;
-            box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
-            background-color: #111;
+
+        /* --- CRT SCREEN / SCANLINE OVERLAY --- */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.02));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.6;
         }
-        h2 { color: #ffaa00; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; margin-top:0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .section-box { border: 1px dashed #ffaa00; padding: 15px; background: #141414; }
-        .section-box h3 { margin-top: 0; color: #fff; border-bottom: 1px solid #ffaa00; padding-bottom: 5px; font-size: 14px; letter-spacing: 1px;}
-        .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 14px; }
-        .sub-row { display: flex; justify-content: space-between; padding: 4px 0 4px 20px; border-bottom: 1px dashed #222; font-size: 13px; color: #aaa; }
-        .val { color: #ffaa00; font-weight: bold; }
-        .selector-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-        select { background: #1a1a1a; border: 1px solid #ffaa00; color: #00ff00; padding: 10px; font-family: inherit; font-size: 16px; flex-grow: 1; }
-        button { background: #222; border: 1px solid #ffaa00; color: #ffaa00; padding: 10px 20px; cursor: pointer; font-family: inherit; font-weight: bold; white-space: nowrap; }
-        button:hover { background: #ffaa00; color: #0c0c0c; }
-        button.nav-back-btn { border: 1px solid #ffaa00; color: #ffaa00; background: #1a1a1a; }
-        button.nav-back-btn:hover { background: #ffaa00; color: #0c0c0c; }
-        button.export-btn { border: 1px solid #00ff00; color: #00ff00; margin-left: auto; display: block; margin-top: 15px; }
-        button.export-btn:hover { background: #00ff00; color: #0c0c0c; }
-        .full-width { grid-column: span 2; }
-        .badge { font-weight: bold; padding: 2px 6px; background: rgba(255, 170, 0, 0.1); border: 1px solid #ffaa00; color: #ffaa00; font-size: 12px; }
+
+        /* Navigation Header */
+        #nav-header {
+            height: 50px; 
+            background: #111; 
+            border-bottom: 2px solid var(--fire-yellow);
+            display: flex; 
+            align-items: center; 
+            padding: 0 20px; 
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.8); 
+            flex-shrink: 0;
+        }
+        .nav-link {
+            color: var(--fire-yellow); 
+            text-decoration: none; 
+            font-weight: bold;
+            border: 1px solid var(--fire-yellow); 
+            padding: 6px 18px; 
+            background: #1a1a1a;
+            font-size: 14px; 
+            letter-spacing: 0.5px; 
+            transition: all 0.3s ease; 
+            cursor: pointer;
+        }
+        .nav-link:hover { background: var(--fire-yellow); color: #0c0c0c; box-shadow: 0 0 10px var(--fire-yellow); }
+        .title { margin-left: auto; font-weight: bold; font-size: 15px; letter-spacing: 1px; color: #fff; }
+
+        /* Main Layout */
+        #workspace { flex: 1; padding: 25px; overflow-y: auto; max-width: 1400px; margin: 0 auto; width: 100%; z-index: 10; }
+
+        .section-header {
+            border-bottom: 1px dashed var(--fire-yellow); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end;
+        }
+        .section-header h2 { color: var(--fire-yellow); font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* Controls */
+        .controls-bar {
+            display: flex; gap: 15px; margin-bottom: 25px; background: #111; padding: 15px; border: 1px solid #333;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+        input[type="text"], select {
+            background: #000; border: 1px solid var(--fire-yellow); color: var(--terminal-green);
+            font-family: inherit; font-size: 14px; padding: 8px 12px; outline: none;
+        }
+        input[type="text"]:focus, select:focus {
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+        }
+        .search-input { flex: 1; }
+
+        /* Comparison Dock */
+        #comparison-dock {
+            background: #151515; border: 1px solid var(--cyber-cyan); padding: 20px; margin-bottom: 30px;
+            display: none; box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+        #comparison-dock.active { display: block; }
+        .comp-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .comp-table th, .comp-table td { border: 1px solid #333; padding: 8px 10px; text-align: left; font-size: 13px; }
+        .comp-table th { background: #1a1a1a; color: var(--cyber-cyan); }
+
+        /* Roster Grid */
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        
+        .nation-card {
+            background: #111; border: 1px solid var(--fire-yellow); padding: 18px;
+            display: flex; flex-direction: column; gap: 10px; transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .nation-card:hover { transform: translateY(-2px); box-shadow: 0 0 12px rgba(255, 170, 0, 0.3); }
+
+        .card-title { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; }
+        .nation-name { font-size: 16px; font-weight: bold; color: #fff; }
+        .power-tag { font-size: 12px; padding: 3px 8px; background: #222; border: 1px solid var(--fire-yellow); color: var(--fire-yellow); }
+        .power-tag.invalid { border-color: #ff0000; color: #ff0000; background: #330000; }
+
+        .stat-list { font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+        .stat-row { display: flex; justify-content: space-between; }
+        .stat-key { color: #888; }
+        .stat-val { color: var(--terminal-green); font-weight: bold; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-action {
+            flex: 1; background: transparent; border: 1px solid var(--fire-yellow); color: var(--fire-yellow);
+            padding: 8px; font-family: inherit; font-size: 12px; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .btn-action:hover { background: var(--fire-yellow); color: #000; box-shadow: 0 0 8px var(--fire-yellow); }
+        .btn-compare { border-color: var(--cyber-cyan); color: var(--cyber-cyan); }
+        .btn-compare:hover { background: var(--cyber-cyan); color: #000; box-shadow: 0 0 8px var(--cyber-cyan); }
+        .btn-compare.selected { background: #ff0055; border-color: #ff0055; color: #fff; }
+
+        /* Profile Modal (Single View) */
+        #profile-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        #profile-modal.active { display: flex; }
+        
+        .modal-content {
+            background: #111; border: 1px solid var(--fire-yellow); width: 90%; max-width: 700px;
+            max-height: 85vh; overflow-y: auto; position: relative;
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.2);
+        }
+        
+        .modal-header {
+            background: #1a1a1a; padding: 15px 20px; border-bottom: 1px dashed var(--fire-yellow);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0;
+            z-index: 20;
+        }
+        .modal-header h3 { color: #fff; margin: 0; font-size: 18px; }
+        .close-btn { color: var(--fire-yellow); background: none; border: none; font-size: 24px; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: #ff3333; }
+        
+        .modal-body { padding: 20px; }
+        .audit-box {
+            background: #000; border: 1px solid #333; padding: 10px 15px; margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .audit-box.clean { border-color: var(--terminal-green); }
+        .audit-box.warn { border-color: #ff0000; background: #1a0000; }
+        
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .detail-item { background: #0a0a0a; border: 1px solid #222; padding: 12px; }
+        .detail-item.full-width { grid-column: span 2; }
+        .detail-item .lbl { display: block; font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .detail-item .val { font-size: 14px; font-weight: bold; color: var(--terminal-green); word-wrap: break-word; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>[TSL_CONVERTED_STATS_ENGINE_v4.2]</h2>
-    <p>Logarithmic Conversion System // Map Database Calibration Patch</p>
+    <!-- CRT Screen Ambient Overlay -->
+    <div class="scanlines"></div>
 
-    <div class="selector-box">
-        <button class="nav-back-btn" onclick="window.location.href='index.html'">◀ RETURN TO STRATEGIC MAP</button>
-        <select id="cacheSelector">
-            <option value="">-- Choose Profile Matrix Focus Target --</option>
-        </select>
-        <button onclick="loadTargetAnalytics()">LOAD CONVERTED PROFILE</button>
+    <div id="nav-header">
+        <a href="index.html" class="nav-link">&lt; RETURN HOME</a>
+        <div class="title">// TSL_REGIONAL_INTELLIGENCE_&amp;_ANALYSIS</div>
     </div>
 
-    <div id="noDataMsg" style="color: #ffaa00; font-style: italic;">Select a national target above to calculate converted values.</div>
-
-    <div id="analyticsDisplay" style="display: none;">
-        <div class="stat-row" style="font-size: 16px; font-weight: bold; border: none; margin-bottom: 15px;">
-            <span>Nation Identity: <span id="targetName" style="color:#fff;">-</span></span>
-            <span>Government Type: <span id="targetClass" style="color:#00ff00;">-</span></span>
+    <div id="workspace">
+        
+        <!-- COMPARISON DOCK -->
+        <div id="comparison-dock">
+            <div class="section-header">
+                <h2 style="color: var(--cyber-cyan);">⚔️ Tactical Comparison Matrix</h2>
+                <button class="nav-link" style="border-color: #ff0055; color: #ff0055;" onclick="clearComparison()">Clear Matrix</button>
+            </div>
+            <div id="comparison-content">Select two nations from the roster below to compare intelligence parameters...</div>
         </div>
 
-        <div class="grid">
-            <div class="section-box full-width">
-                <h3>I // GEOPOLITICAL & CORE OVERVIEW</h3>
-                <div class="stat-row"><span>Logarithmic Population Structure:</span> <span class="val" id="s-pop">-</span></div>
-                <div class="stat-row"><span>Logarithmic GDP Output:</span> <span class="val" id="s-gdp">-</span></div>
-                <div class="stat-row"><span>Converted GDP Per Capita:</span> <span class="val" id="s-gdpCapita">-</span></div>
-                <div class="stat-row"><span>National Motto:</span> <span id="s-motto" style="font-style: italic; color:#aaa;">-</span></div>
-            </div>
-
-            <div class="section-box">
-                <h3>II // INDUSTRIAL SECTORS & TRADE</h3>
-                <div class="stat-row"><span>Business Subsidization Strength:</span> <span class="val" id="s-subsidies">-</span></div>
-                <div class="stat-row"><span>Private Sector Control %:</span> <span class="val" id="s-private">-</span></div>
-                <div class="stat-row"><span>Public Sector Control %:</span> <span class="val" id="s-public">-</span></div>
-                <div class="stat-row"><span>Tax Burden Index:</span> <span class="val" id="s-taxes">-</span></div>
-                <div class="stat-row"><span>Top 3 National Industries:</span> <span class="val" id="s-topindustries" style="color:#fff;">-</span></div>
-                <div class="stat-row"><span>Primary Export Profile:</span> <span class="val" id="s-exports">-</span></div>
-                <div class="stat-row"><span>Primary Import Requirement:</span> <span class="val" id="s-imports">-</span></div>
-                <div class="stat-row"><span>Black Market Size Index:</span> <span class="val" id="s-blackmarket">-</span></div>
-            </div>
-
-            <div class="section-box">
-                <h3>III // CIVIL QUALITY & LIVING CONDITIONS</h3>
-                <div class="stat-row"><span>Happiness & Freedom Index:</span> <span class="val" id="s-happiness">-</span></div>
-                <div class="stat-row"><span>Patriotism Rating:</span> <span class="val" id="s-patriotism">-</span></div>
-                <div class="stat-row"><span>Risk of Rebellion Vector:</span> <span class="val" id="s-rebellion">-</span></div>
-                <div class="stat-row"><span>Civil Safety & Security Rating:</span> <span class="val" id="s-safety">-</span></div>
-                <div class="stat-row"><span>Healthcare Accessibility Index:</span> <span class="val" id="s-healthcare">-</span></div>
-                <div class="stat-row"><span>Education Accessibility Index:</span> <span class="val" id="s-education">-</span></div>
-                <div class="stat-row"><span>Transportation Accessibility Index:</span> <span class="val" id="s-transport">-</span></div>
-            </div>
-
-            <div class="section-box full-width">
-                <h3>IV // NATIONAL RESOURCE & INFRASTRUCTURE INTEGRITY</h3>
-                <div class="stat-row"><span>Primary Energy Grid Backbone:</span> <span id="s-energygrid" class="badge">-</span></div>
-                <div class="stat-row"><span>National Food Security Index:</span> <span id="s-foodsecurity" style="font-weight: bold;">-</span></div>
-            </div>
-
-            <div class="section-box full-width">
-                <h3>V // POPULATION CONTEXT & AGE BRACKETS</h3>
-                <div class="stat-row"><span>Literacy Rate:</span> <span class="val" id="s-literacy">-</span></div>
-                <div class="stat-row"><span>Net Immigration Vector:</span> <span class="val" id="s-immigration">-</span></div>
-                <div class="stat-row"><span>Annual Birth Rate:</span> <span class="val" id="s-births">-</span></div>
-                <div class="stat-row"><span>Annual Death Rate:</span> <span class="val" id="s-deaths">-</span></div>
-                <div class="stat-row"><span>Net Population Growth Vector:</span> <span class="val" id="s-growth">-</span></div>
-                <div class="stat-row"><span>Able-Bodied Working Workforce:</span> <span class="val" id="s-labor">-</span></div>
-                <div class="stat-row"><span>Retired / Senior Demographics:</span> <span class="val" id="s-seniors">-</span></div>
-            </div>
-
-            <div class="section-box full-width">
-                <h3>VI // MILITARY DEFENSE STRATEGY & FORCE ESTIMATES</h3>
-                <div class="stat-row"><span>Military Strength Index:</span> <span class="val" id="s-milstrength">-</span></div>
-                <div class="stat-row"><span>Military Advancement Index:</span> <span class="val" id="s-miladv">-</span></div>
-                <div class="stat-row"><span>Active Deployment Footprint:</span> <span class="val" id="s-troops">-</span></div>
-                <div class="stat-row"><span>Special Operations Forces Pool:</span> <span class="val" id="s-specops" style="color: #00ff00;">-</span></div>
-                
-                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">LAND FORCE COMBAT ASSETS</div>
-                <div class="sub-row"><span>└ Main Battle Tanks (MBTs):</span> <span class="val" id="s-mbt">-</span></div>
-                <div class="sub-row"><span>└ Infantry Fighting Vehicles (IFVs):</span> <span id="s-ifv">-</span></div>
-                <div class="sub-row"><span>└ Armored Personnel Carriers (APCs):</span> <span id="s-apc">-</span></div>
-                <div class="sub-row"><span>└ Field Artillery Arrays:</span> <span id="s-arty">-</span></div>
-                <div class="sub-row"><span>└ Rocket Artillery Launchers (MLRS):</span> <span id="s-mlrs">-</span></div>
-
-                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">TACTICAL FIELD AVIATION HULLS</div>
-                <div class="sub-row"><span>└ Air Superiority Fighters:</span> <span class="val" id="s-f-air">-</span></div>
-                <div class="sub-row"><span>└ Interceptor Jets:</span> <span id="s-f-int">-</span></div>
-                <div class="sub-row"><span>└ Multi-Role Combat Jets:</span> <span id="s-f-multi">-</span></div>
-                <div class="sub-row"><span>└ Close Air Support (CAS) Strike Craft:</span> <span id="s-f-strike">-</span></div>
-                <div class="sub-row"><span>└ Strategic Heavy Bombers:</span> <span id="s-f-bomb">-</span></div>
-                <div class="sub-row"><span>└ Stealth Strike Bombers:</span> <span id="s-f-stealth" style="color:#00ff00;">-</span></div>
-
-                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">MARITIME FLEET HULLS</div>
-                <div class="sub-row"><span>└ Strategic Capital Fleet (Carriers / Amphibious Assault):</span> <span class="val" id="s-n-capital">-</span></div>
-                <div class="sub-row"><span>└ Surface Screening Force (Destroyers / Frigates):</span> <span id="s-n-escort">-</span></div>
-                <div class="sub-row"><span>└ Sub-surface Hunter Hull Squadrons:</span> <span id="s-n-subs">-</span></div>
-            </div>
+        <!-- ROSTER CONTROLS -->
+        <div class="section-header">
+            <h2>📊 Regional Nations Intelligence Database</h2>
+            <div id="nation-count" style="color: #aaa;">Loaded: 0 Nations</div>
         </div>
 
-        <button class="export-btn" onclick="exportConvertedDossier()">GENERATE MAP DATABASE EXTRACTION FILE</button>
+        <div class="controls-bar">
+            <input type="text" id="search-bar" class="search-input" placeholder="Search by nation name, capital, government..." oninput="filterRoster()">
+            <select id="sort-select" onchange="filterRoster()">
+                <option value="name">Sort by: Name (A-Z)</option>
+                <option value="power-desc">Sort by: Power Budget (High-Low)</option>
+                <option value="power-asc">Sort by: Power Budget (Low-High)</option>
+            </select>
+        </div>
+
+        <!-- ROSTER GRID -->
+        <div class="roster-grid" id="roster-grid">
+            <div style="color: #666;">Loading regional statistics data (region-stats-data.json)...</div>
+        </div>
     </div>
-</div>
 
-<script>
-    let db;
-    let globalExportString = ""; 
-    const dbOpenRequest = indexedDB.open("TSL_NationalCacheDB", 1);
+    <!-- NATION PROFILE MODAL (Single View) -->
+    <div id="profile-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">NATION NAME</h3>
+                <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-audit" class="audit-box"></div>
+                <div id="modal-details" class="detail-grid"></div>
+            </div>
+        </div>
+    </div>
 
-    dbOpenRequest.onsuccess = function(e) {
-        db = e.target.result;
-        populateSelector();
-    };
+    <script>
+        let nationsData = [];
+        let selectedForCompare = [];
 
-    function populateSelector() {
-        const transaction = db.transaction(["nations"], "readonly");
-        const store = transaction.objectStore("nations");
-        const request = store.openCursor();
-        const selector = document.getElementById("cacheSelector");
-
-        request.onsuccess = function(event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                const option = document.createElement("option");
-                option.value = cursor.key;
-                option.text = cursor.value.payload.core.name;
-                selector.appendChild(option);
-                cursor.continue();
+        async function loadStatsData() {
+            try {
+                const res = await fetch('region-stats-data.json');
+                if (!res.ok) throw new Error("Could not load stats data JSON.");
+                nationsData = await res.json();
+                renderRoster(nationsData);
+            } catch (err) {
+                document.getElementById('roster-grid').innerHTML = 
+                    `<div style="color: #ff3333;">❌ Failed to load 'region-stats-data.json'. Ensure 'fetch-stats.js' has run successfully.</div>`;
             }
-        };
-    }
-
-    function loadTargetAnalytics() {
-        const selectedId = document.getElementById("cacheSelector").value;
-        if (!selectedId) return;
-
-        const transaction = db.transaction(["nations"], "readonly");
-        const store = transaction.objectStore("nations");
-        const request = store.get(selectedId);
-
-        request.onsuccess = function() {
-            const record = request.result;
-            if (record) processAndRenderData(record.payload);
-        };
-    }
-
-    function processAndRenderData(payload) {
-        document.getElementById("noDataMsg").style.display = "none";
-        document.getElementById("analyticsDisplay").style.display = "block";
-
-        const getScore = (id) => (payload.scales && payload.scales[id]) ? parseFloat(payload.scales[id].score) : 25;
-
-        document.getElementById("targetName").innerText = payload.core.name;
-        document.getElementById("targetClass").innerText = payload.core.category || payload.core.govtype || "Not Specified";
-
-        // Logarithmic Population Base
-        const rawPopMillion = parseFloat(payload.core.population);
-        let convertedPopValue;
-        if (rawPopMillion <= 900) {
-            convertedPopValue = rawPopMillion * 1000000;
-        } else {
-            convertedPopValue = (900 * 1000000) + (Math.log10(rawPopMillion / 900) * 400 * 1000000);
         }
 
-        // Logarithmic GDP Output Base
-        const rawGdp = parseFloat(payload.core.gdp) || 0;
-        let convertedGdp = rawGdp <= 90000 ? rawGdp : 90000 + (Math.log10(rawGdp / 90000) * 35000);
-        
-        // GDP Per Capita Alignment
-        const gdpCapita = Math.round((convertedGdp * 1000000) / convertedPopValue);
+        function renderRoster(data) {
+            const grid = document.getElementById('roster-grid');
+            document.getElementById('nation-count').textContent = `Loaded: ${data.length} Nations`;
 
-        // Sorting industry tiers
-        const indMap = [
-            { name: "Arms Production", val: getScore(16) }, { name: "Automobile Assembly", val: getScore(10) },
-            { name: "Basket Weaving", val: getScore(12) }, { name: "Beverage Sales", val: getScore(18) },
-            { name: "Book Publishing", val: getScore(24) }, { name: "Cheese Exports", val: getScore(11) },
-            { name: "Furniture Restorations", val: getScore(22) }, { name: "Gambling Sector", val: getScore(25) },
-            { name: "Information Tech", val: getScore(13) }, { name: "Insurance Industry", val: getScore(21) },
-            { name: "Mining Operations", val: getScore(20) }, { name: "Pizza Deliveries", val: getScore(14) },
-            { name: "Retail Networks", val: getScore(23) }, { name: "Woodchipping Sector", val: getScore(19) },
-            { name: "Trout Fishing", val: getScore(15) }, { name: "Agriculture Sector", val: getScore(17) },
-            { name: "Manufacturing Base", val: getScore(26) }, { name: "Tourism Matrices", val: getScore(58) }
-        ];
-        indMap.sort((a, b) => b.val - a.val);
-        const top3Str = `${indMap[0].name}, ${indMap[1].name}, ${indMap[2].name}`;
+            if (data.length === 0) {
+                grid.innerHTML = `<div style="color: #888;">No nation stats match the criteria.</div>`;
+                return;
+            }
 
-        const govSize = getScore(27);
-        const econFreedom = getScore(48);
-        const publicPct = Math.max(5, Math.min(95, Math.round((govSize / (govSize + econFreedom)) * 100)));
-        const privatePct = 100 - publicPct;
+            grid.innerHTML = data.map(entry => {
+                const s = entry.stats || {};
+                const audit = entry.audit || { powerScore: 0, isValid: true };
+                const nationId = entry.nation_id;
+                const isSelected = selectedForCompare.includes(nationId);
 
-        document.getElementById("s-motto").innerText = payload.core.motto ? `"${payload.core.motto}"` : "None";
-        document.getElementById("s-pop").innerText = `${(convertedPopValue / 1000000).toFixed(2)} Million Citizens`;
-        document.getElementById("s-gdp").innerText = `${payload.core.currency} ${Math.round(convertedGdp).toLocaleString()} Million`;
-        document.getElementById("s-gdpCapita").innerText = `${payload.core.currency} ${gdpCapita.toLocaleString()}`;
-        
-        document.getElementById("s-subsidies").innerText = `${getScore(31).toFixed(1)} / 100`;
-        document.getElementById("s-private").innerText = `${privatePct}%`;
-        document.getElementById("s-public").innerText = `${publicPct}%`;
-        document.getElementById("s-taxes").innerText = `${getScore(49).toFixed(1)}% Burden Index`;
-        document.getElementById("s-topindustries").innerText = top3Str;
-        document.getElementById("s-exports").innerText = `${indMap[0].name} Dominant Focus`;
-        document.getElementById("s-imports").innerText = `${indMap[indMap.length - 1].name} Logistics Demand`;
-        document.getElementById("s-blackmarket").innerText = `${getScore(79).toFixed(1)} Factor Density`;
-
-        const happinessRating = Math.round((getScore(34) + getScore(40) + getScore(0)) / 3);
-        document.getElementById("s-happiness").innerText = `${happinessRating} / 100 Rating`;
-        document.getElementById("s-patriotism").innerText = `${Math.round((getScore(42) + getScore(55)) / 2)} / 100 Units`;
-        
-        const rebellionThreat = Math.max(0, Math.min(100, Math.round((getScore(54) * 0.6) + (getScore(77) * 0.4) - (getScore(42) * 0.3))));
-        document.getElementById("s-rebellion").innerText = `${rebellionThreat}% Likelihood Indicator`;
-        document.getElementById("s-safety").innerText = `${getScore(43).toFixed(1)} Secure Points`;
-
-        // Updated from Tiers to Numeric Indexes out of 100
-        document.getElementById("s-healthcare").innerText = `${getScore(29).toFixed(1)} / 100 Index`;
-        document.getElementById("s-education").innerText = `${getScore(75).toFixed(1)} / 100 Index`;
-        document.getElementById("s-transport").innerText = `${getScore(57).toFixed(1)} / 100 Index`;
-
-        const miningScore = getScore(20);
-        const ecoScore = getScore(7);
-        let energyGrid = "Fossil Fuel Combustions & Coal Extraction Lines";
-        if (ecoScore > 50 && miningScore > 40) energyGrid = "Fission / Nuclear Power Sub-Station Matrices";
-        if (ecoScore > 75) energyGrid = "Renewable Hydro-Electric & Green Grid Arrays";
-        document.getElementById("s-energygrid").innerText = energyGrid;
-
-        const agScore = getScore(17);
-        const obesity = getScore(61);
-        let foodSecurity = "Stable // Highly Self-Sufficient Production Enclaves";
-        if (agScore < 35) foodSecurity = "Import-Reliant // Subject to External Logistics Shifts";
-        if (obesity > 65) foodSecurity = "Surplus Heavy Production // Consumer Inefficiencies Logged";
-        document.getElementById("s-foodsecurity").innerText = foodSecurity;
-        document.getElementById("s-foodsecurity").style.color = agScore < 35 ? "#ffaa00" : "#00ff00";
-
-        document.getElementById("s-literacy").innerText = `${Math.min(100, Math.round(80 + (getScore(75) * 0.2)))}%`;
-        document.getElementById("s-immigration").innerText = `${(getScore(68) - 50).toFixed(1)} / K Net Margin`;
-        
-        const bRate = Math.max(5, (getScore(55) / 5).toFixed(1));
-        const dRate = Math.max(2, (getScore(5) / 4).toFixed(1));
-        document.getElementById("s-births").innerText = `${bRate} / 1K Citizens`;
-        document.getElementById("s-deaths").innerText = `${dRate} / 1K Citizens`;
-        document.getElementById("s-growth").innerText = `${(bRate - dRate).toFixed(1)} / 1K Change Index`;
-
-        const youthPct = Math.min(45, Math.max(12, 15 + (getScore(54) * 0.2)));
-        const seniorPct = Math.min(30, Math.max(5, (getScore(44) / 100) * 18));
-        const adultPct = 100 - youthPct - seniorPct;
-        document.getElementById("s-labor").innerText = `${adultPct.toFixed(1)}% Core Pool`;
-        document.getElementById("s-seniors").innerText = `${seniorPct.toFixed(1)}% Bracket Population`;
-
-        // --- FIXED RE-CALIBRATED MILITARY ALLOCATION SYSTEMS ---
-        const milStrengthIdx = Math.round((getScore(59) * 25) + (getScore(46) * 25));
-        document.getElementById("s-milstrength").innerText = `${milStrengthIdx.toLocaleString()} Points`;
-        document.getElementById("s-miladv").innerText = `${getScore(70).toFixed(1)} Coefficient`;
-
-        // Fixed Active Troops formula scaling realistically as 0.1% to 3.0% maximum baseline of converted population
-        const activeTroops = Math.max(15000, Math.round(convertedPopValue * (0.001 + (getScore(46) / 100) * 0.029)));
-        document.getElementById("s-troops").innerText = activeTroops.toLocaleString() + " Enlisted Personnel";
-        document.getElementById("s-specops").innerText = Math.max(150, Math.round(activeTroops * 0.003 * (getScore(36)/100))).toLocaleString() + " Operators";
-
-        // Balanced Vehicle Scaling Ratios
-        const indDensity = Math.min(100, (getScore(26) + getScore(16)) / 2) / 100;
-        const mbtCount = Math.max(50, Math.round(activeTroops * 0.008 * indDensity));
-        const ifvCount = Math.round(mbtCount * 2.2); 
-        const apcCount = Math.round(mbtCount * 3.5); 
-        const artyCount = Math.round(mbtCount * 0.8);
-        const mlrsCount = Math.round(mbtCount * 0.3);
-
-        document.getElementById("s-mbt").innerText = mbtCount.toLocaleString() + " Armor Platforms";
-        document.getElementById("s-ifv").innerText = ifvCount.toLocaleString() + " Tracked Support Transports";
-        document.getElementById("s-apc").innerText = apcCount.toLocaleString() + " Wheeled Transit Shuttles";
-        document.getElementById("s-arty").innerText = artyCount.toLocaleString() + " Field Artillery Systems";
-        document.getElementById("s-mlrs").innerText = mlrsCount.toLocaleString() + " Mobile Rocket Units";
-
-        // Balanced Flight Squadrons
-        const totalPlanes = Math.max(20, Math.round(activeTroops * 0.0007 * (getScore(70)/100)));
-        document.getElementById("s-f-air").innerText = Math.round(totalPlanes * 0.30).toLocaleString() + " Air Frames";
-        document.getElementById("s-f-int").innerText = Math.round(totalPlanes * 0.20).toLocaleString() + " Fast Units";
-        document.getElementById("s-f-multi").innerText = Math.round(totalPlanes * 0.35).toLocaleString() + " Multi-Roles";
-        document.getElementById("s-f-strike").innerText = Math.round(totalPlanes * 0.15).toLocaleString() + " Strike Hulls";
-        
-        const isHighTech = getScore(70) > 65;
-        document.getElementById("s-f-bomb").innerText = isHighTech ? Math.max(2, Math.round(totalPlanes * 0.05)).toLocaleString() + " Strategic Frames" : "0 Hulls";
-        document.getElementById("s-f-stealth").innerText = isHighTech ? Math.max(1, Math.round(totalPlanes * 0.03)).toLocaleString() + " Low-Observables" : "0 Hulls";
-
-        // Navy Checks
-        let navCap = 0, navEsc = 0, navSub = 0;
-        if (getScore(15) > 5) {
-            const navalPool = Math.max(5, Math.round(mbtCount * 0.08));
-            navCap = Math.max(0, Math.round(navalPool * 0.1));
-            navEsc = Math.max(2, Math.round(navalPool * 0.6));
-            navSub = Math.max(1, Math.round(navalPool * 0.3));
+                return `
+                    <div class="nation-card">
+                        <div class="card-title">
+                            <span class="nation-name">${s.nation || nationId}</span>
+                            <span class="power-tag ${audit.isValid ? '' : 'invalid'}">
+                                ${audit.powerScore}/7 PTS
+                            </span>
+                        </div>
+                        <div class="stat-list">
+                            <div class="stat-row"><span class="stat-key">Capital:</span><span class="stat-val">${s.capital || 'N/A'}</span></div>
+                            <div class="stat-row"><span class="stat-key">Gov Type:</span><span class="stat-val">${s.government || 'N/A'}</span></div>
+                            <div class="stat-row"><span class="stat-key">Population:</span><span class="stat-val">${s.population || 'N/A'}</span></div>
+                            <div class="stat-row"><span class="stat-key">Econ Grade:</span><span class="stat-val">${s.economy_grade || 'N/A'}</span></div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-action" onclick="viewProfile('${nationId}')">📄 View Profile</button>
+                            <button class="btn-action btn-compare ${isSelected ? 'selected' : ''}" onclick="toggleCompare('${nationId}')">
+                                ${isSelected ? '✓ In Matrix' : '+ Compare'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
-        document.getElementById("s-n-capital").innerText = `${navCap.toLocaleString()} Capital Hulls`;
-        document.getElementById("s-n-escort").innerText = `${navEsc.toLocaleString()} Destroyer / Frigate Escorts`;
-        document.getElementById("s-n-subs").innerText = `${navSub.toLocaleString()} Sub-surface Attack Inclusions`;
 
-        // Capture updated values into global export string layout
-        const dateObj = new Date();
-        globalExportString = `==================================================
-TSL CONVERTED NATIONAL DOSSIER ARCHIVE FILE
-==================================================
-TARGET IDENTIFIER    : ${payload.core.name}
-FILE CREATION TIMESTAMP: ${dateObj.toLocaleDateString()} // ${dateObj.toLocaleTimeString()}
-REGIME CLASSIFICATION : ${payload.core.category || "Not Specified"}
-==================================================
-[I // GEOPOLITICAL LOGISTICS MAP CORE]
-Converted Population  : ${(convertedPopValue / 1000000).toFixed(2)} Million
-Converted GDP Output  : ${payload.core.currency} ${Math.round(convertedGdp).toLocaleString()} Million
-Wages Resource Density: ${payload.core.currency} ${gdpCapita.toLocaleString()}
-National Motto        : ${payload.core.motto ? `"${payload.core.motto}"` : "None"}
+        function filterRoster() {
+            const query = document.getElementById('search-bar').value.toLowerCase();
+            const sortBy = document.getElementById('sort-select').value;
 
-[II // SECTOR ECONOMICS & LOGISTICS]
-Private Market Share  : ${privatePct}%
-Public Market Share   : ${publicPct}%
-Top 3 Dominant Trades : ${top3Str}
-Energy Grid Backbone  : ${energyGrid}
-Food Security Index   : ${foodSecurity}
-Tax Burden Metric     : ${getScore(49).toFixed(1)}%
+            let filtered = nationsData.filter(e => {
+                const name = (e.stats.nation || e.nation_id).toLowerCase();
+                const cap = (e.stats.capital || '').toLowerCase();
+                const gov = (e.stats.government || '').toLowerCase();
+                return name.includes(query) || cap.includes(query) || gov.includes(query);
+            });
 
-[III // MILITARY FORCE ALLOCATIONS]
-Active Duty Personnel : ${activeTroops.toLocaleString()}
-Special Operations    : ${Math.max(150, Math.round(activeTroops * 0.003 * (getScore(36)/100))).toLocaleString()}
-Main Battle Tanks     : ${mbtCount.toLocaleString()}
-Infantry Fighting Veh : ${ifvCount.toLocaleString()}
-Armored Personnel Car : ${apcCount.toLocaleString()}
-Frontline Airframes   : ${totalPlanes.toLocaleString()}
-==================================================
-[DATA EXTRACTION ENVELOPE END // ARCHIVE FILE SECURE]`;
-    }
+            filtered.sort((a, b) => {
+                if (sortBy === 'power-desc') return (b.audit?.powerScore || 0) - (a.audit?.powerScore || 0);
+                if (sortBy === 'power-asc') return (a.audit?.powerScore || 0) - (b.audit?.powerScore || 0);
+                return (a.stats.nation || a.nation_id).localeCompare(b.stats.nation || b.nation_id);
+            });
 
-    function exportConvertedDossier() {
-        if (!globalExportString) return;
-        const targetNameStr = document.getElementById("targetName").innerText.toLowerCase().replace(/ /g, "_");
-        const fileName = `${targetNameStr}_converted_dossier.txt`;
-        const blobElement = new Blob([globalExportString], { type: "text/plain;charset=utf-8" });
-        const temporaryLinkNode = document.createElement("a");
-        temporaryLinkNode.href = URL.createObjectURL(blobElement);
-        temporaryLinkNode.download = fileName;
-        temporaryLinkNode.style.display = "none";
-        document.body.appendChild(temporaryLinkNode);
-        temporaryLinkNode.click();
-        document.body.removeChild(temporaryLinkNode);
-    }
-</script>
+            renderRoster(filtered);
+        }
+
+        /* --- SINGLE VIEW MODAL LOGIC --- */
+        function viewProfile(nationId) {
+            const entry = nationsData.find(e => e.nation_id === nationId);
+            if (!entry) return;
+
+            const s = entry.stats || {};
+            const audit = entry.audit || {};
+
+            document.getElementById('modal-title').textContent = (s.nation || nationId).toUpperCase();
+
+            // Build Audit Box
+            const auditBox = document.getElementById('modal-audit');
+            if (audit.isValid) {
+                auditBox.className = 'audit-box clean';
+                auditBox.innerHTML = `<strong style="color:#00ff00;">[VALIDATED]</strong> Power Budget: ${audit.powerScore}/7 Points. No rule violations detected.`;
+            } else {
+                auditBox.className = 'audit-box warn';
+                auditBox.innerHTML = `<strong style="color:#ff0000;">[VIOLATION DETECTED]</strong> Power Budget: ${audit.powerScore}/7 Points.<br>Errors: ${audit.violations ? audit.violations.join(' | ') : 'Rules threshold broken.'}`;
+            }
+
+            // Build Details Grid dynamically
+            const detailsGrid = document.getElementById('modal-details');
+            let html = '';
+            
+            for (const [key, value] of Object.entries(s)) {
+                if (key === 'nation') continue;
+
+                const cleanKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const isFullWidth = value.length > 40; 
+                
+                html += `
+                    <div class="detail-item ${isFullWidth ? 'full-width' : ''}">
+                        <span class="lbl">${cleanKey}</span>
+                        <span class="val">${value}</span>
+                    </div>
+                `;
+            }
+            detailsGrid.innerHTML = html;
+
+            document.getElementById('profile-modal').classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.remove('active');
+        }
+
+        document.getElementById('profile-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeProfileModal();
+        });
+
+        /* --- COMPARISON MATRIX LOGIC --- */
+        function toggleCompare(nationId) {
+            const idx = selectedForCompare.indexOf(nationId);
+            if (idx > -1) {
+                selectedForCompare.splice(idx, 1);
+            } else {
+                if (selectedForCompare.length >= 2) selectedForCompare.shift();
+                selectedForCompare.push(nationId);
+            }
+            updateComparisonView();
+            filterRoster();
+        }
+
+        function clearComparison() {
+            selectedForCompare = [];
+            updateComparisonView();
+            filterRoster();
+        }
+
+        function updateComparisonView() {
+            const dock = document.getElementById('comparison-dock');
+            const content = document.getElementById('comparison-content');
+
+            if (selectedForCompare.length === 0) {
+                dock.classList.remove('active');
+                return;
+            }
+
+            dock.classList.add('active');
+
+            if (selectedForCompare.length === 1) {
+                const n1 = nationsData.find(e => e.nation_id === selectedForCompare[0]);
+                content.innerHTML = `<div style="color: var(--cyber-cyan);">Selected <strong>${n1.stats.nation || n1.nation_id}</strong>. Select a second nation to complete matrix.</div>`;
+                return;
+            }
+
+            const n1 = nationsData.find(e => e.nation_id === selectedForCompare[0]);
+            const n2 = nationsData.find(e => e.nation_id === selectedForCompare[1]);
+            const s1 = n1.stats || {};
+            const s2 = n2.stats || {};
+
+            content.innerHTML = `
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Metric Parameter</th>
+                            <th>${s1.nation || n1.nation_id}</th>
+                            <th>${s2.nation || n2.nation_id}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Power Budget Score</td><td>${n1.audit?.powerScore || 0} / 7 Pts</td><td>${n2.audit?.powerScore || 0} / 7 Pts</td></tr>
+                        <tr><td>Capital City</td><td>${s1.capital || 'N/A'}</td><td>${s2.capital || 'N/A'}</td></tr>
+                        <tr><td>Government Type</td><td>${s1.government || 'N/A'}</td><td>${s2.government || 'N/A'}</td></tr>
+                        <tr><td>Population</td><td>${s1.population || 'N/A'}</td><td>${s2.population || 'N/A'}</td></tr>
+                        <tr><td>Economy Grade</td><td>${s1.economy_grade || 'N/A'}</td><td>${s2.economy_grade || 'N/A'}</td></tr>
+                        <tr><td>Resource Wealth</td><td>${s1.resource_wealth || 'N/A'}</td><td>${s2.resource_wealth || 'N/A'}</td></tr>
+                        <tr><td>Tech Tier</td><td>${s1.tech_tier || 'N/A'}</td><td>${s2.tech_tier || 'N/A'}</td></tr>
+                        <tr><td>Infrastructure</td><td>${s1.infrastructure || 'N/A'}</td><td>${s2.infrastructure || 'N/A'}</td></tr>
+                        <tr><td>Defense Posture</td><td>${s1.defense_stance || 'N/A'}</td><td>${s2.defense_stance || 'N/A'}</td></tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.onload = loadStatsData;
+    </script>
 </body>
 </html>

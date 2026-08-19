@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSL Converted National Analytics</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #0c0c0c;
+            color: #00ff00;
+            margin: 20px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1150px;
+            margin: 0 auto;
+            border: 1px solid #ffaa00;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
+            background-color: #111;
+        }
+        h2 { color: #ffaa00; border-bottom: 2px solid #ffaa00; padding-bottom: 10px; margin-top:0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .section-box { border: 1px dashed #ffaa00; padding: 15px; background: #141414; }
+        .section-box h3 { margin-top: 0; color: #fff; border-bottom: 1px solid #ffaa00; padding-bottom: 5px; font-size: 14px; letter-spacing: 1px;}
+        .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .sub-row { display: flex; justify-content: space-between; padding: 4px 0 4px 20px; border-bottom: 1px dashed #222; font-size: 13px; color: #aaa; }
+        .val { color: #ffaa00; font-weight: bold; }
+        .selector-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        select { background: #1a1a1a; border: 1px solid #ffaa00; color: #00ff00; padding: 10px; font-family: inherit; font-size: 16px; flex-grow: 1; }
+        button { background: #222; border: 1px solid #ffaa00; color: #ffaa00; padding: 10px 20px; cursor: pointer; font-family: inherit; font-weight: bold; white-space: nowrap; }
+        button:hover { background: #ffaa00; color: #0c0c0c; }
+        button.nav-back-btn { border: 1px solid #ffaa00; color: #ffaa00; background: #1a1a1a; }
+        button.nav-back-btn:hover { background: #ffaa00; color: #0c0c0c; }
+        button.export-btn { border: 1px solid #00ff00; color: #00ff00; margin-left: auto; display: block; margin-top: 15px; }
+        button.export-btn:hover { background: #00ff00; color: #0c0c0c; }
+        .full-width { grid-column: span 2; }
+        .badge { font-weight: bold; padding: 2px 6px; background: rgba(255, 170, 0, 0.1); border: 1px solid #ffaa00; color: #ffaa00; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>[TSL_CONVERTED_STATS_ENGINE_v4.2]</h2>
+    <p>Logarithmic Conversion System // Map Database Calibration Patch</p>
+
+    <div class="selector-box">
+        <button class="nav-back-btn" onclick="window.location.href='index.html'">◀ RETURN TO STRATEGIC MAP</button>
+        <select id="cacheSelector">
+            <option value="">-- Choose Profile Matrix Focus Target --</option>
+        </select>
+        <button onclick="loadTargetAnalytics()">LOAD CONVERTED PROFILE</button>
+    </div>
+
+    <div id="noDataMsg" style="color: #ffaa00; font-style: italic;">Select a national target above to calculate converted values.</div>
+
+    <div id="analyticsDisplay" style="display: none;">
+        <div class="stat-row" style="font-size: 16px; font-weight: bold; border: none; margin-bottom: 15px;">
+            <span>Nation Identity: <span id="targetName" style="color:#fff;">-</span></span>
+            <span>Government Type: <span id="targetClass" style="color:#00ff00;">-</span></span>
+        </div>
+
+        <div class="grid">
+            <div class="section-box full-width">
+                <h3>I // GEOPOLITICAL & CORE OVERVIEW</h3>
+                <div class="stat-row"><span>Logarithmic Population Structure:</span> <span class="val" id="s-pop">-</span></div>
+                <div class="stat-row"><span>Logarithmic GDP Output:</span> <span class="val" id="s-gdp">-</span></div>
+                <div class="stat-row"><span>Converted GDP Per Capita:</span> <span class="val" id="s-gdpCapita">-</span></div>
+                <div class="stat-row"><span>National Motto:</span> <span id="s-motto" style="font-style: italic; color:#aaa;">-</span></div>
+            </div>
+
+            <div class="section-box">
+                <h3>II // INDUSTRIAL SECTORS & TRADE</h3>
+                <div class="stat-row"><span>Business Subsidization Strength:</span> <span class="val" id="s-subsidies">-</span></div>
+                <div class="stat-row"><span>Private Sector Control %:</span> <span class="val" id="s-private">-</span></div>
+                <div class="stat-row"><span>Public Sector Control %:</span> <span class="val" id="s-public">-</span></div>
+                <div class="stat-row"><span>Tax Burden Index:</span> <span class="val" id="s-taxes">-</span></div>
+                <div class="stat-row"><span>Top 3 National Industries:</span> <span class="val" id="s-topindustries" style="color:#fff;">-</span></div>
+                <div class="stat-row"><span>Primary Export Profile:</span> <span class="val" id="s-exports">-</span></div>
+                <div class="stat-row"><span>Primary Import Requirement:</span> <span class="val" id="s-imports">-</span></div>
+                <div class="stat-row"><span>Black Market Size Index:</span> <span class="val" id="s-blackmarket">-</span></div>
+            </div>
+
+            <div class="section-box">
+                <h3>III // CIVIL QUALITY & LIVING CONDITIONS</h3>
+                <div class="stat-row"><span>Happiness & Freedom Index:</span> <span class="val" id="s-happiness">-</span></div>
+                <div class="stat-row"><span>Patriotism Rating:</span> <span class="val" id="s-patriotism">-</span></div>
+                <div class="stat-row"><span>Risk of Rebellion Vector:</span> <span class="val" id="s-rebellion">-</span></div>
+                <div class="stat-row"><span>Civil Safety & Security Rating:</span> <span class="val" id="s-safety">-</span></div>
+                <div class="stat-row"><span>Healthcare Accessibility Index:</span> <span class="val" id="s-healthcare">-</span></div>
+                <div class="stat-row"><span>Education Accessibility Index:</span> <span class="val" id="s-education">-</span></div>
+                <div class="stat-row"><span>Transportation Accessibility Index:</span> <span class="val" id="s-transport">-</span></div>
+            </div>
+
+            <div class="section-box full-width">
+                <h3>IV // NATIONAL RESOURCE & INFRASTRUCTURE INTEGRITY</h3>
+                <div class="stat-row"><span>Primary Energy Grid Backbone:</span> <span id="s-energygrid" class="badge">-</span></div>
+                <div class="stat-row"><span>National Food Security Index:</span> <span id="s-foodsecurity" style="font-weight: bold;">-</span></div>
+            </div>
+
+            <div class="section-box full-width">
+                <h3>V // POPULATION CONTEXT & AGE BRACKETS</h3>
+                <div class="stat-row"><span>Literacy Rate:</span> <span class="val" id="s-literacy">-</span></div>
+                <div class="stat-row"><span>Net Immigration Vector:</span> <span class="val" id="s-immigration">-</span></div>
+                <div class="stat-row"><span>Annual Birth Rate:</span> <span class="val" id="s-births">-</span></div>
+                <div class="stat-row"><span>Annual Death Rate:</span> <span class="val" id="s-deaths">-</span></div>
+                <div class="stat-row"><span>Net Population Growth Vector:</span> <span class="val" id="s-growth">-</span></div>
+                <div class="stat-row"><span>Able-Bodied Working Workforce:</span> <span class="val" id="s-labor">-</span></div>
+                <div class="stat-row"><span>Retired / Senior Demographics:</span> <span class="val" id="s-seniors">-</span></div>
+            </div>
+
+            <div class="section-box full-width">
+                <h3>VI // MILITARY DEFENSE STRATEGY & FORCE ESTIMATES</h3>
+                <div class="stat-row"><span>Military Strength Index:</span> <span class="val" id="s-milstrength">-</span></div>
+                <div class="stat-row"><span>Military Advancement Index:</span> <span class="val" id="s-miladv">-</span></div>
+                <div class="stat-row"><span>Active Deployment Footprint:</span> <span class="val" id="s-troops">-</span></div>
+                <div class="stat-row"><span>Special Operations Forces Pool:</span> <span class="val" id="s-specops" style="color: #00ff00;">-</span></div>
+                
+                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">LAND FORCE COMBAT ASSETS</div>
+                <div class="sub-row"><span>└ Main Battle Tanks (MBTs):</span> <span class="val" id="s-mbt">-</span></div>
+                <div class="sub-row"><span>└ Infantry Fighting Vehicles (IFVs):</span> <span id="s-ifv">-</span></div>
+                <div class="sub-row"><span>└ Armored Personnel Carriers (APCs):</span> <span id="s-apc">-</span></div>
+                <div class="sub-row"><span>└ Field Artillery Arrays:</span> <span id="s-arty">-</span></div>
+                <div class="sub-row"><span>└ Rocket Artillery Launchers (MLRS):</span> <span id="s-mlrs">-</span></div>
+
+                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">TACTICAL FIELD AVIATION HULLS</div>
+                <div class="sub-row"><span>└ Air Superiority Fighters:</span> <span class="val" id="s-f-air">-</span></div>
+                <div class="sub-row"><span>└ Interceptor Jets:</span> <span id="s-f-int">-</span></div>
+                <div class="sub-row"><span>└ Multi-Role Combat Jets:</span> <span id="s-f-multi">-</span></div>
+                <div class="sub-row"><span>└ Close Air Support (CAS) Strike Craft:</span> <span id="s-f-strike">-</span></div>
+                <div class="sub-row"><span>└ Strategic Heavy Bombers:</span> <span id="s-f-bomb">-</span></div>
+                <div class="sub-row"><span>└ Stealth Strike Bombers:</span> <span id="s-f-stealth" style="color:#00ff00;">-</span></div>
+
+                <div class="stat-row" style="color: #ffaa00; font-weight:bold; padding-top: 10px;">MARITIME FLEET HULLS</div>
+                <div class="sub-row"><span>└ Strategic Capital Fleet (Carriers / Amphibious Assault):</span> <span class="val" id="s-n-capital">-</span></div>
+                <div class="sub-row"><span>└ Surface Screening Force (Destroyers / Frigates):</span> <span id="s-n-escort">-</span></div>
+                <div class="sub-row"><span>└ Sub-surface Hunter Hull Squadrons:</span> <span id="s-n-subs">-</span></div>
+            </div>
+        </div>
+
+        <button class="export-btn" onclick="exportConvertedDossier()">GENERATE MAP DATABASE EXTRACTION FILE</button>
+    </div>
+</div>
+
+<script>
+    let db;
+    let globalExportString = ""; 
+    const dbOpenRequest = indexedDB.open("TSL_NationalCacheDB", 1);
+
+    dbOpenRequest.onsuccess = function(e) {
+        db = e.target.result;
+        populateSelector();
+    };
+
+    function populateSelector() {
+        const transaction = db.transaction(["nations"], "readonly");
+        const store = transaction.objectStore("nations");
+        const request = store.openCursor();
+        const selector = document.getElementById("cacheSelector");
+
+        request.onsuccess = function(event) {
+            const cursor = event.target.result;
+            if (cursor) {
+                const option = document.createElement("option");
+                option.value = cursor.key;
+                option.text = cursor.value.payload.core.name;
+                selector.appendChild(option);
+                cursor.continue();
+            }
+        };
+    }
+
+    function loadTargetAnalytics() {
+        const selectedId = document.getElementById("cacheSelector").value;
+        if (!selectedId) return;
+
+        const transaction = db.transaction(["nations"], "readonly");
+        const store = transaction.objectStore("nations");
+        const request = store.get(selectedId);
+
+        request.onsuccess = function() {
+            const record = request.result;
+            if (record) processAndRenderData(record.payload);
+        };
+    }
+
+    function processAndRenderData(payload) {
+        document.getElementById("noDataMsg").style.display = "none";
+        document.getElementById("analyticsDisplay").style.display = "block";
+
+        const getScore = (id) => (payload.scales && payload.scales[id]) ? parseFloat(payload.scales[id].score) : 25;
+
+        document.getElementById("targetName").innerText = payload.core.name;
+        document.getElementById("targetClass").innerText = payload.core.category || payload.core.govtype || "Not Specified";
+
+        // Logarithmic Population Base
+        const rawPopMillion = parseFloat(payload.core.population);
+        let convertedPopValue;
+        if (rawPopMillion <= 900) {
+            convertedPopValue = rawPopMillion * 1000000;
+        } else {
+            convertedPopValue = (900 * 1000000) + (Math.log10(rawPopMillion / 900) * 400 * 1000000);
+        }
+
+        // Logarithmic GDP Output Base
+        const rawGdp = parseFloat(payload.core.gdp) || 0;
+        let convertedGdp = rawGdp <= 90000 ? rawGdp : 90000 + (Math.log10(rawGdp / 90000) * 35000);
+        
+        // GDP Per Capita Alignment
+        const gdpCapita = Math.round((convertedGdp * 1000000) / convertedPopValue);
+
+        // Sorting industry tiers
+        const indMap = [
+            { name: "Arms Production", val: getScore(16) }, { name: "Automobile Assembly", val: getScore(10) },
+            { name: "Basket Weaving", val: getScore(12) }, { name: "Beverage Sales", val: getScore(18) },
+            { name: "Book Publishing", val: getScore(24) }, { name: "Cheese Exports", val: getScore(11) },
+            { name: "Furniture Restorations", val: getScore(22) }, { name: "Gambling Sector", val: getScore(25) },
+            { name: "Information Tech", val: getScore(13) }, { name: "Insurance Industry", val: getScore(21) },
+            { name: "Mining Operations", val: getScore(20) }, { name: "Pizza Deliveries", val: getScore(14) },
+            { name: "Retail Networks", val: getScore(23) }, { name: "Woodchipping Sector", val: getScore(19) },
+            { name: "Trout Fishing", val: getScore(15) }, { name: "Agriculture Sector", val: getScore(17) },
+            { name: "Manufacturing Base", val: getScore(26) }, { name: "Tourism Matrices", val: getScore(58) }
+        ];
+        indMap.sort((a, b) => b.val - a.val);
+        const top3Str = `${indMap[0].name}, ${indMap[1].name}, ${indMap[2].name}`;
+
+        const govSize = getScore(27);
+        const econFreedom = getScore(48);
+        const publicPct = Math.max(5, Math.min(95, Math.round((govSize / (govSize + econFreedom)) * 100)));
+        const privatePct = 100 - publicPct;
+
+        document.getElementById("s-motto").innerText = payload.core.motto ? `"${payload.core.motto}"` : "None";
+        document.getElementById("s-pop").innerText = `${(convertedPopValue / 1000000).toFixed(2)} Million Citizens`;
+        document.getElementById("s-gdp").innerText = `${payload.core.currency} ${Math.round(convertedGdp).toLocaleString()} Million`;
+        document.getElementById("s-gdpCapita").innerText = `${payload.core.currency} ${gdpCapita.toLocaleString()}`;
+        
+        document.getElementById("s-subsidies").innerText = `${getScore(31).toFixed(1)} / 100`;
+        document.getElementById("s-private").innerText = `${privatePct}%`;
+        document.getElementById("s-public").innerText = `${publicPct}%`;
+        document.getElementById("s-taxes").innerText = `${getScore(49).toFixed(1)}% Burden Index`;
+        document.getElementById("s-topindustries").innerText = top3Str;
+        document.getElementById("s-exports").innerText = `${indMap[0].name} Dominant Focus`;
+        document.getElementById("s-imports").innerText = `${indMap[indMap.length - 1].name} Logistics Demand`;
+        document.getElementById("s-blackmarket").innerText = `${getScore(79).toFixed(1)} Factor Density`;
+
+        const happinessRating = Math.round((getScore(34) + getScore(40) + getScore(0)) / 3);
+        document.getElementById("s-happiness").innerText = `${happinessRating} / 100 Rating`;
+        document.getElementById("s-patriotism").innerText = `${Math.round((getScore(42) + getScore(55)) / 2)} / 100 Units`;
+        
+        const rebellionThreat = Math.max(0, Math.min(100, Math.round((getScore(54) * 0.6) + (getScore(77) * 0.4) - (getScore(42) * 0.3))));
+        document.getElementById("s-rebellion").innerText = `${rebellionThreat}% Likelihood Indicator`;
+        document.getElementById("s-safety").innerText = `${getScore(43).toFixed(1)} Secure Points`;
+
+        // Updated from Tiers to Numeric Indexes out of 100
+        document.getElementById("s-healthcare").innerText = `${getScore(29).toFixed(1)} / 100 Index`;
+        document.getElementById("s-education").innerText = `${getScore(75).toFixed(1)} / 100 Index`;
+        document.getElementById("s-transport").innerText = `${getScore(57).toFixed(1)} / 100 Index`;
+
+        const miningScore = getScore(20);
+        const ecoScore = getScore(7);
+        let energyGrid = "Fossil Fuel Combustions & Coal Extraction Lines";
+        if (ecoScore > 50 && miningScore > 40) energyGrid = "Fission / Nuclear Power Sub-Station Matrices";
+        if (ecoScore > 75) energyGrid = "Renewable Hydro-Electric & Green Grid Arrays";
+        document.getElementById("s-energygrid").innerText = energyGrid;
+
+        const agScore = getScore(17);
+        const obesity = getScore(61);
+        let foodSecurity = "Stable // Highly Self-Sufficient Production Enclaves";
+        if (agScore < 35) foodSecurity = "Import-Reliant // Subject to External Logistics Shifts";
+        if (obesity > 65) foodSecurity = "Surplus Heavy Production // Consumer Inefficiencies Logged";
+        document.getElementById("s-foodsecurity").innerText = foodSecurity;
+        document.getElementById("s-foodsecurity").style.color = agScore < 35 ? "#ffaa00" : "#00ff00";
+
+        document.getElementById("s-literacy").innerText = `${Math.min(100, Math.round(80 + (getScore(75) * 0.2)))}%`;
+        document.getElementById("s-immigration").innerText = `${(getScore(68) - 50).toFixed(1)} / K Net Margin`;
+        
+        const bRate = Math.max(5, (getScore(55) / 5).toFixed(1));
+        const dRate = Math.max(2, (getScore(5) / 4).toFixed(1));
+        document.getElementById("s-births").innerText = `${bRate} / 1K Citizens`;
+        document.getElementById("s-deaths").innerText = `${dRate} / 1K Citizens`;
+        document.getElementById("s-growth").innerText = `${(bRate - dRate).toFixed(1)} / 1K Change Index`;
+
+        const youthPct = Math.min(45, Math.max(12, 15 + (getScore(54) * 0.2)));
+        const seniorPct = Math.min(30, Math.max(5, (getScore(44) / 100) * 18));
+        const adultPct = 100 - youthPct - seniorPct;
+        document.getElementById("s-labor").innerText = `${adultPct.toFixed(1)}% Core Pool`;
+        document.getElementById("s-seniors").innerText = `${seniorPct.toFixed(1)}% Bracket Population`;
+
+        // --- FIXED RE-CALIBRATED MILITARY ALLOCATION SYSTEMS ---
+        const milStrengthIdx = Math.round((getScore(59) * 25) + (getScore(46) * 25));
+        document.getElementById("s-milstrength").innerText = `${milStrengthIdx.toLocaleString()} Points`;
+        document.getElementById("s-miladv").innerText = `${getScore(70).toFixed(1)} Coefficient`;
+
+        // Fixed Active Troops formula scaling realistically as 0.1% to 3.0% maximum baseline of converted population
+        const activeTroops = Math.max(15000, Math.round(convertedPopValue * (0.001 + (getScore(46) / 100) * 0.029)));
+        document.getElementById("s-troops").innerText = activeTroops.toLocaleString() + " Enlisted Personnel";
+        document.getElementById("s-specops").innerText = Math.max(150, Math.round(activeTroops * 0.003 * (getScore(36)/100))).toLocaleString() + " Operators";
+
+        // Balanced Vehicle Scaling Ratios
+        const indDensity = Math.min(100, (getScore(26) + getScore(16)) / 2) / 100;
+        const mbtCount = Math.max(50, Math.round(activeTroops * 0.008 * indDensity));
+        const ifvCount = Math.round(mbtCount * 2.2); 
+        const apcCount = Math.round(mbtCount * 3.5); 
+        const artyCount = Math.round(mbtCount * 0.8);
+        const mlrsCount = Math.round(mbtCount * 0.3);
+
+        document.getElementById("s-mbt").innerText = mbtCount.toLocaleString() + " Armor Platforms";
+        document.getElementById("s-ifv").innerText = ifvCount.toLocaleString() + " Tracked Support Transports";
+        document.getElementById("s-apc").innerText = apcCount.toLocaleString() + " Wheeled Transit Shuttles";
+        document.getElementById("s-arty").innerText = artyCount.toLocaleString() + " Field Artillery Systems";
+        document.getElementById("s-mlrs").innerText = mlrsCount.toLocaleString() + " Mobile Rocket Units";
+
+        // Balanced Flight Squadrons
+        const totalPlanes = Math.max(20, Math.round(activeTroops * 0.0007 * (getScore(70)/100)));
+        document.getElementById("s-f-air").innerText = Math.round(totalPlanes * 0.30).toLocaleString() + " Air Frames";
+        document.getElementById("s-f-int").innerText = Math.round(totalPlanes * 0.20).toLocaleString() + " Fast Units";
+        document.getElementById("s-f-multi").innerText = Math.round(totalPlanes * 0.35).toLocaleString() + " Multi-Roles";
+        document.getElementById("s-f-strike").innerText = Math.round(totalPlanes * 0.15).toLocaleString() + " Strike Hulls";
+        
+        const isHighTech = getScore(70) > 65;
+        document.getElementById("s-f-bomb").innerText = isHighTech ? Math.max(2, Math.round(totalPlanes * 0.05)).toLocaleString() + " Strategic Frames" : "0 Hulls";
+        document.getElementById("s-f-stealth").innerText = isHighTech ? Math.max(1, Math.round(totalPlanes * 0.03)).toLocaleString() + " Low-Observables" : "0 Hulls";
+
+        // Navy Checks
+        let navCap = 0, navEsc = 0, navSub = 0;
+        if (getScore(15) > 5) {
+            const navalPool = Math.max(5, Math.round(mbtCount * 0.08));
+            navCap = Math.max(0, Math.round(navalPool * 0.1));
+            navEsc = Math.max(2, Math.round(navalPool * 0.6));
+            navSub = Math.max(1, Math.round(navalPool * 0.3));
+        }
+        document.getElementById("s-n-capital").innerText = `${navCap.toLocaleString()} Capital Hulls`;
+        document.getElementById("s-n-escort").innerText = `${navEsc.toLocaleString()} Destroyer / Frigate Escorts`;
+        document.getElementById("s-n-subs").innerText = `${navSub.toLocaleString()} Sub-surface Attack Inclusions`;
+
+        // Capture updated values into global export string layout
+        const dateObj = new Date();
+        globalExportString = `==================================================
+TSL CONVERTED NATIONAL DOSSIER ARCHIVE FILE
+==================================================
+TARGET IDENTIFIER    : ${payload.core.name}
+FILE CREATION TIMESTAMP: ${dateObj.toLocaleDateString()} // ${dateObj.toLocaleTimeString()}
+REGIME CLASSIFICATION : ${payload.core.category || "Not Specified"}
+==================================================
+[I // GEOPOLITICAL LOGISTICS MAP CORE]
+Converted Population  : ${(convertedPopValue / 1000000).toFixed(2)} Million
+Converted GDP Output  : ${payload.core.currency} ${Math.round(convertedGdp).toLocaleString()} Million
+Wages Resource Density: ${payload.core.currency} ${gdpCapita.toLocaleString()}
+National Motto        : ${payload.core.motto ? `"${payload.core.motto}"` : "None"}
+
+[II // SECTOR ECONOMICS & LOGISTICS]
+Private Market Share  : ${privatePct}%
+Public Market Share   : ${publicPct}%
+Top 3 Dominant Trades : ${top3Str}
+Energy Grid Backbone  : ${energyGrid}
+Food Security Index   : ${foodSecurity}
+Tax Burden Metric     : ${getScore(49).toFixed(1)}%
+
+[III // MILITARY FORCE ALLOCATIONS]
+Active Duty Personnel : ${activeTroops.toLocaleString()}
+Special Operations    : ${Math.max(150, Math.round(activeTroops * 0.003 * (getScore(36)/100))).toLocaleString()}
+Main Battle Tanks     : ${mbtCount.toLocaleString()}
+Infantry Fighting Veh : ${ifvCount.toLocaleString()}
+Armored Personnel Car : ${apcCount.toLocaleString()}
+Frontline Airframes   : ${totalPlanes.toLocaleString()}
+==================================================
+[DATA EXTRACTION ENVELOPE END // ARCHIVE FILE SECURE]`;
+    }
+
+    function exportConvertedDossier() {
+        if (!globalExportString) return;
+        const targetNameStr = document.getElementById("targetName").innerText.toLowerCase().replace(/ /g, "_");
+        const fileName = `${targetNameStr}_converted_dossier.txt`;
+        const blobElement = new Blob([globalExportString], { type: "text/plain;charset=utf-8" });
+        const temporaryLinkNode = document.createElement("a");
+        temporaryLinkNode.href = URL.createObjectURL(blobElement);
+        temporaryLinkNode.download = fileName;
+        temporaryLinkNode.style.display = "none";
+        document.body.appendChild(temporaryLinkNode);
+        temporaryLinkNode.click();
+        document.body.removeChild(temporaryLinkNode);
+    }
+</script>
+</body>
+</html>
