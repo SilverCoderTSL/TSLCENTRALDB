@@ -2,7 +2,7 @@
   {
     "nation_id": "union_of_silver_states_union",
     "dispatch_id": "2808233",
-    "last_updated": "2026-08-19T04:11:39.832Z",
+    "last_updated": "2026-08-27T05:38:49.316Z",
     "stats": {
       "nation": "Test Nation",
       "capital": "Bleh",
@@ -32,9 +32,39 @@
     }
   },
   {
+    "nation_id": "the_ypres_front",
+    "dispatch_id": "2810109",
+    "last_updated": "2026-08-27T05:38:50.823Z",
+    "stats": {
+      "nation": "The Ypres Front",
+      "capital": "Ypres",
+      "government": "Social Democracy",
+      "population": "12 Million",
+      "economy_grade": "C",
+      "resource_wealth": "B",
+      "top_exports": "Le grainz, le iron, le petrol, le meat",
+      "top_imports": "Embedded electronics",
+      "tech_tier": "Modern",
+      "infrastructure": "B",
+      "defense_stance": "Active Patrol",
+      "internal_stability": "Moderate",
+      "culture___influence": "D",
+      "education___r_d": "B",
+      "regional_alignment": "Ocean",
+      "national_focus": "Maintainence",
+      "current_regional_stance": "Currently Uncontactable"
+    },
+    "audit": {
+      "powerScore": 3,
+      "sTierCount": 0,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
     "nation_id": "silver_republics",
     "dispatch_id": "2808224",
-    "last_updated": "2026-08-19T04:11:58.384Z",
+    "last_updated": "2026-08-27T05:39:02.105Z",
     "stats": {
       "nation": "Federation of Silver Republics",
       "capital": "Silberstadt",
