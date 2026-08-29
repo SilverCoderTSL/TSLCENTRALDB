@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSL Tactical Battle Matrix & Resolution Suite</title>
+    <title>TSL Tactical Battle Matrix & Multi-Phase Simulator v5.0</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -13,6 +13,8 @@
             --text-color: #dddddd;
             --highlight-text: #ffffff;
             --success-color: #00ff66;
+            --warning-color: #ffcc00;
+            --info-color: #00ccff;
             --terminal-glow: rgba(255, 51, 51, 0.15);
         }
 
@@ -65,7 +67,7 @@
         h2 {
             border-bottom: 1px dashed var(--border-color);
             padding-bottom: 8px;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .title-bar {
@@ -92,14 +94,13 @@
             background: var(--accent-color);
             color: #000000;
             box-shadow: 0 0 15px var(--accent-color);
-            animation: pulse-flash 0.3s infinite alternate;
         }
 
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            max-width: 1400px;
+            max-width: 1450px;
             margin: 0 auto;
         }
 
@@ -117,24 +118,24 @@
 
         label {
             display: block;
-            margin-top: 12px;
+            margin-top: 10px;
             font-weight: bold;
             color: #ffffff;
-            font-size: 13px;
+            font-size: 12px;
             letter-spacing: 0.5px;
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             background: #000000;
             border: 1px solid #441111;
             color: #ffffff;
             font-family: inherit;
             box-sizing: border-box;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            font-size: 13px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            font-size: 12px;
             transition: all 0.2s;
         }
 
@@ -152,9 +153,9 @@
             font-family: inherit;
             font-weight: bold;
             cursor: pointer;
-            padding: 12px 20px;
-            font-size: 13px;
-            margin-top: 15px;
+            padding: 10px 16px;
+            font-size: 12px;
+            margin-top: 10px;
             letter-spacing: 1px;
             transition: all 0.2s;
             text-transform: uppercase;
@@ -164,12 +165,6 @@
             background: var(--accent-color);
             color: #000000;
             box-shadow: 0 0 15px var(--accent-color);
-            animation: pulse-flash 0.3s infinite alternate;
-        }
-
-        @keyframes pulse-flash {
-            0% { opacity: 0.9; box-shadow: 0 0 8px var(--accent-color); }
-            100% { opacity: 1; box-shadow: 0 0 18px var(--accent-color); }
         }
 
         .danger-btn {
@@ -190,60 +185,48 @@
         .success-btn:hover {
             background: var(--success-color);
             color: #000000;
-            border-color: var(--success-color);
             box-shadow: 0 0 15px var(--success-color);
         }
 
         .brigade-stack {
             border: 1px dashed #551111;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-bottom: 10px;
             background: #040404;
             position: relative;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
         }
 
         .remove-brigade-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 3px 8px;
+            top: 5px;
+            right: 5px;
+            padding: 2px 6px;
             margin: 0;
             font-size: 10px;
         }
 
-        .export-area, .output-area {
+        .export-area {
             width: 100%;
-            height: 120px;
+            height: 70px;
             background: #000000;
             border: 1px solid #440000;
             color: #00ff33;
-            padding: 12px;
+            padding: 8px;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 11px;
             resize: vertical;
             box-sizing: border-box;
             margin-top: 5px;
-            line-height: 1.4;
-        }
-
-        .output-area {
-            height: 350px;
-            font-size: 13px;
-            color: #ffffff;
-            line-height: 1.5;
-            background: #080000;
-            border: 1px solid var(--border-color);
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
+            line-height: 1.3;
         }
 
         .history-log {
-            height: 250px;
+            height: 180px;
             overflow-y: auto;
             background: #020202;
             border: 1px solid #330000;
-            padding: 10px;
-            font-size: 12px;
+            padding: 8px;
+            font-size: 11px;
             font-family: monospace;
             color: #aaaaaa;
         }
@@ -251,7 +234,7 @@
         .log-entry {
             border-left: 3px solid var(--border-color);
             background: #0e0404;
-            padding: 8px 12px;
+            padding: 6px 10px;
             margin-bottom: 6px;
             cursor: pointer;
             transition: all 0.2s;
@@ -264,273 +247,537 @@
             background: #250808;
             border-left-color: var(--accent-color);
             color: #ffffff;
-            box-shadow: 0 0 8px rgba(255,51,51,0.1);
         }
 
         .log-entry span.timestamp {
             color: #666666;
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .grid-half {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
-        hr {
-            border: 0;
-            border-top: 1px solid #440000;
-            margin: 20px 0;
+        .grid-quad {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
         }
 
         .crypto-hash-display {
             font-family: monospace;
             background: #000000;
             color: #00ff33;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #004411;
             word-break: break-all;
             margin-top: 5px;
-            margin-bottom: 15px;
-            font-size: 12px;
+            margin-bottom: 10px;
+            font-size: 11px;
         }
 
         .field-group {
             background: rgba(255,51,51,0.02);
             border-left: 2px solid var(--border-color);
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
         }
 
         .action-container {
             display: flex;
             gap: 10px;
             align-items: center;
+            margin-top: 15px;
         }
 
+        .side-header {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--accent-color);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* --- VISUAL AFTER-ACTION REPORT (AAR) STYLING --- */
+        .tab-container {
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: #110303;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            color: #888888;
+            padding: 8px 16px;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tab-btn.active {
+            background: #250505;
+            color: var(--highlight-text);
+            border-color: var(--accent-color);
+        }
+
+        .aar-display {
+            background: #030304;
+            border: 1px solid #331111;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .outcome-banner {
+            border: 2px solid #555555;
+            padding: 15px;
+            text-align: center;
+            background: #0a0a0d;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .outcome-banner.decisive-att {
+            border-color: var(--accent-color);
+            background: rgba(255, 51, 51, 0.1);
+            color: #ff6666;
+        }
+
+        .outcome-banner.victory-att {
+            border-color: var(--warning-color);
+            background: rgba(255, 204, 0, 0.1);
+            color: #ffe066;
+        }
+
+        .outcome-banner.repelled-def {
+            border-color: var(--info-color);
+            background: rgba(0, 204, 255, 0.1);
+            color: #66e0ff;
+        }
+
+        .outcome-title {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .outcome-subtext {
+            font-size: 13px;
+            color: #dddddd;
+        }
+
+        .phase-box {
+            background: #0c0808;
+            border: 1px solid #441111;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .phase-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 6px;
+            border-bottom: 1px solid #331111;
+            padding-bottom: 4px;
+        }
+
+        .power-bar-wrapper {
+            background: #111115;
+            border: 1px solid #333344;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .bar-container {
+            display: flex;
+            height: 24px;
+            background: #220000;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid #000;
+        }
+
+        .bar-att {
+            background: linear-gradient(90deg, #aa0000, #ff3333);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .bar-def {
+            background: linear-gradient(90deg, #0055ff, #00aaff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .aar-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .aar-table th {
+            background: #180808;
+            color: #ffaaaa;
+            border: 1px solid #441111;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .aar-table td {
+            border: 1px solid #220808;
+            padding: 8px;
+            background: #080404;
+        }
+
+        .loss-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .loss-badge.high { background: #440000; color: #ff6666; border: 1px solid #880000; }
+        .loss-badge.med { background: #443300; color: #ffcc00; border: 1px solid #886600; }
+        .loss-badge.low { background: #003311; color: #66ff99; border: 1px solid #008833; }
+
+        .raw-text-view {
+            width: 100%;
+            height: 320px;
+            background: #000000;
+            border: 1px solid var(--border-color);
+            color: #00ff33;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+            box-sizing: border-box;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="title-bar">// TSL_TACTICAL_BATTLE_SIM_MATRIX_v2.0 //</div>
-        <a href="index.html" class="nav-link">◀ RETURN TO VECTOR GRID</a>
+        <div class="title-bar">// TSL_TACTICAL_BATTLE_SIM_MATRIX_v5.0 //</div>
+        <a href="index.html" class="nav-link">◀ RETURN TO MAIN PAGE</a>
+        <a href="map.html" class="nav-link">◀ MAP</a>
     </header>
 
     <div class="container">
         
+        <!-- SIDE BY SIDE BUILDERS: ATTACKER (LEFT) -->
         <div class="panel">
-            <h2>STEP 1: BATTLESPACE ROSTER BUILD</h2>
-            <p style="font-size: 12px; color: #888888;">Construct your combat footprint, select your tactical posture, and declare your objectives.</p>
-            <hr>
+            <div class="side-header">⚔️ ATTACKER FORCE BUILDER</div>
+            <h2>STEP 1A: ATTACKER ROSTER & POSTURE</h2>
 
             <div class="field-group">
-                <h3>A. Operational Parameters</h3>
-                <label for="player-nation">Acting Nation Identifier:</label>
-                <input type="text" id="player-nation" placeholder="Enter your NationStates name...">
+                <label>Acting Nation Identifier:</label>
+                <input type="text" id="att-nation" placeholder="Attacker NationStates name...">
 
-                <label for="player-doctrine">Faction / Doctrinal Specialization:</label>
-                <select id="player-doctrine">
-                    <option value="none">-- Select Warfare Doctrine --</option>
-                    <option value="assault">Assault Doctrine (Blitzkrieg / Shock & Awe)</option>
-                    <option value="fanatical">Fanatical / At-All-Costs (Patriotism Surge)</option>
-                    <option value="guerrilla">Asymmetric / Guerrilla Doctrine</option>
-                    <option value="combined">Mechanized / Combined Arms Doctrine</option>
-                </select>
+                <div class="grid-half">
+                    <div>
+                        <label>Doctrine:</label>
+                        <select id="att-doctrine">
+                            <option value="assault">Assault / Blitzkrieg</option>
+                            <option value="combined">Combined Arms</option>
+                            <option value="fanatical">Fanatical Surge</option>
+                            <option value="guerrilla">Guerrilla / Asymmetric</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Tactical Stance:</label>
+                        <select id="att-stance">
+                            <option value="assault">Deliberate Assault</option>
+                            <option value="hasty">Hasty Probe / Recon</option>
+                            <option value="defense">Deliberate Defense</option>
+                            <option value="mobile">Mobile Defense</option>
+                        </select>
+                    </div>
+                </div>
 
-                <label for="tactical-stance">Assigned Tactical Posture (Stance):</label>
-                <select id="tactical-stance">
-                    <option value="none">-- Select Posture --</option>
-                    <option value="hasty">Hasty Attack (Probe / Recon in Force)</option>
-                    <option value="assault">Deliberate Assault (Full-Scale Offensive)</option>
-                    <option value="defense">Deliberate Defense (Entrenched / Digging In)</option>
-                    <option value="mobile">Mobile Defense (Elastic / Delaying Action)</option>
-                    <option value="withdrawal">Withdrawal / Retrograde (Tactical Retreat)</option>
-                </select>
-
-                <label for="operational-goal">Objective Directive (Goal):</label>
-                <select id="operational-goal" onchange="toggleGoalTargetInput()">
+                <label>Objective Goal:</label>
+                <select id="att-goal" onchange="toggleGoalTargetInput('att')">
                     <option value="breakthrough">Breakthrough & Encirclement</option>
                     <option value="capture">Asset Capture / Seizure</option>
                     <option value="annihilation">Attritional Annihilation</option>
-                    <option value="conquest">Territorial Conquest (Push Frontline)</option>
+                    <option value="conquest">Territorial Conquest</option>
                 </select>
 
-                <div id="target-detail-wrapper" style="display: none;">
-                    <label for="goal-target-detail">Explicit Seizure Target (e.g., Sector 4 Oil Refinery):</label>
-                    <input type="text" id="goal-target-detail" placeholder="Type coordinate or infrastructure node...">
+                <div id="att-target-wrapper" style="display: none;">
+                    <label>Target Coordinate/Node:</label>
+                    <input type="text" id="att-target-detail" placeholder="e.g., Sector 4 Oil Refinery">
                 </div>
             </div>
 
             <div class="field-group">
-                <h3>B. Order of Battle (OOB) - Force Stacking</h3>
-                <div id="brigades-container"></div>
-                <button type="button" onclick="addRosterStack()">[ + Add Array / Brigade ]</button>
+                <h3>Order of Battle (OOB)</h3>
+                <div id="att-brigades-container"></div>
+                <button type="button" onclick="addRosterStack('att')">[ + Add Attacker Brigade ]</button>
             </div>
 
-            <hr>
-            <h3>C. Security / Tamper-Detection Export</h3>
-            <p style="font-size: 12px; color: #888888;">Generate encrypted marching orders to send to the Game Master. Tamper checks protect against order spoofing.</p>
-            <button type="button" class="success-btn" onclick="generateEncryptedOrders()">GENERATE SECURE ENCRYPTED ORDERS</button>
+            <button type="button" class="success-btn" onclick="generateEncryptedOrders('att')" style="width: 100%;">GENERATE & AUTO-PASS ATTACKER HASH</button>
             
-            <label for="export-hasher-output">Encrypted Outbound String (DM to GM):</label>
-            <textarea class="export-area" id="export-hasher-output" readonly placeholder="Orders string will generate here..."></textarea>
+            <label>Attacker Encrypted Payload String:</label>
+            <textarea class="export-area" id="att-export-output" readonly placeholder="Attacker order hash auto-populates here..."></textarea>
         </div>
 
+        <!-- SIDE BY SIDE BUILDERS: DEFENDER (RIGHT) -->
         <div class="panel">
-            <h2>STEP 2: GM VALIDATION & SIMULATION ENGINE</h2>
-            <p style="font-size: 12px; color: #888888;">Compile both sides' encrypted orders, factor in environmental stats, and execute projection.</p>
-            <hr>
+            <div class="side-header">🛡️ DEFENDER FORCE BUILDER</div>
+            <h2>STEP 1B: DEFENDER ROSTER & POSTURE</h2>
 
             <div class="field-group">
-                <h3>Inbound Submissions (Paste strings directly)</h3>
-                <label for="inbound-att-orders">Attacker Encrypted Data String:</label>
-                <textarea id="inbound-att-orders" placeholder="Paste Attacker string here..."></textarea>
+                <label>Acting Nation Identifier:</label>
+                <input type="text" id="def-nation" placeholder="Defender NationStates name...">
 
-                <label for="inbound-def-orders">Defender Encrypted Data String:</label>
-                <textarea id="inbound-def-orders" placeholder="Paste Defender string here..."></textarea>
-                
-                <button type="button" onclick="validateAndDecodeSubmissions()">VERIFY STRINGS & INTEGRITY</button>
-                <div id="verification-feedback" class="crypto-hash-display" style="display:none;"></div>
-            </div>
-
-            <div class="field-group">
-                <h3>Environmental Modifiers & Battlefield Intel</h3>
                 <div class="grid-half">
                     <div>
-                        <label for="terrain-type">Theater Topography/Terrain:</label>
-                        <select id="terrain-type">
-                            <option value="plains">Open Plains / Flatlands</option>
-                            <option value="urban">Urban Conurbation / Industrial</option>
-                            <option value="mountains">Mountainous Pass / Highlands</option>
-                            <option value="forest">Dense Taiga / Forest Grid</option>
+                        <label>Doctrine:</label>
+                        <select id="def-doctrine">
+                            <option value="combined">Combined Arms</option>
+                            <option value="fanatical">Fanatical Surge</option>
+                            <option value="assault">Assault / Blitzkrieg</option>
+                            <option value="guerrilla">Guerrilla / Asymmetric</option>
                         </select>
                     </div>
                     <div>
-                        <label for="weather-cond">Weather / Visibility Factor:</label>
-                        <select id="weather-cond">
-                            <option value="clear">Optimal / Clear Operations</option>
-                            <option value="storm">Inclement Weather / Severe Fog</option>
+                        <label>Tactical Stance:</label>
+                        <select id="def-stance">
+                            <option value="defense">Deliberate Defense</option>
+                            <option value="mobile">Mobile Defense</option>
+                            <option value="withdrawal">Tactical Withdrawal</option>
+                            <option value="assault">Counter-Assault</option>
                         </select>
                     </div>
                 </div>
-                
-                <label for="mod-att-readiness">Attacker Nationstates Patriotism/Readiness Mod (+/-):</label>
-                <input type="number" id="mod-att-readiness" value="0" placeholder="e.g., 15 for 15% boost">
 
-                <label for="mod-def-readiness">Defender Nationstates Patriotism/Readiness Mod (+/-):</label>
-                <input type="number" id="mod-def-readiness" value="0" placeholder="e.g., -10 for corruption penalty">
-                
-                <label for="theatre-location">Geographic Theater Name / Location:</label>
-                <input type="text" id="theatre-location" placeholder="e.g., Region-East Sector 4">
+                <label>Objective Goal:</label>
+                <select id="def-goal" onchange="toggleGoalTargetInput('def')">
+                    <option value="annihilation">Attritional Defense</option>
+                    <option value="capture">Recapture Node</option>
+                    <option value="conquest">Hold Frontline Boundaries</option>
+                </select>
+
+                <div id="def-target-wrapper" style="display: none;">
+                    <label>Target Coordinate/Node:</label>
+                    <input type="text" id="def-target-detail" placeholder="e.g., Sector 4 Defense Grid">
+                </div>
             </div>
 
-            <button type="button" class="danger-btn" onclick="executeTacticalProjection()" style="width: 100%; padding: 15px; font-size: 15px;">EXECUTE TACTICAL PROJECTION</button>
+            <div class="field-group">
+                <h3>Order of Battle (OOB)</h3>
+                <div id="def-brigades-container"></div>
+                <button type="button" onclick="addRosterStack('def')">[ + Add Defender Brigade ]</button>
+            </div>
+
+            <button type="button" class="success-btn" onclick="generateEncryptedOrders('def')" style="width: 100%;">GENERATE & AUTO-PASS DEFENDER HASH</button>
+            
+            <label>Defender Encrypted Payload String:</label>
+            <textarea class="export-area" id="def-export-output" readonly placeholder="Defender order hash auto-populates here..."></textarea>
         </div>
 
-        <div class="panel panel-full" style="margin-top: 20px;">
-            <h2>WAR NEWS TELETYPE & RESULTS TERMINAL</h2>
-            <p style="font-size: 12px; color: #888888;">Generated combat assessments suitable for broadcast in Discord "#war-news" channels.</p>
-            <hr>
+        <!-- STEP 2: GM VALIDATION & SIMULATION ENGINE -->
+        <div class="panel panel-full">
+            <h2>STEP 2: GM VALIDATION & SIMULATION ENGINE</h2>
+            <p style="font-size: 11px; color: #888888;">Auto-populated from steps above. Verify tamper-check signatures and execute the multi-phase resolution vector.</p>
 
-            <label for="automated-sitrep-log">Generated Tele-Log Output Teletype:</label>
-            <textarea class="output-area" id="automated-sitrep-log" readonly placeholder="Operational projections will teletype here..."></textarea>
-            
-            <div class="action-container">
-                <button type="button" class="success-btn" onclick="exportActiveLogFile()">[📥 EXPORT TARGET FIELD SITREP]</button>
-                <button type="button" class="danger-btn" onclick="clearSavedHistory()" style="padding: 12px; margin-top:15px; font-size:12px;">Clear All Saved Logs</button>
+            <div class="grid-half">
+                <div>
+                    <label for="inbound-att-orders">Inbound Attacker Hash (Auto-Synced or Paste Manual):</label>
+                    <textarea id="inbound-att-orders" style="height:60px;" placeholder="Attacker string will auto-pass here..."></textarea>
+                </div>
+                <div>
+                    <label for="inbound-def-orders">Inbound Defender Hash (Auto-Synced or Paste Manual):</label>
+                    <textarea id="inbound-def-orders" style="height:60px;" placeholder="Defender string will auto-pass here..."></textarea>
+                </div>
             </div>
 
-            <h3 style="margin-top: 25px;">Historical Archive Scroll (Recent Session Output Log)</h3>
-            <p style="font-size:11px; color:#666; margin-top:-8px;">Click any item below to load its full telemetry context back into the display terminal.</p>
+            <button type="button" onclick="validateAndDecodeSubmissions()">VERIFY STRINGS & INTEGRITY</button>
+            <div id="verification-feedback" class="crypto-hash-display" style="display:none;"></div>
+
+            <div class="field-group" style="margin-top: 15px;">
+                <h3>Battlefield Environmental Modifiers</h3>
+                <div class="grid-quad">
+                    <div>
+                        <label for="terrain-type">Topography:</label>
+                        <select id="terrain-type">
+                            <option value="plains">Open Plains / Flatlands</option>
+                            <option value="urban">Urban Conurbation</option>
+                            <option value="mountains">Mountainous Pass</option>
+                            <option value="forest">Dense Forest Grid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="weather-cond">Weather Factor:</label>
+                        <select id="weather-cond">
+                            <option value="clear">Optimal / Clear</option>
+                            <option value="storm">Inclement Storm / Fog</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="mod-att-readiness">Attacker Readiness Mod (%):</label>
+                        <input type="number" id="mod-att-readiness" value="0">
+                    </div>
+                    <div>
+                        <label for="mod-def-readiness">Defender Readiness Mod (%):</label>
+                        <input type="number" id="mod-def-readiness" value="0">
+                    </div>
+                </div>
+
+                <label for="theatre-location">Geographic Theater / Sector Name:</label>
+                <input type="text" id="theatre-location" placeholder="e.g., Eastern Front - Sector 7">
+            </div>
+
+            <button type="button" class="danger-btn" onclick="executeTacticalProjection()" style="width: 100%; padding: 12px; font-size: 14px;">EXECUTE MULTI-PHASE PROJECTION & RECORD TO CACHE</button>
+        </div>
+
+        <!-- RESULTS & CACHED BATTLE HISTORY -->
+        <div class="panel panel-full">
+            <h2>TACTICAL RESOLUTION & AFTER-ACTION REPORT (AAR)</h2>
+
+            <div class="tab-container">
+                <button class="tab-btn active" id="tab-btn-visual" onclick="switchReportTab('visual')">📊 VISUAL DASHBOARD</button>
+                <button class="tab-btn" id="tab-btn-raw" onclick="switchReportTab('raw')">📄 RAW TELETYPE TXT</button>
+            </div>
+
+            <!-- VISUAL DASHBOARD DISPLAY -->
+            <div id="visual-aar-view" class="aar-display">
+                <div style="text-align:center; color:#666; padding: 40px 0;">No active engagement calculated. Run a tactical projection above to generate AAR.</div>
+            </div>
+
+            <!-- RAW TELETYPE TEXT DISPLAY -->
+            <textarea class="raw-text-view" id="automated-sitrep-log" readonly placeholder="Raw operational teletype will stream here..."></textarea>
+            
+            <div class="action-container">
+                <button type="button" class="success-btn" onclick="exportActiveLogFile()">[📥 EXPORT SITREP TXT]</button>
+                <button type="button" class="danger-btn" onclick="clearSavedHistory()" style="font-size:11px;">Clear All Cached History</button>
+            </div>
+
+            <h3 style="margin-top: 25px;">Persistent Session Cache Archive (Click entry to load)</h3>
             <div class="history-log" id="history-scroll-ledger"></div>
         </div>
 
     </div>
 
 <script>
-    let activeRosterBrackets = [];
+    let activeRosterBrackets = { att: [], def: [] };
     let savedBattleHistoryLogs = [];
 
     window.onload = function() {
-        addRosterStack();
+        addRosterStack('att');
+        addRosterStack('def');
         loadSavedHistoryFromStorage();
     };
 
-    function toggleGoalTargetInput() {
-        const goal = document.getElementById("operational-goal").value;
-        const wrapper = document.getElementById("target-detail-wrapper");
+    function toggleGoalTargetInput(side) {
+        const goal = document.getElementById(`${side}-goal`).value;
+        const wrapper = document.getElementById(`${side}-target-wrapper`);
         wrapper.style.display = (goal === "capture") ? "block" : "none";
     }
 
-    function addRosterStack() {
-        const container = document.getElementById("brigades-container");
+    function switchReportTab(tabType) {
+        const visualView = document.getElementById("visual-aar-view");
+        const rawView = document.getElementById("automated-sitrep-log");
+        const visualBtn = document.getElementById("tab-btn-visual");
+        const rawBtn = document.getElementById("tab-btn-raw");
+
+        if (tabType === 'visual') {
+            visualView.style.display = "block";
+            rawView.style.display = "none";
+            visualBtn.classList.add("active");
+            rawBtn.classList.remove("active");
+        } else {
+            visualView.style.display = "none";
+            rawView.style.display = "block";
+            visualBtn.classList.remove("active");
+            rawBtn.classList.add("active");
+        }
+    }
+
+    function addRosterStack(side) {
+        const container = document.getElementById(`${side}-brigades-container`);
         const stackIndex = Date.now() + Math.floor(Math.random() * 100);
 
         const stackWrapper = document.createElement("div");
         stackWrapper.className = "brigade-stack";
-        stackWrapper.id = `stack-block-${stackIndex}`;
+        stackWrapper.id = `stack-${side}-${stackIndex}`;
         
         stackWrapper.innerHTML = `
-            <button type="button" class="remove-brigade-btn danger-btn" onclick="removeRosterStack(${stackIndex})">X</button>
-            <label>Brigade/Formation Designation Number / Commander:</label>
-            <input type="text" id="stack-name-${stackIndex}" placeholder="e.g., 1st Armored Spearhead / Gen. Zhukov">
+            <button type="button" class="remove-brigade-btn danger-btn" onclick="removeRosterStack('${side}', ${stackIndex})">X</button>
+            <label>Brigade Designation / Commander:</label>
+            <input type="text" id="stack-name-${side}-${stackIndex}" placeholder="e.g., 1st Vanguard / Gen. Vance">
             
-            <div class="grid-half">
+            <div class="grid-quad">
                 <div>
-                    <label>Infantry Elements Count:</label>
-                    <input type="number" id="stack-inf-${stackIndex}" value="0" min="0">
+                    <label>Infantry:</label>
+                    <input type="number" id="stack-inf-${side}-${stackIndex}" value="0" min="0">
                 </div>
                 <div>
-                    <label>Engineer Units Count:</label>
-                    <input type="number" id="stack-eng-${stackIndex}" value="0" min="0">
-                </div>
-            </div>
-            <div class="grid-half">
-                <div>
-                    <label>Special Operations Personnel:</label>
-                    <input type="number" id="stack-spec-${stackIndex}" value="0" min="0">
+                    <label>Engineers:</label>
+                    <input type="number" id="stack-eng-${side}-${stackIndex}" value="0" min="0">
                 </div>
                 <div>
-                    <label>Super-Soldiers / Elite Guards:</label>
-                    <input type="number" id="stack-super-${stackIndex}" value="0" min="0">
+                    <label>SpecOps:</label>
+                    <input type="number" id="stack-spec-${side}-${stackIndex}" value="0" min="0">
+                </div>
+                <div>
+                    <label>Super Soldiers:</label>
+                    <input type="number" id="stack-super-${side}-${stackIndex}" value="0" min="0">
                 </div>
             </div>
-            <hr style="border-color: #220000; margin: 10px 0;">
-            <div class="grid-half">
+            <div class="grid-quad">
                 <div>
-                    <label>Main Battle Tanks (MBTs):</label>
-                    <input type="number" id="stack-mbt-${stackIndex}" value="0" min="0">
+                    <label>Artillery/MLRS:</label>
+                    <input type="number" id="stack-arty-${side}-${stackIndex}" value="0" min="0">
                 </div>
                 <div>
-                    <label>Recon / Light Armored Vehicles:</label>
-                    <input type="number" id="stack-rec-${stackIndex}" value="0" min="0">
-                </div>
-            </div>
-            <div class="grid-half">
-                <div>
-                    <label>Airframes / CAS Assets:</label>
-                    <input type="number" id="stack-air-${stackIndex}" value="0" min="0">
+                    <label>MBTs:</label>
+                    <input type="number" id="stack-mbt-${side}-${stackIndex}" value="0" min="0">
                 </div>
                 <div>
-                    <label>Naval Artillery Fire Support Platforms:</label>
-                    <input type="number" id="stack-nav-${stackIndex}" value="0" min="0">
+                    <label>Recon Veh:</label>
+                    <input type="number" id="stack-rec-${side}-${stackIndex}" value="0" min="0">
+                </div>
+                <div>
+                    <label>Airframes:</label>
+                    <input type="number" id="stack-air-${side}-${stackIndex}" value="0" min="0">
                 </div>
             </div>
         `;
 
         container.appendChild(stackWrapper);
-        activeRosterBrackets.push(stackIndex);
+        activeRosterBrackets[side].push(stackIndex);
     }
 
-    function removeRosterStack(index) {
-        const targetElement = document.getElementById(`stack-block-${index}`);
+    function removeRosterStack(side, index) {
+        const targetElement = document.getElementById(`stack-${side}-${index}`);
         if (targetElement) targetElement.remove();
-        activeRosterBrackets = activeRosterBrackets.filter(id => id !== index);
+        activeRosterBrackets[side] = activeRosterBrackets[side].filter(id => id !== index);
     }
 
-    // --- CRITICAL ANTI-CHEAT SYSTEM HASH SYSTEM PRESERVED ---
     async function digestMessageSimpleSalted(messageToSign) {
         const secretSystemSalt = "TSL_PROJECT_SECRET_SALT_KEY";
         const msgUint8 = new TextEncoder().encode(messageToSign + secretSystemSalt);
@@ -540,32 +787,32 @@
         return hashHex.substring(0, 16);
     }
 
-    async function generateEncryptedOrders() {
-        const nation = document.getElementById("player-nation").value;
-        const doctrine = document.getElementById("player-doctrine").value;
-        const stance = document.getElementById("tactical-stance").value;
-        const goal = document.getElementById("operational-goal").value;
-        const targetDetail = document.getElementById("goal-target-detail").value;
+    async function generateEncryptedOrders(side) {
+        const nation = document.getElementById(`${side}-nation`).value;
+        const doctrine = document.getElementById(`${side}-doctrine`).value;
+        const stance = document.getElementById(`${side}-stance`).value;
+        const goal = document.getElementById(`${side}-goal`).value;
+        const targetDetail = document.getElementById(`${side}-target-detail`).value;
 
-        if (!nation || doctrine === "none" || stance === "none") {
-            alert("CRITICAL: Nation, Doctrine, and Tactical Posture parameters must be populated.");
+        if (!nation) {
+            alert(`CRITICAL: Enter a nation name for the ${side.toUpperCase()} team.`);
             return;
         }
 
         let gatheredRosterBlocks = [];
-        activeRosterBrackets.forEach(i => {
-            if (document.getElementById(`stack-name-${i}`)) {
+        activeRosterBrackets[side].forEach(i => {
+            if (document.getElementById(`stack-name-${side}-${i}`)) {
                 gatheredRosterBlocks.push({
                     id: i,
-                    label: document.getElementById(`stack-name-${i}`).value,
-                    inf: document.getElementById(`stack-inf-${i}`).value,
-                    eng: document.getElementById(`stack-eng-${i}`).value,
-                    spec: document.getElementById(`stack-spec-${i}`).value,
-                    sup: document.getElementById(`stack-super-${i}`).value,
-                    mbt: document.getElementById(`stack-mbt-${i}`).value,
-                    rec: document.getElementById(`stack-rec-${i}`).value,
-                    air: document.getElementById(`stack-air-${i}`).value,
-                    nav: document.getElementById(`stack-nav-${i}`).value
+                    label: document.getElementById(`stack-name-${side}-${i}`).value,
+                    inf: document.getElementById(`stack-inf-${side}-${i}`).value,
+                    eng: document.getElementById(`stack-eng-${side}-${i}`).value,
+                    spec: document.getElementById(`stack-spec-${side}-${i}`).value,
+                    sup: document.getElementById(`stack-super-${side}-${i}`).value,
+                    arty: document.getElementById(`stack-arty-${side}-${i}`).value,
+                    mbt: document.getElementById(`stack-mbt-${side}-${i}`).value,
+                    rec: document.getElementById(`stack-rec-${side}-${i}`).value,
+                    air: document.getElementById(`stack-air-${side}-${i}`).value
                 });
             }
         });
@@ -583,7 +830,8 @@
         const generatedHashStr = await digestMessageSimpleSalted(stringifiedJSONPay);
 
         const absoluteOutboundString = `PAYLOAD_RAW:${btoa(stringifiedJSONPay)}|HASH_SUM:${generatedHashStr}`;
-        document.getElementById("export-hasher-output").value = absoluteOutboundString;
+        document.getElementById(`${side}-export-output`).value = absoluteOutboundString;
+        document.getElementById(`inbound-${side}-orders`).value = absoluteOutboundString;
     }
 
     async function validateAndDecodeSubmissions() {
@@ -606,11 +854,11 @@
                 const actualPassedInHash = arrPieces[1];
 
                 if (expectedHash !== actualPassedInHash) {
-                    return { ok: false, msg: `TAMPER ENCOUNTERED: Hash integrity validation check failed. Strings do not match.` };
+                    return { ok: false, msg: `TAMPER ENCOUNTERED: Hash verification check failed.` };
                 }
                 return { ok: true, data: JSON.parse(payloadContentJsonStr) };
             } catch (err) {
-                return { ok: false, msg: `PARSING EXCEPTION: Malformed string or tamper sequence.` };
+                return { ok: false, msg: `PARSING EXCEPTION: Malformed order string.` };
             }
         };
 
@@ -620,10 +868,10 @@
         feedBackPanel.style.display = "block";
         if (attRes.ok && defRes.ok) {
             feedBackPanel.style.color = "#00ff33";
-            feedBackPanel.innerHTML = `✔ INTEGRITY VERIFICATION LOGS: BOTH ARRAYS ARE VALID.<br>Attacker Authenticated: ${attRes.data.nation}<br>Defender Authenticated: ${defRes.data.nation}`;
+            feedBackPanel.innerHTML = `✔ INTEGRITY VERIFICATION PASSED: BOTH ARRAYS AUTHENTICATED.<br>Attacker: ${attRes.data.nation} | Defender: ${defRes.data.nation}`;
         } else {
             feedBackPanel.style.color = "#ff3333";
-            feedBackPanel.innerHTML = `❌ SECURITY ENCOUNTER: INVALID ENCRYPTED STRING(S) DETECTED.<br>Attacker State: ${attRes.msg || "Valid"}<br>Defender State: ${defRes.msg || "Valid"}`;
+            feedBackPanel.innerHTML = `❌ SECURITY ERROR: INVALID ENCRYPTED STRING(S).<br>Attacker: ${attRes.msg || "Valid"} | Defender: ${defRes.msg || "Valid"}`;
         }
     }
 
@@ -633,7 +881,7 @@
         const locationTheater = document.getElementById("theatre-location").value || "Uncharted Sector";
 
         if (!attStr || !defStr) {
-            alert("EXECUTION HALT: Populate and verify strings in Step 2.");
+            alert("EXECUTION HALT: Populate or generate strings before resolution.");
             return;
         }
 
@@ -647,127 +895,201 @@
                 acc.eng += parseInt(cur.eng) || 0;
                 acc.spec += parseInt(cur.spec) || 0;
                 acc.sup += parseInt(cur.sup) || 0;
+                acc.arty += parseInt(cur.arty) || 0;
                 acc.mbt += parseInt(cur.mbt) || 0;
                 acc.rec += parseInt(cur.rec) || 0;
                 acc.air += parseInt(cur.air) || 0;
-                acc.nav += parseInt(cur.nav) || 0;
                 return acc;
-            }, { inf: 0, eng: 0, spec: 0, sup: 0, mbt: 0, rec: 0, air: 0, nav: 0 });
+            }, { inf: 0, eng: 0, spec: 0, sup: 0, arty: 0, mbt: 0, rec: 0, air: 0 });
         };
 
         const attSums = sumUnits(attObj.oob);
         const defSums = sumUnits(defObj.oob);
 
+        // --- PHASE 0: DYNAMIC PRELIMINARY BOMBARDMENT ---
+        const attArtilleryPower = (attSums.arty * 5) + (attSums.air * 3);
+        const defArtilleryPower = (defSums.arty * 5) + (defSums.air * 3);
+
+        let defSuppressionPct = 0;
+        let attSuppressionPct = 0;
+
+        if (defArtilleryPower > 0) {
+            const attRatio = attArtilleryPower / defArtilleryPower;
+            defSuppressionPct = Math.min(90, Math.round(attRatio * 15));
+        } else if (attArtilleryPower > 0) {
+            defSuppressionPct = 85; // Massive uncountered bombardment
+        }
+
+        if (attArtilleryPower > 0) {
+            const defRatio = defArtilleryPower / attArtilleryPower;
+            attSuppressionPct = Math.min(90, Math.round(defRatio * 15));
+        } else if (defArtilleryPower > 0) {
+            attSuppressionPct = 85;
+        }
+
+        // --- PHASE 1: GROUND & ARMORED ASSAULT ---
         let attFactor = 1.0;
         if (attObj.stance === "assault") attFactor = 1.3;
         if (attObj.stance === "hasty") attFactor = 1.1;
-        if (attObj.stance === "defense") attFactor = 0.8;
 
-        const attReadyMod = parseInt(document.getElementById("mod-att-readiness").value) || 0;
-        const defReadyMod = parseInt(document.getElementById("mod-def-readiness").value) || 0;
-        
-        const attTotalPower = (attSums.inf * 1 + attSums.eng * 1.5 + attSums.spec * 2.5 + attSums.sup * 4 + attSums.mbt * 10 + attSums.rec * 3 + attSums.air * 8 + attSums.nav * 6) * attFactor * (1 + attReadyMod/100);
-        
         let defFactor = 1.0;
         if (defObj.stance === "defense") defFactor = 2.0;
-        if (defObj.stance === "mobile") defFactor = 1.3;
-        if (defObj.stance === "withdrawal") defFactor = 0.5;
 
         const terrain = document.getElementById("terrain-type").value;
         if (terrain === "mountains" && defObj.stance === "defense") defFactor *= 1.5;
         if (terrain === "urban" && defObj.stance === "defense") defFactor *= 1.8;
 
-        const defTotalPower = (defSums.inf * 1 + defSums.eng * 1.5 + defSums.spec * 2.5 + defSums.sup * 4 + defSums.mbt * 10 + defSums.rec * 3 + defSums.air * 8 + defSums.nav * 6) * defFactor * (1 + defReadyMod/100);
+        const attReadyMod = parseInt(document.getElementById("mod-att-readiness").value) || 0;
+        const defReadyMod = parseInt(document.getElementById("mod-def-readiness").value) || 0;
 
-        let dynamicReportTitle = "";
-        let attCasualtiesMultiplier = 0.10;
-        let defCasualtiesMultiplier = 0.10;
-        let outcomeText = "";
+        const attEffectivePower = (attSums.inf * 1 + attSums.eng * 1.5 + attSums.spec * 2.5 + attSums.sup * 4 + attSums.mbt * 10 + attSums.rec * 3) * attFactor * (1 - attSuppressionPct/100) * (1 + attReadyMod/100);
+        const defEffectivePower = (defSums.inf * 1 + defSums.eng * 1.5 + defSums.spec * 2.5 + defSums.sup * 4 + defSums.mbt * 10 + defSums.rec * 3) * defFactor * (1 - defSuppressionPct/100) * (1 + defReadyMod/100);
 
-        if (attTotalPower > defTotalPower * 2.2) {
-            dynamicReportTitle = `[SITUATION REPORT]: THE HAMMER FALLS - RAPID ENEMY COLLAPSE IN ${locationTheater.toUpperCase()}`;
-            attCasualtiesMultiplier = 0.04;
-            defCasualtiesMultiplier = 0.48;
-            outcomeText = "CRITICAL PENETRATION: Attacking lines broke completely through defensive depth. Defending formations fragmented into disorganized retreat grids.";
-        } else if (attTotalPower > defTotalPower) {
-            dynamicReportTitle = `[SITUATION REPORT]: PYRRHIC ADVANCE ACROSS FIELD SECTORS - THEATER: ${locationTheater.toUpperCase()}`;
-            attCasualtiesMultiplier = 0.19;
-            defCasualtiesMultiplier = 0.24;
-            outcomeText = "SECURED OBJECTIVE: Attacking forces successfully gained high ground, forcing a localized defender withdrawal. Frontline shifted forward 12-15km inland.";
+        const totalAttPersonnel = attSums.inf + attSums.eng + attSums.spec + attSums.sup;
+        const totalDefPersonnel = defSums.inf + defSums.eng + defSums.spec + defSums.sup;
+        const totalAttVehicles = attSums.mbt + attSums.rec;
+        const totalDefVehicles = defSums.mbt + defSums.rec;
+
+        // --- REALISTIC ATTRITION CALCULATIONS ---
+        let bannerClass = "";
+        let bannerTitle = "";
+        let outcomeDescription = "";
+
+        let attPersonnelLoss = 0;
+        let defPersonnelLoss = 0;
+        let attArmorLoss = 0;
+        let defArmorLoss = 0;
+
+        const combinedPower = attEffectivePower + defEffectivePower || 1;
+        const attPowerPct = Math.round((attEffectivePower / combinedPower) * 100);
+        const defPowerPct = 100 - attPowerPct;
+
+        if (attEffectivePower > defEffectivePower * 2.0) {
+            bannerClass = "decisive-att";
+            bannerTitle = "🔥 CRITICAL ATTACKER OVERRUN";
+            outcomeDescription = `Overwhelming stand-off fire completely neutralized defenders, allowing <strong>${attObj.nation}</strong> armor to breach defensive depth in ${locationTheater} with minimal casualties.`;
+            
+            // Attacker losses strictly bounded by defender's actual combat capacity
+            const maxAttackerDamageCap = Math.round(defEffectivePower * 0.15);
+            attPersonnelLoss = Math.min(totalAttPersonnel, maxAttackerDamageCap);
+            defPersonnelLoss = Math.round(totalDefPersonnel * 0.85); // Defender routed / captured
+
+            attArmorLoss = Math.min(totalAttVehicles, Math.round(defEffectivePower * 0.02));
+            defArmorLoss = Math.round(totalDefVehicles * 0.90);
+
+        } else if (attEffectivePower > defEffectivePower) {
+            bannerClass = "victory-att";
+            bannerTitle = "⚔️ ATTACKER ADVANCE SECURED";
+            outcomeDescription = `Attacking forces under <strong>${attObj.nation}</strong> secured forward objectives in ${locationTheater} following sustained ground combat.`;
+            
+            attPersonnelLoss = Math.round(totalAttPersonnel * 0.12);
+            defPersonnelLoss = Math.round(totalDefPersonnel * 0.35);
+
+            attArmorLoss = Math.round(totalAttVehicles * 0.10);
+            defArmorLoss = Math.round(totalDefVehicles * 0.30);
+
         } else {
-            dynamicReportTitle = `[SITUATION REPORT]: THE BRICK WALL - ARMORED SPEARHEAD SHATTERED AT GROUND NODE ${locationTheater.toUpperCase()}`;
-            attCasualtiesMultiplier = 0.38;
-            defCasualtiesMultiplier = 0.11;
-            outcomeText = "ATTACK STALLED: Defending fortifications held matching perimeter specifications. Attacking column neutralized under coordinated interlocking fields of fire.";
+            bannerClass = "repelled-def";
+            bannerTitle = "🛡️ DEFENSIVE LINE HELD";
+            outcomeDescription = `Defending fortifications under <strong>${defObj.nation}</strong> absorbed the opening bombardment and successfully repelled the ground assault in ${locationTheater}.`;
+            
+            attPersonnelLoss = Math.round(totalAttPersonnel * 0.30);
+            defPersonnelLoss = Math.round(totalDefPersonnel * 0.08);
+
+            attArmorLoss = Math.round(totalAttVehicles * 0.25);
+            defArmorLoss = Math.round(totalDefVehicles * 0.05);
         }
 
-        const calcLoss = (val, mult) => Math.round(val * mult);
+        const attLossPct = totalAttPersonnel > 0 ? Math.round((attPersonnelLoss / totalAttPersonnel) * 100) : 0;
+        const defLossPct = totalDefPersonnel > 0 ? Math.round((defPersonnelLoss / totalDefPersonnel) * 100) : 0;
+
         const timestamp = new Date().toLocaleString();
 
-        // More detailed simulated logistics text formatting
+        const visualAARHTML = `
+            <div class="outcome-banner ${bannerClass}">
+                <div class="outcome-title">${bannerTitle}</div>
+                <div class="outcome-subtext">${outcomeDescription}</div>
+            </div>
+
+            <div class="phase-box">
+                <div class="phase-title">PHASE 0: PRELIMINARY ARTILLERY & AIR BOMBARDMENT</div>
+                <div style="font-size:12px; line-height:1.5;">
+                    • <strong>Attacker Stand-Off Fire:</strong> ${attSums.arty} Artillery/MLRS & ${attSums.air} Air Sorties → Inflicted <strong>${defSuppressionPct}% Defense Suppression</strong>.<br>
+                    • <strong>Defender Counter-Battery:</strong> ${defSums.arty} Artillery/MLRS & ${defSums.air} Air Sorties → Inflicted <strong>${attSuppressionPct}% Assault Suppression</strong>.
+                </div>
+            </div>
+
+            <div class="phase-box">
+                <div class="phase-title">PHASE 1: MAIN GROUND & ARMORED COLLISION</div>
+                <div class="power-bar-wrapper" style="margin-bottom:0;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
+                        <span style="color:#ff6666;">⚔️ ${attObj.nation} (${Math.round(attEffectivePower).toLocaleString()} Net Power)</span>
+                        <span style="color:#66ff99; margin-left:auto;">🛡️ ${defObj.nation} (${Math.round(defEffectivePower).toLocaleString()} Net Power)</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-att" style="width: ${attPowerPct}%;">${attPowerPct}%</div>
+                        <div class="bar-def" style="width: ${defPowerPct}%;">${defPowerPct}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>CASUALTY & ATTRITION SUMMARY</h3>
+            <table class="aar-table">
+                <thead>
+                    <tr>
+                        <th>Metric Category</th>
+                        <th>⚔️ Attacker Losses (${attObj.nation})</th>
+                        <th>🛡️ Defender Losses (${defObj.nation})</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Personnel (Infantry/Ops)</strong></td>
+                        <td>${attPersonnelLoss.toLocaleString()} <span class="loss-badge ${attLossPct > 20 ? 'high' : 'low'}">${attLossPct}%</span></td>
+                        <td>${defPersonnelLoss.toLocaleString()} <span class="loss-badge ${defLossPct > 20 ? 'high' : 'low'}">${defLossPct}%</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vehicular & Armor Hulls</strong></td>
+                        <td>${attArmorLoss.toLocaleString()} platforms</td>
+                        <td>${defArmorLoss.toLocaleString()} platforms</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+
+        document.getElementById("visual-aar-view").innerHTML = visualAARHTML;
+
         const sitRepMessage = 
 `======================================================================================
-${dynamicReportTitle}
+[SITUATION REPORT]: ${bannerTitle}
 ======================================================================================
-SYSTEM REALTIME TIMESTAMP : ${timestamp}
-STRATEGIC COMMAND MATRIX  : TSL_RESOLUTION_ENGINE_v2.0
-GEOGRAPHIC COMBAT THEATER : ${locationTheater.toUpperCase()}
-OPERATIONAL DIRECTIVE     : Attacker Goal -> ${attObj.goal.toUpperCase()} [${attObj.targetDetail || "Frontline Boundary Push"}]
-ENVIRONMENTAL READOUT     : Topography -> ${terrain.toUpperCase()} // Atmosphere -> ${document.getElementById("weather-cond").value.toUpperCase()}
+TIMESTAMP : ${timestamp}
+THEATER   : ${locationTheater.toUpperCase()}
+TERRAIN   : ${terrain.toUpperCase()}
 
-COMBATANT ASSIGNMENTS:
- - COMMAND ATTACK FORCE: ${attObj.nation}
-   [Posture: ${attObj.stance.toUpperCase()} // Doctrine Mod: ${attObj.doctrine.toUpperCase()}]
- - COMMAND DEFEND FORCE: ${defObj.nation}
-   [Posture: ${defObj.stance.toUpperCase()} // Doctrine Mod: ${defObj.doctrine.toUpperCase()}]
+PHASE 0 - PRELIMINARY BOMBARDMENT:
+ - Attacker Artillery Power : ${attArtilleryPower.toLocaleString()} -> Inflicted ${defSuppressionPct}% Suppression
+ - Defender Counter-Battery : ${defArtilleryPower.toLocaleString()} -> Inflicted ${attSuppressionPct}% Suppression
 
-ABSOLUTE FORCE COMMITMENTS (Pre-engagement totals):
---------------------------------------------------------------------------------------
-| UNIT METRIC                  | ATTACKER (Total Array) | DEFENDER (Total Array) |
---------------------------------------------------------------------------------------
-| Active Frontline Infantry    | ${String(attSums.inf).padStart(22, ' ')} | ${String(defSums.inf).padStart(22, ' ')} |
-| Combat Engineers             | ${String(attSums.eng).padStart(22, ' ')} | ${String(defSums.eng).padStart(22, ' ')} |
-| Special Operations Units     | ${String(attSums.spec).padStart(22, ' ')} | ${String(defSums.spec).padStart(22, ' ')} |
-| Fanatical Guard Strikers     | ${String(attSums.sup).padStart(22, ' ')} | ${String(defSums.sup).padStart(22, ' ')} |
-| Main Battle Tanks (MBTs)     | ${String(attSums.mbt).padStart(22, ' ')} | ${String(defSums.mbt).padStart(22, ' ')} |
-| Recon Armored Vehicles       | ${String(attSums.rec).padStart(22, ' ')} | ${String(defSums.rec).padStart(22, ' ')} |
-| Combined Airframe Sorties    | ${String(attSums.air).padStart(22, ' ')} | ${String(defSums.air).padStart(22, ' ')} |
-| Naval Arty Gunfire Platforms | ${String(attSums.nav).padStart(22, ' ')} | ${String(defSums.nav).padStart(22, ' ')} |
---------------------------------------------------------------------------------------
+PHASE 1 - MAIN GROUND ENGAGEMENT:
+ - Attacker Effective Power : ${Math.round(attEffectivePower).toLocaleString()} (${attPowerPct}%)
+ - Defender Effective Power : ${Math.round(defEffectivePower).toLocaleString()} (${defPowerPct}%)
 
-TACTICAL FORCE CALCULATION SUMMARY:
- - Raw Combined Attacker Grid Rating : ${Math.round(attTotalPower).toLocaleString()} Power Metrics
- - Raw Combined Defender Grid Rating : ${Math.round(defTotalPower).toLocaleString()} Power Metrics
+PROJECTED ATTRITION:
+ - Attacker Personnel Losses : ${attPersonnelLoss.toLocaleString()} (${attLossPct}%)
+ - Defender Personnel Losses : ${defPersonnelLoss.toLocaleString()} (${defLossPct}%)
 
-PROJECTED ENEMY ATTRITION LEDGER (Delineated Losses):
---------------------------------------------------------------------------------------
-[-] ATTACKER COMPONENT LOSSES:
-    * Personnel Casualties (KIA/WIA) : ${calcLoss(attSums.inf + attSums.eng + attSums.spec + attSums.sup, attCasualtiesMultiplier).toLocaleString()} operators terminated/unfit
-    * Armored Vehicular Hulls Lost   : ${calcLoss(attSums.mbt + attSums.rec, attCasualtiesMultiplier).toLocaleString()} platforms disabled
-    * Airframe Logistical Attrition  : ${calcLoss(attSums.air, attCasualtiesMultiplier).toLocaleString()} wings downed
-    * Ammunition Supply Depletion    : ~${Math.round(attTotalPower * 0.12).toLocaleString()} standard tons expended
-
-[-] DEFENDER COMPONENT LOSSES:
-    * Personnel Casualties (KIA/WIA) : ${calcLoss(defSums.inf + defSums.eng + defSums.spec + defSums.sup, defCasualtiesMultiplier).toLocaleString()} operators terminated/unfit
-    * Armored Vehicular Hulls Lost   : ${calcLoss(defSums.mbt + defSums.rec, defCasualtiesMultiplier).toLocaleString()} platforms disabled
-    * Airframe Logistical Attrition  : ${calcLoss(defSums.air, defCasualtiesMultiplier).toLocaleString()} wings downed
-    * Ammunition Supply Depletion    : ~${Math.round(defTotalPower * 0.14).toLocaleString()} standard tons expended
-
-GEOPOLITICAL & FIELD OBJECTIVE DISPOSITION:
- -> OUTCOME TEXT : ${outcomeText}
- -> Objective Node Impacted: [ ${attObj.goal.toUpperCase() === "CAPTURE" ? attObj.targetDetail.toUpperCase() : "REGIONAL TERRITORY SECTOR LINES"} ]
- 
-STATUS CORRELATION: Converted Census database entries updated. Attacker Readiness adjustments synchronized to current tactical file.
-======================================================================================
-[END OF SITREP REPORT TRANSMISSION // TELETYPE OUT SAFE]`;
+OUTCOME SUMMARY:
+ -> ${outcomeDescription.replace(/<\/?[^>]+(>|$)/g, "")}
+======================================================================================`;
 
         document.getElementById("automated-sitrep-log").value = sitRepMessage;
 
-        // Save entry payload context to history log object array
         const newHistoryLogEntry = {
             id: 'battle_' + Date.now(),
             title: `${attObj.nation} VS ${defObj.nation} [${locationTheater}]`,
             timestamp: timestamp,
+            visualHTML: visualAARHTML,
             fullText: sitRepMessage
         };
 
@@ -781,7 +1103,7 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
         historyContainer.innerHTML = "";
 
         if (savedBattleHistoryLogs.length === 0) {
-            historyContainer.innerHTML = `<div style="color:#555; text-align:center; padding-top:20px;">No historical engagements logged in system local cache storage.</div>`;
+            historyContainer.innerHTML = `<div style="color:#555; text-align:center; padding-top:20px;">No historical engagements logged in local storage cache.</div>`;
             return;
         }
 
@@ -790,7 +1112,7 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
             entryDiv.className = "log-entry";
             entryDiv.onclick = () => loadHistoricalLogText(entry.id);
             entryDiv.innerHTML = `
-                <strong>[Telemetry Node]</strong> ${entry.title}
+                <strong>[Cached Entry]</strong> ${entry.title}
                 <span class="timestamp">${entry.timestamp}</span>
             `;
             historyContainer.appendChild(entryDiv);
@@ -800,6 +1122,9 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
     function loadHistoricalLogText(entryId) {
         const foundItem = savedBattleHistoryLogs.find(item => item.id === entryId);
         if (foundItem) {
+            if (foundItem.visualHTML) {
+                document.getElementById("visual-aar-view").innerHTML = foundItem.visualHTML;
+            }
             document.getElementById("automated-sitrep-log").value = foundItem.fullText;
         }
     }
@@ -807,7 +1132,7 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
     function exportActiveLogFile() {
         const textContent = document.getElementById("automated-sitrep-log").value;
         if (!textContent || textContent.trim() === "") {
-            alert("Terminal display report engine empty. Execute a battle simulation before export attempt.");
+            alert("No simulation report active to export.");
             return;
         }
         
@@ -823,11 +1148,11 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
     }
 
     function saveHistoryToStorage() {
-        localStorage.setItem("TSL_BATTLE_LOGS_STORAGE", JSON.stringify(savedBattleHistoryLogs));
+        localStorage.setItem("TSL_BATTLE_LOGS_STORAGE_v5", JSON.stringify(savedBattleHistoryLogs));
     }
 
     function loadSavedHistoryFromStorage() {
-        const databaseRaw = localStorage.getItem("TSL_BATTLE_LOGS_STORAGE");
+        const databaseRaw = localStorage.getItem("TSL_BATTLE_LOGS_STORAGE_v5");
         if (databaseRaw) {
             try {
                 savedBattleHistoryLogs = JSON.parse(databaseRaw);
@@ -839,10 +1164,11 @@ STATUS CORRELATION: Converted Census database entries updated. Attacker Readines
     }
 
     function clearSavedHistory() {
-        if(confirm("Are you sure you want to completely clear the persistent combat archive data?")) {
+        if(confirm("Clear all battle logs from local storage cache?")) {
             savedBattleHistoryLogs = [];
             saveHistoryToStorage();
             renderHistoryLedgerUI();
+            document.getElementById("visual-aar-view").innerHTML = `<div style="text-align:center; color:#666; padding: 40px 0;">No active engagement calculated. Run a tactical projection above to generate AAR.</div>`;
             document.getElementById("automated-sitrep-log").value = "";
         }
     }

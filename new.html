@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSL Command — Nation Builder Field Manual</title>
+    <style>
+        :root {
+            --hell-red: #ff1100;
+            --hell-orange: #ff5500;
+            --fire-yellow: #ffaa00;
+            --dark-metal: #0c0505;
+            --deep-black: #040101;
+            --glow-red: rgba(255, 17, 0, 0.4);
+            --cyber-cyan: #00e5ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--deep-black);
+            color: var(--fire-yellow);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 30%, #150505 0%, var(--deep-black) 70%);
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 0, 0, 0.01), rgba(255, 85, 0, 0.02));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        #nav-header {
+            height: 50px;
+            background: rgba(12, 3, 3, 0.9);
+            border-bottom: 2px solid var(--hell-orange);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 40;
+            backdrop-filter: blur(6px);
+        }
+
+        .title {
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--hell-red);
+            font-weight: bold;
+            text-shadow: 0 0 8px var(--glow-red);
+        }
+
+        #guide-container {
+            max-width: 900px;
+            width: 90%;
+            margin: 40px auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .critical-banner {
+            border: 2px solid var(--hell-red);
+            background: rgba(30, 0, 0, 0.9);
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 25px var(--glow-red);
+        }
+
+        .flash-text {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulseWarning 0.9s infinite alternate;
+        }
+
+        @keyframes pulseWarning {
+            0% {
+                color: var(--fire-yellow);
+                text-shadow: 0 0 8px var(--hell-red);
+            }
+            100% {
+                color: #ffffff;
+                text-shadow: 0 0 25px var(--hell-red);
+            }
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .tool-card {
+            border: 1px solid var(--hell-orange);
+            background: rgba(18, 4, 4, 0.9);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.1);
+        }
+
+        .tool-card h2 {
+            font-size: 16px;
+            color: var(--fire-yellow);
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--hell-orange);
+            padding-bottom: 10px;
+        }
+
+        .action-btn {
+            display: block;
+            text-align: center;
+            color: #000;
+            background: var(--fire-yellow);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 14px;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--cyber-cyan);
+            box-shadow: 0 0 15px var(--cyber-cyan);
+        }
+
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 32px;
+            font-size: 12px;
+            color: #ddd;
+            line-height: 1.5;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 85, 0, 0.2);
+            border: 1px solid var(--hell-orange);
+            color: var(--fire-yellow);
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dispatch-tag {
+            background: #200505;
+            color: var(--cyber-cyan);
+            padding: 2px 6px;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            font-weight: bold;
+        }
+
+        /* Expanded field-manual UI */
+        .hero {
+            border: 1px solid var(--hell-orange);
+            background:
+                linear-gradient(135deg, rgba(55, 5, 5, 0.96), rgba(10, 2, 2, 0.96));
+            padding: 35px;
+            box-shadow: 0 0 35px rgba(255, 85, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "TSL";
+            position: absolute;
+            right: 20px;
+            bottom: -35px;
+            font-size: 130px;
+            font-weight: bold;
+            color: rgba(255, 85, 0, 0.035);
+            pointer-events: none;
+        }
+
+        .hero-kicker, .section-label {
+            color: var(--cyber-cyan);
+            font-size: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hero h1 {
+            color: var(--fire-yellow);
+            font-size: clamp(28px, 5vw, 48px);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 18px rgba(255, 170, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            color: var(--hell-orange);
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .hero-copy {
+            color: #ccc;
+            max-width: 680px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .workflow, .info-panel, .faq-panel, .power-panel {
+            border: 1px solid rgba(255, 85, 0, 0.55);
+            background: rgba(13, 3, 3, 0.9);
+            padding: 25px;
+        }
+
+        .workflow h2, .info-panel h2, .faq-panel h2, .power-panel h2 {
+            color: var(--fire-yellow);
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .workflow-step {
+            border: 1px solid rgba(255, 85, 0, 0.35);
+            background: rgba(255, 85, 0, 0.045);
+            padding: 15px;
+            min-height: 145px;
+        }
+
+        .workflow-step > span {
+            display: block;
+            color: var(--hell-red);
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .workflow-step h3 {
+            color: #fff;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .workflow-step p, .rule p, .faq-grid p, .power-panel p {
+            color: #aaa;
+            font-size: 11px;
+            line-height: 1.65;
+        }
+
+        .rules-grid, .faq-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .rule, .faq-grid > div {
+            border-left: 2px solid var(--hell-orange);
+            background: rgba(255, 85, 0, 0.04);
+            padding: 14px;
+        }
+
+        .rule b {
+            color: var(--fire-yellow);
+            font-size: 11px;
+        }
+
+        .tool-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-number {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            color: rgba(255, 170, 0, 0.18);
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .tool-intro {
+            color: #aaa;
+            font-size: 11px;
+            line-height: 1.65;
+        }
+
+        .mini-heading {
+            color: var(--cyber-cyan);
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .tip-box {
+            border: 1px dashed rgba(0, 229, 255, 0.4);
+            background: rgba(0, 229, 255, 0.035);
+            color: #aaa;
+            padding: 12px;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .tip-box strong {
+            color: var(--cyber-cyan);
+        }
+
+        .power-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            background: linear-gradient(90deg, rgba(30, 4, 4, 0.95), rgba(8, 5, 5, 0.95));
+        }
+
+        .power-panel > div:first-child {
+            max-width: 650px;
+        }
+
+        .power-display {
+            min-width: 190px;
+            text-align: center;
+            border: 1px solid var(--hell-orange);
+            padding: 18px 12px;
+            box-shadow: inset 0 0 20px rgba(255, 85, 0, 0.06);
+        }
+
+        .power-display span {
+            color: var(--fire-yellow);
+            font-size: 16px;
+            text-shadow: 0 0 8px var(--hell-orange);
+            margin: 2px;
+        }
+
+        .power-display small {
+            display: block;
+            margin-top: 8px;
+            color: var(--cyber-cyan);
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        .faq-grid h3 {
+            color: var(--fire-yellow);
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .manual-footer {
+            border-top: 1px solid rgba(255, 85, 0, 0.4);
+            padding: 18px 4px 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            color: #777;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+        }
+
+        @media (max-width: 800px) {
+            .workflow-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .power-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .power-display {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 520px) {
+            #guide-container {
+                width: 94%;
+                margin: 25px auto;
+            }
+
+            .hero, .workflow, .info-panel, .faq-panel, .power-panel, .tool-card {
+                padding: 18px;
+            }
+
+            .workflow-grid, .rules-grid, .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 27px;
+            }
+
+            .manual-footer {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+
+    <div id="nav-header">
+        <div class="title">// TSL_OPERATIONAL_TOOLS</div>
+    </div>
+
+    <div id="guide-container">
+
+        <section class="hero">
+            <div class="hero-kicker">// TSL_COMMAND_MANUAL // v1.0</div>
+            <h1>TSL NATION BUILDER</h1>
+            <p class="hero-subtitle">
+                Borders. Statistics. Questionable geopolitical decisions.
+            </p>
+            <p class="hero-copy">
+                Welcome to TSL Command. These tools are your starting point for building a nation
+                that can actually exist in The Southern Lands without requiring a PhD in spreadsheetology.
+            </p>
+        </section>
+
+        <div class="critical-banner">
+            <div class="flash-text">
+                ⚠️ DISPATCH TITLES: USE "MAP" FOR BORDER CODE &amp; "STATS" FOR STAT CODE ⚠️
+            </div>
+        </div>
+
+        <section class="workflow">
+            <div class="section-label">// STANDARD_OPERATING_PROCEDURE</div>
+            <h2>HOW THIS WORKS</h2>
+
+            <div class="workflow-grid">
+                <div class="workflow-step">
+                    <span>01</span>
+                    <div>
+                        <h3>DEFINE</h3>
+                        <p>Give your nation an identity, economy, technology profile and RP characteristics.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <span>02</span>
+                    <div>
+                        <h3>DRAW</h3>
+                        <p>Establish your borders and place your capital on the strategic map.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <span>03</span>
+                    <div>
+                        <h3>BALANCE</h3>
+                        <p>Build your national capabilities within the TSL population and power limits.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <span>04</span>
+                    <div>
+                        <h3>EXPORT</h3>
+                        <p>Generate the code and place it into the correct NationStates Factbook dispatch.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <span>05</span>
+                    <div>
+                        <h3>RP</h3>
+                        <p>Congratulations. You now have a country. Please try not to start World War III before lunch.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-panel">
+            <div class="section-label">// BEFORE_YOU_BEGIN</div>
+            <h2>THE GOLDEN RULES</h2>
+
+            <div class="rules-grid">
+                <div class="rule">
+                    <b>01 / KEEP IT SEPARATE</b>
+                    <p>Your <span class="dispatch-tag">MAP</span> and <span class="dispatch-tag">STATS</span> dispatches are separate. Don't combine them.</p>
+                </div>
+                <div class="rule">
+                    <b>02 / USE THE GENERATOR</b>
+                    <p>Let the tools produce the code for you. Manual editing is unnecessary unless you know exactly what you're changing.</p>
+                </div>
+                <div class="rule">
+                    <b>03 / BALANCE MATTERS</b>
+                    <p>The numbers are broad RP indicators, not a perfect simulation of every factory, tank and accountant in your nation.</p>
+                </div>
+                <div class="rule">
+                    <b>04 / HAVE FUN</b>
+                    <p>TSL is a place to build interesting nations, not a competition to produce the world's most aggressively boring spreadsheet.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="tools-grid">
+
+            <!-- TOOL 1 -->
+            <div class="tool-card">
+                <div class="tool-number">01</div>
+                <h2>🗺️ STRATEGIC MAP &amp; BORDERS</h2>
+                <p class="tool-intro">
+                    Define where your nation exists. Draw your territory, add disconnected islands or
+                    territories, and plant your capital where your government insists it belongs.
+                </p>
+
+                <a href="map.html" class="action-btn" target="_blank" rel="noopener noreferrer">LAUNCH MAP TOOL &gt;</a>
+
+                <div class="mini-heading">// PROCEDURE</div>
+                <ol class="steps-list">
+                    <li>Click <b>DRAW BORDER MODE</b> in the top bar.</li>
+                    <li>Click <b>SET CAPITAL</b> and place your capital city on the map.</li>
+                    <li>Click points across the grid to trace your land boundaries.</li>
+                    <li>Use <b>FINISH ISLAND</b> when tracing extra disconnected territories.</li>
+                    <li>Click <b>COPY JSON</b> to grab your encoded map snippet.</li>
+                    <li>Paste the snippet into a NationStates Factbook dispatch titled strictly <span class="dispatch-tag">MAP</span>.</li>
+                </ol>
+
+                <div class="tip-box">
+                    <strong>FIELD NOTE //</strong>
+                    Don't worry about making the map look like a perfect GIS survey.
+                    The goal is a clear, usable representation of your nation's territory.
+                </div>
+            </div>
+
+            <!-- TOOL 2 -->
+            <div class="tool-card">
+                <div class="tool-number">02</div>
+                <h2>📑 NATION STATS GENERATOR</h2>
+                <p class="tool-intro">
+                    Turn your idea of a country into a consistent set of RP statistics.
+                    You have room to make a small peaceful republic, an industrial powerhouse,
+                    a technological monster—or something considerably more questionable.
+                </p>
+
+                <a href="stats.html" class="action-btn" target="_blank" rel="noopener noreferrer">LAUNCH STATS GENERATOR &gt;</a>
+
+                <div class="mini-heading">// PROCEDURE</div>
+                <ol class="steps-list">
+                    <li>Complete the 4-part wizard: <b>Identity, Economy, Tech, RP</b>.</li>
+                    <li>Keep your settings within the system limits: <b>Max 100M Population</b> and <b>Max 7 Power Points</b>.</li>
+                    <li>Review your choices before compiling. A powerful nation should have a reason for being powerful.</li>
+                    <li>Click <b>COMPILE BBCODE</b> when you're satisfied.</li>
+                    <li>Click <b>COPY TO CLIPBOARD</b>.</li>
+                    <li>Paste the output into a separate NationStates Factbook dispatch titled strictly <span class="dispatch-tag">STATS</span>.</li>
+                </ol>
+
+                <div class="tip-box">
+                    <strong>POWER POINTS //</strong>
+                    Think of the 7 points as broad indicators of national capability,
+                    not literal units of military power or percentages of GDP.
+                    Spend them deliberately—being amazing at everything is usually less interesting
+                    than having strengths, weaknesses and a reason for both.
+                </div>
+            </div>
+
+        </div>
+
+        <section class="power-panel">
+            <div>
+                <div class="section-label">// POWER_POINTS</div>
+                <h2>SEVEN POINTS. USE THEM WISELY.</h2>
+                <p>
+                    The current system gives nations a maximum of <b>7 Power Points</b>.
+                    That's enough to create meaningful specialization without turning every country
+                    into an unstoppable superstate with infinite money, infinite technology and
+                    somehow still a functioning public transport system.
+                </p>
+            </div>
+
+            <div class="power-display" aria-label="Seven Power Points">
+                <span>●</span><span>●</span><span>●</span><span>●</span>
+                <span>●</span><span>●</span><span>●</span>
+                <small>MAXIMUM: 07</small>
+            </div>
+        </section>
+
+        <section class="faq-panel">
+            <div class="section-label">// COMMON_SENSE.exe</div>
+            <h2>SO... WHAT AM I ACTUALLY MAKING?</h2>
+
+            <div class="faq-grid">
+                <div>
+                    <h3>MAP</h3>
+                    <p>The physical footprint of your nation: borders, territories and capital.</p>
+                </div>
+                <div>
+                    <h3>STATS</h3>
+                    <p>The broad capabilities and characteristics that describe how your nation functions.</p>
+                </div>
+                <div>
+                    <h3>FACTBOOK</h3>
+                    <p>The place where the generated information gets published so other players can actually use it.</p>
+                </div>
+                <div>
+                    <h3>RP</h3>
+                    <p>The important bit. Numbers provide structure; people provide the story.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="manual-footer">
+            <span>TSL COMMAND // THE SOUTHERN LANDS</span>
+            <span>PROGRESS OVER PERFECTION</span>
+        </footer>
+
+    </div>
+
+</body>
+</html>

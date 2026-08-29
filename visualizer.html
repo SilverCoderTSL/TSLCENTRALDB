@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyberpunk Audio Visualizer & Hazard Runner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body, html { width: 100%; height: 100%; overflow: hidden; background: #050508; font-family: 'Courier New', monospace; color: #00ffcc; }
+  
+  #canvas-container { position: relative; width: 100vw; height: 100vh; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  /* Overlay UI */
+  #ui-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; display: flex; flex-direction: column;
+    justify-content: space-between; padding: 20px;
+  }
+
+  .hud-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    text-shadow: 0 0 8px #00ffcc;
+  }
+  .sys-status { font-size: 14px; background: rgba(0,255,204,0.1); padding: 8px 12px; border: 1px solid #00ffcc; }
+
+  /* CRT Overlay Effect */
+  .crt::after {
+    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 10; background-size: 100% 3px, 6px 100%; pointer-events: none;
+  }
+
+  /* File Drop Modal */
+  #loader-modal {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(10, 10, 15, 0.95); border: 2px solid #00ffcc;
+    box-shadow: 0 0 25px rgba(0,255,204,0.3); padding: 40px; text-align: center;
+    pointer-events: auto; z-index: 20; max-width: 480px; width: 90%;
+  }
+
+  .btn {
+    margin-top: 20px; padding: 12px 24px; background: #00ffcc; color: #050508;
+    border: none; font-weight: bold; font-family: inherit; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px;
+    box-shadow: 0 0 10px #00ffcc; transition: all 0.2s;
+  }
+  .btn:hover { background: #ff0055; color: #fff; box-shadow: 0 0 15px #ff0055; }
+
+  input[type="file"] { display: none; }
+  .file-label {
+    display: block; padding: 15px; border: 1px dashed #00ffcc;
+    margin-top: 15px; cursor: pointer; transition: 0.2s;
+  }
+  .file-label:hover { background: rgba(0,255,204,0.15); }
+  
+  #progress-bar {
+    width: 100%; height: 6px; background: #222; margin-top: 15px; display: none;
+  }
+  #progress-fill { width: 0%; height: 100%; background: #ff0055; transition: width 0.1s; }
+</style>
+</head>
+<body class="crt">
+
+<div id="canvas-container">
+  <canvas id="visualizer"></canvas>
+  
+  <div id="ui-layer">
+    <div class="hud-top">
+      <div class="sys-status">
+        [SYS_STATUS: <span id="status-text">OFFLINE</span>]<br>
+        [CONTROLS: A / D or LEFT / RIGHT ARROWS TO STEER]
+      </div>
+      <div class="sys-status" style="text-align: right;">
+        [SCORE: <span id="score-val">0000</span>]<br>
+        [GLITCH_INTENSITY: <span id="glitch-val">LOW</span>]
+      </div>
+    </div>
+  </div>
+
+  <div id="loader-modal">
+    <h2 style="margin-bottom: 10px; color: #ff0055; text-shadow: 0 0 5px #ff0055;">NEON DRIVE OS v2.6</h2>
+    <p style="font-size: 12px; margin-bottom: 20px; color: #aaa;">LOAD AUDIO FILE FOR PRE-ANALYSIS DYNAMIC RANGE PROFILING</p>
+    
+    <label class="file-label" for="audio-input" id="file-drop-text">
+      DROP MP3 / WAV HERE OR CLICK TO BROWSE
+    </label>
+    <input type="file" id="audio-input" accept="audio/*">
+    
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <button class="btn" id="start-btn" style="display: none;">INITIATE SYSTEM STARTUP</button>
+  </div>
+</div>
+
+<script>
+/**
+ * CYBERPUNK AUDIO VISUALIZER & GAME ENGINE
+ */
+
+const canvas = document.getElementById('visualizer');
+const ctx = canvas.getContext('2d');
+
+// State Management
+let audioCtx, audioBuffer, audioSource, analyser;
+let isAnalyzed = false;
+let isPlaying = false;
+let startupSequence = false;
+let startupTime = 0;
+
+// Dynamic Audio Profile Data
+let trackData = {
+  energyProfile: [], // Relative intensity over time slices
+  maxRMS: 0.01,
+  duration: 0
+};
+
+// Game State & Physics
+let playerX = 0; // -1 (Left), 0 (Center), 1 (Right)
+let targetPlayerX = 0;
+let carX = 0; // Smooth rendered position
+let roadBend = 0;
+let targetRoadBend = 0;
+let roadOffset = 0;
+let score = 0;
+let glitchFactor = 0;
+
+// Gauges State
+let currentSpeed = 0;
+let currentRPM = 0;
+let currentBoost = 0;
+let currentGear = 1;
+
+// Objects
+let meteors = [];
+
+// Resize Handling
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// UI Elements
+const loaderModal = document.getElementById('loader-modal');
+const audioInput = document.getElementById('audio-input');
+const fileDropText = document.getElementById('file-drop-text');
+const progressBar = document.getElementById('progress-bar');
+const progressFill = document.getElementById('progress-fill');
+const startBtn = document.getElementById('start-btn');
+const statusText = document.getElementById('status-text');
+
+// Audio Loading & Pre-Analysis Pass
+audioInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  fileDropText.innerText = `SELECTED: ${file.name.toUpperCase()}`;
+  progressBar.style.display = 'block';
+  
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    initAudioContext();
+    audioCtx.decodeAudioData(evt.target.result, (buffer) => {
+      audioBuffer = buffer;
+      analyzeAudio(buffer);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function initAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function analyzeAudio(buffer) {
+  statusText.innerText = "RUNNING DYNAMIC PRE-ANALYSIS...";
+  const channelData = buffer.getChannelData(0); // Left channel
+  const sampleRate = buffer.sampleRate;
+  const sliceSize = Math.floor(sampleRate * 0.1); // 100ms slices
+  const totalSlices = Math.floor(channelData.length / sliceSize);
+  
+  trackData.energyProfile = new Float32Array(totalSlices);
+  trackData.duration = buffer.duration;
+  let maxRMS = 0;
+
+  for (let i = 0; i < totalSlices; i++) {
+    let sum = 0;
+    const offset = i * sliceSize;
+    for (let j = 0; j < sliceSize; j++) {
+      const val = channelData[offset + j];
+      sum += val * val;
+    }
+    const rms = Math.sqrt(sum / sliceSize);
+    trackData.energyProfile[i] = rms;
+    if (rms > maxRMS) maxRMS = rms;
+    
+    // Update progress bar
+    if (i % 50 === 0) {
+      progressFill.style.width = `${(i / totalSlices) * 100}%`;
+    }
+  }
+
+  trackData.maxRMS = maxRMS || 1;
+  isAnalyzed = true;
+  progressBar.style.display = 'none';
+  startBtn.style.display = 'inline-block';
+  statusText.innerText = "PRE-ANALYSIS COMPLETE. SYSTEM READY.";
+}
+
+startBtn.addEventListener('click', () => {
+  loaderModal.style.display = 'none';
+  startSequence();
+});
+
+function startSequence() {
+  startupSequence = true;
+  startupTime = Date.now();
+  statusText.innerText = "BOOTING COCKPIT OS...";
+  
+  // Play Audio
+  audioSource = audioCtx.createBufferSource();
+  audioSource.buffer = audioBuffer;
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  
+  audioSource.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  audioSource.start(0);
+  isPlaying = true;
+  
+  setTimeout(() => {
+    startupSequence = false;
+    statusText.innerText = "ONLINE // DISPATCHING VEHICLE";
+  }, 2500);
+}
+
+// User Input Steering
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    targetPlayerX = Math.max(-1, targetPlayerX - 1);
+  } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    targetPlayerX = Math.min(1, targetPlayerX + 1);
+  }
+});
+
+// Main Loop
+function render() {
+  requestAnimationFrame(render);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  let currentRelativeEnergy = 0;
+  let bassEnergy = 0;
+  let trebleEnergy = 0;
+
+  if (isPlaying && analyser) {
+    const freqData = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(freqData);
+
+    // Calculate real-time instantaneous band energies
+    let bassSum = 0;
+    for (let i = 0; i < 10; i++) bassSum += freqData[i];
+    bassEnergy = bassSum / (10 * 255);
+
+    let trebleSum = 0;
+    for (let i = 100; i < 200; i++) trebleSum += freqData[i];
+    trebleEnergy = trebleSum / (100 * 255);
+
+    // Get overall relative intensity from pre-analyzed track profile
+    const currentTime = audioCtx.currentTime;
+    const sliceIndex = Math.floor((currentTime / trackData.duration) * trackData.energyProfile.length);
+    if (sliceIndex < trackData.energyProfile.length) {
+      currentRelativeEnergy = trackData.energyProfile[sliceIndex] / trackData.maxRMS;
+    }
+
+    // Dynamic Road Bends on melodic shifts / treble peaks
+    targetRoadBend = (trebleEnergy - 0.2) * 2;
+  }
+
+  // Smooth Interpolation
+  carX += (targetPlayerX - carX) * 0.1;
+  roadBend += (targetRoadBend - roadBend) * 0.05;
+
+  // Glitch Effect Controller
+  glitchFactor = Math.max(0, glitchFactor - 0.02);
+  if (bassEnergy > 0.82) glitchFactor = 0.4;
+
+  // Update Game Physics
+  if (isPlaying && !startupSequence) {
+    roadOffset += (10 + currentRelativeEnergy * 40);
+    score += Math.floor(currentRelativeEnergy * 5);
+    document.getElementById('score-val').innerText = String(score).padStart(4, '0');
+    
+    // Gauge Mechanics
+    currentSpeed = Math.floor(currentRelativeEnergy * 220 + Math.random() * 3);
+    currentRPM = Math.floor(bassEnergy * 7000 + 1000);
+    currentBoost = (bassEnergy * 2.0).toFixed(1);
+    
+    // Dynamic Gear shifting
+    if (currentSpeed < 40) currentGear = 1;
+    else if (currentSpeed < 80) currentGear = 2;
+    else if (currentSpeed < 120) currentGear = 3;
+    else if (currentSpeed < 160) currentGear = 4;
+    else if (currentSpeed < 200) currentGear = 5;
+    else currentGear = 6;
+
+    // Meteor Spawns (Driven by Treble / Percussion Transients)
+    if (Math.random() < trebleEnergy * 0.12) {
+      const lane = Math.floor(Math.random() * 3) - 1; // -1, 0, 1
+      meteors.push({ lane: lane, z: 1000, speed: 15 + Math.random() * 10 });
+    }
+  }
+
+  // Draw Visual Layers
+  drawSky(bassEnergy);
+  drawWindingRoad();
+  updateAndDrawMeteors();
+  drawCockpitAndGauges();
+
+  if (startupSequence) {
+    drawBootAnimation();
+  }
+
+  // CRT Screen Glitch Trigger
+  if (glitchFactor > 0.1) {
+    applyGlitchPass();
+  }
+}
+
+// Rendering Sub-Systems
+
+function drawSky(bass) {
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+  grad.addColorStop(0, '#020208');
+  grad.addColorStop(1, bass > 0.7 ? '#33001b' : '#110022');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height * 0.6);
+
+  // Synthwave Grid Sun
+  const sunX = canvas.width / 2;
+  const sunY = canvas.height * 0.35;
+  const sunRadius = 80 + bass * 20;
+  
+  const sunGrad = ctx.createLinearGradient(0, sunY - sunRadius, 0, sunY + sunRadius);
+  sunGrad.addColorStop(0, '#ff0055');
+  sunGrad.addColorStop(1, '#ffcc00');
+  
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+  ctx.fillStyle = sunGrad;
+  ctx.fill();
+}
+
+function drawWindingRoad() {
+  const horizonY = canvas.height * 0.45;
+  const bottomY = canvas.height;
+  const roadWidthTop = 40;
+  const roadWidthBottom = canvas.width * 0.8;
+  const centerX = canvas.width / 2;
+
+  // Draw Ground Grid
+  ctx.fillStyle = '#05050c';
+  ctx.fillRect(0, horizonY, canvas.width, bottomY - horizonY);
+
+  // Perspective Strip Line Rendering
+  const lines = 25;
+  for (let i = lines; i > 0; i--) {
+    const p1 = (i - 1) / lines;
+    const p2 = i / lines;
+
+    // Perspective transformation
+    const y1 = horizonY + Math.pow(p1, 2) * (bottomY - horizonY);
+    const y2 = horizonY + Math.pow(p2, 2) * (bottomY - horizonY);
+
+    // Compute curve offsets
+    const curveOffset1 = Math.sin(p1 * Math.PI) * roadBend * 300;
+    const curveOffset2 = Math.sin(p2 * Math.PI) * roadBend * 300;
+
+    const w1 = roadWidthTop + p1 * (roadWidthBottom - roadWidthTop);
+    const w2 = roadWidthTop + p2 * (roadWidthBottom - roadWidthTop);
+
+    const x1 = centerX + curveOffset1;
+    const x2 = centerX + curveOffset2;
+
+    // Draw Road Surface
+    ctx.beginPath();
+    ctx.moveTo(x1 - w1 / 2, y1);
+    ctx.lineTo(x1 + w1 / 2, y1);
+    ctx.lineTo(x2 + w2 / 2, y2);
+    ctx.lineTo(x2 - w2 / 2, y2);
+    ctx.fillStyle = (i + Math.floor(roadOffset / 20)) % 2 === 0 ? '#10101a' : '#080810';
+    ctx.fill();
+
+    // Draw Neon Borders
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 2 * p2;
+    ctx.beginPath();
+    ctx.moveTo(x1 - w1 / 2, y1);
+    ctx.lineTo(x2 - w2 / 2, y2);
+    ctx.moveTo(x1 + w1 / 2, y1);
+    ctx.lineTo(x2 + w2 / 2, y2);
+    ctx.stroke();
+  }
+}
+
+function updateAndDrawMeteors() {
+  const horizonY = canvas.height * 0.45;
+  const bottomY = canvas.height;
+  const centerX = canvas.width / 2;
+
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    let m = meteors[i];
+    m.z -= m.speed;
+
+    if (m.z <= 0) {
+      // Check collision
+      if (Math.abs(m.lane - targetPlayerX) < 0.5) {
+        glitchFactor = 1.0; // Trigger big glitch on impact
+        score = Math.max(0, score - 200);
+      }
+      meteors.splice(i, 1);
+      continue;
+    }
+
+    // Perspective mapping
+    const p = 1 - (m.z / 1000);
+    if (p < 0 || p > 1) continue;
+
+    const y = horizonY + Math.pow(p, 2) * (bottomY - horizonY);
+    const curveOffset = Math.sin(p * Math.PI) * roadBend * 300;
+    const roadWidth = 40 + p * (canvas.width * 0.8 - 40);
+    const laneWidth = roadWidth / 3;
+    const x = centerX + curveOffset + (m.lane * laneWidth);
+
+    const radius = Math.max(2, p * 25);
+
+    // Draw Meteor
+    ctx.beginPath();
+    ctx.arc(x, y - radius * 2, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff0055';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#ff0055';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function drawCockpitAndGauges() {
+  const h = canvas.height;
+  const w = canvas.width;
+
+  // Cockpit Dashboard Frame
+  ctx.fillStyle = '#08080c';
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  ctx.lineTo(w * 0.15, h * 0.72);
+  ctx.lineTo(w * 0.85, h * 0.72);
+  ctx.lineTo(w, h);
+  ctx.fill();
+
+  ctx.strokeStyle = '#00ffcc';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Steering Indicator Target
+  const playerScreenX = w / 2 + (carX * (w * 0.25));
+  ctx.fillStyle = '#ff0055';
+  ctx.beginPath();
+  ctx.arc(playerScreenX, h * 0.70, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Gauges Container Layout
+  const gaugeY = h * 0.86;
+  
+  // Gauge 1: Speedometer (Left)
+  drawAnalogGauge(w * 0.3, gaugeY, 55, currentSpeed, 0, 240, "KM/H", "#00ffcc");
+  
+  // Gauge 2: Tachometer / RPM (Center)
+  drawAnalogGauge(w * 0.5, gaugeY, 65, currentRPM, 0, 8000, "RPM x1000", "#ff0055");
+  
+  // Gauge 3: Boost Gauge (Right)
+  drawAnalogGauge(w * 0.7, gaugeY, 55, currentBoost, 0, 2.5, "BOOST PSI", "#00ffcc");
+
+  // Gear Indicator Screen
+  ctx.fillStyle = '#000';
+  ctx.fillRect(w * 0.5 - 20, gaugeY - 110, 40, 30);
+  ctx.strokeStyle = '#00ffcc';
+  ctx.strokeRect(w * 0.5 - 20, gaugeY - 110, 40, 30);
+  
+  ctx.fillStyle = '#ff0055';
+  ctx.font = "bold 20px 'Courier New'";
+  ctx.textAlign = 'center';
+  ctx.fillText(`G:${currentGear}`, w * 0.5, gaugeY - 88);
+}
+
+function drawAnalogGauge(cx, cy, radius, val, minVal, maxVal, label, color) {
+  // Gauge Dial Rim
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI * 0.75, Math.PI * 2.25);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#151522';
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI * 0.75, Math.PI * 2.25);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+  // Angle Mapping
+  const pct = Math.min(1, Math.max(0, (val - minVal) / (maxVal - minVal)));
+  const angle = Math.PI * 0.75 + pct * (Math.PI * 1.5);
+
+  // Needle
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(angle) * (radius - 10), cy + Math.sin(angle) * (radius - 10));
+  ctx.strokeStyle = '#ff0055';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Readout Text
+  ctx.fillStyle = '#fff';
+  ctx.font = "11px 'Courier New'";
+  ctx.textAlign = 'center';
+  ctx.fillText(typeof val === 'number' && val % 1 !== 0 ? val : Math.floor(val), cx, cy + 15);
+  ctx.fillStyle = color;
+  ctx.fillText(label, cx, cy + 30);
+}
+
+function drawBootAnimation() {
+  const elapsed = Date.now() - startupTime;
+  ctx.fillStyle = 'rgba(5, 5, 8, 0.85)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = "16px 'Courier New'";
+  ctx.textAlign = 'center';
+  
+  if (elapsed < 800) {
+    ctx.fillText(">> INITIALIZING AUDIO BUFFER ANALYSIS...", canvas.width / 2, canvas.height / 2);
+  } else if (elapsed < 1600) {
+    ctx.fillText(">> MOUNTING COCKPIT TELEMETRY INSTRUMENTS...", canvas.width / 2, canvas.height / 2);
+  } else {
+    ctx.fillText(">> SYSTEM ONLINE. ENGAGE TRANSMISSION.", canvas.width / 2, canvas.height / 2);
+  }
+}
+
+function applyGlitchPass() {
+  const slices = 8;
+  for (let i = 0; i < slices; i++) {
+    const sliceY = Math.random() * canvas.height;
+    const sliceH = Math.random() * 30 + 5;
+    const offsetX = (Math.random() - 0.5) * 40 * glitchFactor;
+
+    ctx.drawImage(
+      canvas, 
+      0, sliceY, canvas.width, sliceH, 
+      offsetX, sliceY, canvas.width, sliceH
+    );
+  }
+}
+
+// Kick Off Loop
+render();
+</script>
+</body>
+</html>

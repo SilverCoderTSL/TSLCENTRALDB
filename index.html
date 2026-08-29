@@ -42,95 +42,275 @@
             cursor: crosshair;
         }
 
-        /* ========== ENTRY MODAL ========== */
-        #entry-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(3, 1, 1, 0.97);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 28px;
-            cursor: pointer;
-            backdrop-filter: blur(12px);
-            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .modal-box {
-            border: 1px solid var(--hell-red);
-            padding: 40px 60px;
-            background: linear-gradient(160deg, #120303 0%, #080101 100%);
-            text-align: center;
-            box-shadow: 
-                0 0 60px rgba(255, 17, 0, 0.35),
-                inset 0 0 40px rgba(255, 17, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .modal-box::before {
-            content: '';
+        /* ========== CRT VIGNETTE & SCANLINES ========== */
+        .scanlines {
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 17, 0, 0.08), transparent);
-            animation: modalScan 3s linear infinite;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.035), rgba(0, 0, 0, 0.01), rgba(255, 85, 0, 0.035));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0.7;
         }
 
-        @keyframes modalScan {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        .crt-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+            z-index: 31;
+            pointer-events: none;
         }
 
-        .modal-alert {
+        #warp-flash {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--hell-orange) 0%, var(--hell-red) 40%, transparent 70%);
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.9s ease-out;
+        }
+
+        /* ========== TOP COMMAND BAR ========== */
+        .command-bar {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            width: calc(100% - 36px);
+            max-width: 1480px;
+            background: linear-gradient(180deg, rgba(20, 5, 5, 0.95) 0%, rgba(8, 2, 2, 0.9) 100%);
+            border: 1px solid rgba(255, 17, 0, 0.6);
+            padding: 8px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 17, 0, 0.15);
+            backdrop-filter: blur(6px);
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+        }
+
+        .sector-tag {
+            color: var(--fire-yellow);
+            font-weight: bold;
+        }
+
+        #hud-clock {
+            color: var(--fire-yellow);
+        }
+
+        #status-bar {
             color: var(--hell-red);
-            font-size: 15px;
+            font-weight: bold;
+        }
+
+        /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
+        /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
+        .gate-door {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background-color: var(--dark-metal);
+            background-image: 
+                /* 1. RIVETS: 3D metallic dots with highlight & shadow */
+                radial-gradient(circle at 50% 50%, #444 1px, #777 2px, #111 3.5px, transparent 4px),
+                /* 2. INDUSTRIAL GRAIN: Subtle micro-texture pattern */
+                radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                /* 3. METALLIC PANELS & SHADING */
+                linear-gradient(90deg, rgba(0, 0, 0, 0.8), transparent 15%, transparent 85%, rgba(0, 0, 0, 0.9)),
+                linear-gradient(145deg, #220808 0%, #0c0404 40%, #050202 70%, #180505 100%);
+            background-size: 
+                40px 40px, /* Rivet spacing */
+                8px 8px,   /* Metal grain grid */
+                100% 100%, 
+                100% 100%;
+            background-position: 
+                20px 20px, /* Offset rivets from border edges */
+                0 0, 
+                0 0, 
+                0 0;
+            z-index: 50;
+            transition: transform 2.4s cubic-bezier(0.7, 0, 0.1, 1);
+            display: flex;
+            align-items: center;
+            box-shadow: 
+                inset 0 0 120px #000,
+                inset 0 0 15px rgba(255, 85, 0, 0.15);
+            border-bottom: 2px solid #331111;
+        }
+
+        .gate-left {
+            left: 0;
+            border-right: 2px solid #222;
+            justify-content: flex-end;
+        }
+
+        .gate-right {
+            right: 0;
+            border-left: 2px solid #222;
+            justify-content: flex-start;
+        }
+
+        /* Yellow & Black Hazard Stripes on Edge */
+        .gate-left::before,
+        .gate-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 32px;
+            background: repeating-linear-gradient(
+                45deg,
+                #ffaa00,
+                #ffaa00 15px,
+                #000000 15px,
+                #000000 30px
+            );
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+            z-index: 52;
+        }
+
+        .gate-left::before { right: 0; }
+        .gate-right::before { left: 0; }
+
+        /* Warning Beacon Lamps */
+        .warning-beacon {
+            position: absolute;
+            top: 80px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ff4444, #440000);
+            border: 3px solid #111;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+            z-index: 53;
+        }
+
+        .warning-beacon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 17, 0, 0.5);
+            animation: beaconPulse 2s infinite alternate;
+        }
+
+        .gate-left .warning-beacon { right: 50px; }
+        .gate-right .warning-beacon { left: 50px; }
+
+        .beacon-active .warning-beacon {
+            animation: strobeFlash 0.25s infinite alternate !important;
+        }
+
+        @keyframes beaconPulse {
+            0% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+            100% { box-shadow: 0 0 30px rgba(255, 17, 0, 0.9); }
+        }
+
+        @keyframes strobeFlash {
+            0% { background: #ff0000; box-shadow: 0 0 60px #ff0000; }
+            100% { background: #330000; box-shadow: 0 0 5px #110000; }
+        }
+
+        /* Gate Recoil & Open Mechanics */
+        body.gate-recoil .gate-left { transform: scale(0.98) translateZ(-40px); }
+        body.gate-recoil .gate-right { transform: scale(0.98) translateZ(-40px); }
+
+        body.gate-open .gate-left { transform: translateX(-105%); }
+        body.gate-open .gate-right { transform: translateX(105%); }
+
+        /* ========== ANALOG CONTROLLER & BUTTON ========== */
+        #analog-console {
+            position: absolute;
+            z-index: 55;
+            background: linear-gradient(180deg, #1a0808 0%, #0a0303 100%);
+            border: 2px solid var(--hell-red);
+            padding: 30px 45px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 17, 0, 0.3);
+            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .console-title {
+            color: var(--hell-red);
+            font-size: 13px;
             letter-spacing: 4px;
             font-weight: bold;
-            text-shadow: 0 0 12px var(--glow-red);
+            text-shadow: 0 0 10px var(--glow-red);
         }
 
-        .modal-sub {
-            color: var(--fire-yellow);
-            font-size: 12px;
-            letter-spacing: 1.5px;
-            opacity: 0.9;
-        }
-
-        #engage-btn {
-            background: #1a0303;
-            border: 1px solid var(--hell-orange);
-            color: var(--fire-yellow);
-            padding: 14px 36px;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: bold;
-            letter-spacing: 3px;
-            cursor: pointer;
-            box-shadow: 0 0 18px rgba(255, 85, 0, 0.25);
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Analog Button Assembly */
+        .analog-button-housing {
             position: relative;
-            z-index: 2;
-            margin-top: 8px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2a2a2a, #111111);
+            border: 4px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 15px #000, 0 8px 20px rgba(0,0,0,0.8);
         }
 
-        #engage-btn:hover {
-            background: var(--hell-red);
-            color: #000;
-            box-shadow: 0 0 40px rgba(255, 17, 0, 0.9);
-            transform: scale(1.04);
+        #analog-btn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ff3300, #990000);
+            border: 2px solid #ff6644;
+            color: #fff;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 
+                0 6px 0 #550000,
+                0 10px 15px rgba(0, 0, 0, 0.6),
+                inset 0 0 12px rgba(255, 255, 255, 0.35);
+            transition: all 0.1s ease;
+            outline: none;
         }
 
-        #engage-btn:active {
-            transform: scale(0.98);
+        #analog-btn:hover {
+            background: radial-gradient(circle at 35% 35%, #ff5522, #cc0000);
+            box-shadow: 
+                0 6px 0 #660000,
+                0 0 25px rgba(255, 51, 0, 0.8),
+                inset 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
-        /* ========== BACKGROUND LAYERS ========== */
+        #analog-btn:active, #analog-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: 
+                0 2px 0 #330000,
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .console-status {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--fire-yellow);
+        }
+
+        /* ========== BACKGROUND CANVAS ========== */
         #space-canvas {
             position: absolute;
             inset: 0;
@@ -146,59 +326,6 @@
             z-index: 21;
             pointer-events: none;
             opacity: 0.85;
-        }
-
-        .scanlines {
-            position: absolute;
-            inset: 0;
-            background: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.035), rgba(0, 0, 0, 0.01), rgba(255, 85, 0, 0.035));
-            background-size: 100% 3px, 5px 100%;
-            z-index: 30;
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        #warp-flash {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at center, var(--hell-orange) 0%, var(--hell-red) 40%, transparent 70%);
-            z-index: 25;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.9s ease-out;
-        }
-
-        /* ========== HUD ELEMENTS ========== */
-        #hud-clock {
-            position: absolute;
-            top: 18px;
-            left: 18px;
-            z-index: 40;
-            background: rgba(10, 2, 2, 0.88);
-            border: 1px solid rgba(255, 17, 0, 0.6);
-            padding: 8px 16px;
-            font-size: 11px;
-            letter-spacing: 2.5px;
-            color: var(--fire-yellow);
-            box-shadow: 0 0 20px rgba(255, 17, 0, 0.15);
-            backdrop-filter: blur(4px);
-        }
-
-        #status-bar {
-            position: absolute;
-            top: 18px;
-            right: 18px;
-            z-index: 40;
-            background: rgba(10, 2, 2, 0.88);
-            border: 1px solid rgba(255, 17, 0, 0.6);
-            padding: 8px 16px;
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: var(--hell-red);
-            box-shadow: 0 0 20px rgba(255, 17, 0, 0.15);
-            backdrop-filter: blur(4px);
         }
 
         /* ========== 3D SCENE ========== */
@@ -342,7 +469,6 @@
             align-items: center;
         }
 
-        /* Radial Audio Visualizer Ring Canvas */
         #planet-vis-canvas {
             position: absolute;
             width: 660px;
@@ -465,30 +591,6 @@
             border-color: rgba(255, 170, 0, 0.5);
         }
 
-        .debris-field {
-            position: absolute;
-            inset: -90px;
-            transform-style: preserve-3d;
-            animation: rotateDebris 28s linear infinite;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .rock {
-            position: absolute;
-            background: linear-gradient(135deg, #3a1810, #1a0805);
-            border: 1px solid #ff4500;
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.7);
-            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
-        }
-
-        .rock:nth-child(1) { top: 18%; left: 22%; width: 18px; height: 14px; transform: translateZ(100px) rotate(42deg); }
-        .rock:nth-child(2) { top: 12%; left: 38%; width: 24px; height: 19px; transform: translateZ(150px) rotate(118deg); }
-        .rock:nth-child(3) { top: 28%; left: 15%; width: 14px; height: 16px; transform: translateZ(70px) rotate(210deg); }
-        .rock:nth-child(4) { top: 8%; left: 55%; width: 12px; height: 11px; transform: translateZ(120px) rotate(65deg); }
-        .rock:nth-child(5) { top: 35%; left: 8%; width: 20px; height: 15px; transform: translateZ(85px) rotate(300deg); }
-
-        /* Morse Ticker */
         .morse-ticker {
             margin-top: 22px;
             width: 100%;
@@ -571,6 +673,38 @@
             background: linear-gradient(90deg, transparent, rgba(255, 17, 0, 0.25), transparent);
             transition: left 0.5s ease;
         }
+        
+        /* Continuous sweeping shine animation for the beginner button */
+        @keyframes shineSweep {
+            0% { left: -120%; }
+            20% { left: 180%; }
+            100% { left: 180%; }
+        }
+
+        .portal-btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-btn-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -120%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                115deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.08) 30%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.08) 70%,
+                transparent 100%
+            );
+            transform: rotate(25deg);
+            pointer-events: none;
+            animation: shineSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
 
         .portal-btn:hover {
             color: #fff;
@@ -584,114 +718,6 @@
             left: 100%;
         }
 
-        .portal-btn:active {
-            transform: translateX(4px) scale(0.98);
-        }
-
-        /* ========== GATES & LOCK ========== */
-        .gate-door {
-            position: absolute;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            background-color: var(--dark-metal);
-            background-image: 
-                radial-gradient(rgba(255, 17, 0, 0.12) 1.5px, transparent 0),
-                linear-gradient(145deg, #1f0707 0%, #080202 50%, #140303 100%);
-            background-size: 28px 28px, 100% 100%;
-            z-index: 15;
-            transition: transform 2.2s cubic-bezier(0.77, 0, 0.175, 1);
-            display: flex;
-            align-items: center;
-            box-shadow: inset 0 0 140px #000;
-        }
-
-        .gate-left {
-            left: 0;
-            border-right: 3px solid var(--hell-red);
-            justify-content: flex-end;
-            padding-right: 20px;
-        }
-
-        .gate-right {
-            right: 0;
-            border-left: 3px solid var(--hell-red);
-            justify-content: flex-start;
-            padding-left: 20px;
-        }
-
-        .gate-left::after,
-        .gate-right::after {
-            content: '⚠';
-            font-size: 28px;
-            color: var(--hell-red);
-            opacity: 0.4;
-            text-shadow: 0 0 15px var(--glow-red);
-        }
-
-        body.gate-open .gate-left { transform: translateX(-105%); }
-        body.gate-open .gate-right { transform: translateX(105%); }
-
-        #lock-container {
-            position: absolute;
-            z-index: 18;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .lock-ring-outer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 3px dashed var(--hell-red);
-            border-radius: 50%;
-            animation: spinClockwise 14s linear infinite;
-            box-shadow: 0 0 25px rgba(255, 17, 0, 0.3);
-        }
-
-        .lock-ring-inner {
-            position: absolute;
-            width: 70%;
-            height: 70%;
-            border: 2px solid rgba(255, 85, 0, 0.5);
-            border-radius: 50%;
-            animation: spinCounter 9s linear infinite;
-        }
-
-        .lock-core {
-            position: absolute;
-            width: 42%;
-            height: 42%;
-            background: radial-gradient(circle, #1a0505, #0a0202);
-            border: 2px solid var(--hell-red);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--hell-red);
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            box-shadow: inset 0 0 20px rgba(255, 17, 0, 0.3);
-        }
-
-        #loader-hud {
-            position: relative;
-            z-index: 20;
-            color: var(--fire-yellow);
-            font-size: 12px;
-            letter-spacing: 1.5px;
-            background: rgba(12, 2, 2, 0.9);
-            padding: 12px 24px;
-            border: 1px solid rgba(255, 17, 0, 0.7);
-            box-shadow: 0 0 25px rgba(255, 17, 0, 0.2);
-            transition: opacity 0.5s ease;
-        }
-
         /* ========== KEYFRAMES ========== */
         @keyframes pulse-flash {
             0% { opacity: 0.75; transform: scale(0.95); }
@@ -701,19 +727,6 @@
         @keyframes expand-wave {
             0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.9; }
             100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
-        }
-
-        @keyframes rotateDebris {
-            from { transform: rotateZ(0deg); }
-            to { transform: rotateZ(360deg); }
-        }
-
-        @keyframes spinClockwise {
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes spinCounter {
-            100% { transform: rotate(-360deg); }
         }
 
         @keyframes scrollMorse {
@@ -769,42 +782,64 @@
                 padding: 12px 10px;
             }
         }
+
+        .audio-credit {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: var(--fire-yellow);
+            background: rgba(8, 2, 2, 0.7);
+            border: 1px dashed rgba(255, 17, 0, 0.4);
+            padding: 6px 10px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .credit-label {
+            color: var(--hell-red);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <audio id="bg-audio" src="background_audio.mp3" loop preload="auto" crossorigin="anonymous" volume="0.7"></audio>
+    <audio id="bg-audio" loop preload="auto" crossorigin="anonymous"></audio>
 
-    <!-- Entry Modal -->
-    <div id="entry-modal">
-        <div class="modal-box">
-            <div class="modal-alert">CRITICAL ALERT // SECTOR SOUTHERN LANDS</div>
-            <div class="modal-sub">CLICK TO INITIALIZE AUDIO ENGINE & OVERRIDE HYPERDRIVE</div>
-            <button id="engage-btn">[ OVERRIDE & ENTER ]</button>
+    <div class="scanlines"></div>
+    <div class="crt-vignette"></div>
+    <div id="warp-flash"></div>
+
+    <!-- Top Command Bar Header -->
+    <div class="command-bar">
+        <div class="hud-group">
+            <span class="sector-tag">[ SECTOR: SOUTHERN LANDS ]</span>
+            <span id="hud-clock">SYS_TIME: --:--:-- UTC</span>
+        </div>
+        <div class="hud-group">
+            <span id="status-bar">STATUS: STANDBY</span>
         </div>
     </div>
 
-    <div class="scanlines"></div>
-    <div id="warp-flash"></div>
+    <!-- Metallic Gates & Beacon Lights -->
+    <div class="gate-door gate-left" id="gate-left">
+        <div class="warning-beacon"></div>
+    </div>
+    <div class="gate-door gate-right" id="gate-right">
+        <div class="warning-beacon"></div>
+    </div>
+
+    <!-- Center Analog Entry Console -->
+    <div id="analog-console">
+        <div class="console-title">SECURITY OVERRIDE</div>
+        <div class="analog-button-housing">
+            <button id="analog-btn">OPEN</button>
+        </div>
+        <div class="console-status" id="console-status">GATE LOCKED</div>
+    </div>
 
     <canvas id="space-canvas"></canvas>
     <canvas id="visualizer-canvas"></canvas>
-
-    <div id="hud-clock">SYS_TIME: --:--:-- UTC</div>
-    <div id="status-bar">STATUS: STANDBY</div>
-
-    <!-- Lock & Gate Overlay -->
-    <div id="lock-container">
-        <div class="lock-ring-outer"></div>
-        <div class="lock-ring-inner"></div>
-        <div class="lock-core" id="lock-status">LOCKED</div>
-    </div>
-
-    <div class="gate-door gate-left"></div>
-    <div class="gate-door gate-right"></div>
-
-    <div id="loader-hud">
-        <div id="loader-text">&gt; SYSTEM STANDBY — OVERRIDE PENDING</div>
-    </div>
 
     <!-- Main 3D Parallax Stage -->
     <div class="scene-3d" id="scene">
@@ -823,20 +858,17 @@
                         <span class="tv-live">● LIVE</span>
                     </div>
                 </div>
+
+                 <!-- Music Credit Tag -->
+                <div class="audio-credit">
+                    <span class="credit-label">AUDIO FREQ:</span> <span id="credit-text">Music by Antti Luode</span>
+                </div>
             </div>
 
             <!-- CENTER: Planet with Radial Visualizer -->
             <div class="center-panel">
                 <div class="planet-stage">
                     <canvas id="planet-vis-canvas" width="660" height="660"></canvas>
-
-                    <div class="debris-field">
-                        <div class="rock"></div>
-                        <div class="rock"></div>
-                        <div class="rock"></div>
-                        <div class="rock"></div>
-                        <div class="rock"></div>
-                    </div>
 
                     <div class="earth">
                         <div class="continents"></div>
@@ -854,25 +886,25 @@
 
                 <div class="morse-ticker">
                     <div class="morse-text">
-                        ... --- ... / . .- .-. - .... ... / ...- .. - .- .-.. ... / ..-. .- .. .-.. .. -. --. / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ... / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ...
+                        ... --- ... / . .- .-. - .... ... / ...- .. - .- .-.. ... / ..-. .- .. -. --. / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ... / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ...
                     </div>
                 </div>
             </div>
 
             <!-- RIGHT: Commands -->
             <div class="right-panel">
-                <a href="central.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="central">OPEN CENTRAL DATABASE ↗</a>
-                <a href="analytics.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="stats">OPEN CONVERTED STATS ↗</a>
-                <a href="battle.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="battle">OPEN BATTLE SYSTEM ↗</a>
-                <a href="map.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="map">OPEN STRATEGIC MAP ↗</a>
-                <a href="faq.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="faq" style="border-color: var(--hell-red); color: #fff; text-shadow: 0 0 6px var(--hell-red);">FAQ [DOCS] ↗</a>
+                <a href="creator.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="creator">NATION STAT CREATOR ↗</a>
+                <a href="stats.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="stats">NATION STAT DATABASE ↗</a>
+                <a href="battle.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="battle">BATTLE SYSTEM ↗</a>
+                <a href="map.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="map">AUTOMATED MAP ↗</a>
+                <a href="new.html" target="_blank" rel="noopener noreferrer" class="portal-btn portal-btn-shine" data-cmd="faq" style="border-color: var(--hell-red); color: #fff; text-shadow: 0 0 6px var(--hell-red);">NEW? START HERE! ↗</a>
             </div>
 
         </div>
     </div>
 
     <script>
-        // ========== 1. MOUSE PARALLAX (smoothed) ==========
+        // ========== 1. MOUSE PARALLAX ==========
         const scene = document.getElementById('scene');
         let targetX = 0, targetY = 0;
         let currentX = 0, currentY = 0;
@@ -902,30 +934,12 @@
 
         // ========== 3. DISASTER FEED ==========
         const disasterFeed = [
-            {
-                location: "LOC: NEW YORK, US",
-                image: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=700&q=80"
-            },
-            {
-                location: "LOC: PARIS, FRANCE",
-                image: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=700&q=80"
-            },
-            {
-                location: "LOC: LONDON, UK",
-                image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80"
-            },
-            {
-                location: "LOC: SYDNEY, AUSTRALIA",
-                image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=700&q=80"
-            },
-            {
-                location: "LOC: TOKYO, JAPAN",
-                image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=700&q=80"
-            },
-            {
-                location: "LOC: JAKARTA, INDONESIA",
-                image: "https://images.unsplash.com/photo-1604275689235-fdc521556c16?auto=format&fit=crop&w=700&q=80"
-            }
+            { location: "LOC: NEW YORK, US", image: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=700&q=80" },
+            { location: "LOC: PARIS, FRANCE", image: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=700&q=80" },
+            { location: "LOC: LONDON, UK", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80" },
+            { location: "LOC: SYDNEY, AUSTRALIA", image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=700&q=80" },
+            { location: "LOC: TOKYO, JAPAN", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=700&q=80" },
+            { location: "LOC: JAKARTA, INDONESIA", image: "https://images.unsplash.com/photo-1604275689235-fdc521556c16?auto=format&fit=crop&w=700&q=80" }
         ];
 
         let feedIndex = 0;
@@ -1000,7 +1014,7 @@
         const spaceCanvas = document.getElementById('space-canvas');
         const ctx = spaceCanvas.getContext('2d');
         let stars = [];
-        let meteors = [];
+        let shootingStars = [];
         let warpMode = false;
         let warpSpeed = 1;
 
@@ -1008,7 +1022,6 @@
             spaceCanvas.width = window.innerWidth;
             spaceCanvas.height = window.innerHeight;
             initStars();
-            initMeteors();
 
             const vCanvas = document.getElementById('visualizer-canvas');
             if (vCanvas) {
@@ -1034,18 +1047,21 @@
             }
         }
 
-        function initMeteors() {
-            meteors = [];
-            for (let i = 0; i < 7; i++) {
-                meteors.push({
-                    x: Math.random() * spaceCanvas.width * 1.6 - spaceCanvas.width * 0.3,
-                    y: -60 - Math.random() * 200,
-                    length: Math.random() * 100 + 50,
-                    speed: Math.random() * 14 + 7,
-                    size: Math.random() * 2.2 + 0.8,
-                    alpha: Math.random() * 0.65 + 0.35
-                });
-            }
+        // Shooting Star Factory
+        function createShootingStar() {
+            if (warpMode) return; // Pause shooting stars during hyperdrive warp
+            const angle = (Math.random() * 25 + 25) * (Math.PI / 180); // Diagonal angle
+            const speed = Math.random() * 10 + 12;
+            
+            shootingStars.push({
+                x: Math.random() * spaceCanvas.width * 0.8,
+                y: Math.random() * (spaceCanvas.height * 0.4),
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed,
+                length: Math.random() * 80 + 60,
+                life: 1.0,
+                decay: Math.random() * 0.018 + 0.012
+            });
         }
 
         function renderSpace() {
@@ -1055,6 +1071,7 @@
             const cx = spaceCanvas.width / 2;
             const cy = spaceCanvas.height / 2;
 
+            // Render regular starfield / warp stars
             for (let i = 0; i < stars.length; i++) {
                 const star = stars[i];
                 if (warpMode) {
@@ -1099,32 +1116,40 @@
                 }
             }
 
+            // Render & Update Shooting Stars
             if (!warpMode) {
-                for (let i = 0; i < meteors.length; i++) {
-                    const m = meteors[i];
-                    m.x += m.speed * 0.75;
-                    m.y += m.speed;
+                // Random chance to spawn a new shooting star (~3-5 seconds average)
+                if (Math.random() < 0.008) {
+                    createShootingStar();
+                }
 
-                    const grad = ctx.createLinearGradient(m.x, m.y, m.x - m.length * 0.75, m.y - m.length);
-                    grad.addColorStop(0, `rgba(255, 210, 120, ${m.alpha})`);
-                    grad.addColorStop(0.4, `rgba(255, 100, 30, ${m.alpha * 0.7})`);
-                    grad.addColorStop(1, 'transparent');
+                for (let i = shootingStars.length - 1; i >= 0; i--) {
+                    const ss = shootingStars[i];
+                    ss.x += ss.dx;
+                    ss.y += ss.dy;
+                    ss.life -= ss.decay;
 
-                    ctx.strokeStyle = grad;
-                    ctx.lineWidth = m.size;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(m.x, m.y);
-                    ctx.lineTo(m.x - m.length * 0.75, m.y - m.length);
-                    ctx.stroke();
-
-                    if (m.y > spaceCanvas.height + 120 || m.x > spaceCanvas.width + 120) {
-                        m.x = Math.random() * spaceCanvas.width * 1.6 - spaceCanvas.width * 0.3;
-                        m.y = -60 - Math.random() * 180;
-                        m.length = Math.random() * 100 + 50;
-                        m.speed = Math.random() * 14 + 7;
-                        m.alpha = Math.random() * 0.65 + 0.35;
+                    if (ss.life <= 0) {
+                        shootingStars.splice(i, 1);
+                        continue;
                     }
+
+                    const tailX = ss.x - (ss.dx / Math.hypot(ss.dx, ss.dy)) * ss.length;
+                    const tailY = ss.y - (ss.dy / Math.hypot(ss.dx, ss.dy)) * ss.length;
+
+                    const grad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+                    grad.addColorStop(0, `rgba(255, 220, 180, ${ss.life})`);
+                    grad.addColorStop(0.3, `rgba(255, 85, 0, ${ss.life * 0.6})`);
+                    grad.addColorStop(1, 'rgba(255, 17, 0, 0)');
+
+                    ctx.save();
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    ctx.moveTo(ss.x, ss.y);
+                    ctx.lineTo(tailX, tailY);
+                    ctx.stroke();
+                    ctx.restore();
                 }
             }
 
@@ -1140,6 +1165,40 @@
         let analyser = null;
         let dataArray = null;
 
+        // List your top 3 audio track options
+        // Define tracks with custom weights (total 100) and HUD display titles
+        const playlist = [
+            { 
+                src: 'Blood_Guts_and_Pain_(Antti_Luode).ogg', 
+                title: 'Blood Guts and Pain — Antti Luode',
+                weight: 80 // 80% chance (Main Track)
+            },
+            { 
+                src: 'Blue_Whale_(Antti_Luode).ogg', 
+                title: 'Blue Whale — Antti Luode',
+                weight: 10 // 10% chance (Easter Egg)
+            },
+            { 
+                src: 'Canon_in_A_(Antti_Luode).ogg', 
+                title: 'Canon in A — Antti Luode',
+                weight: 10 // 10% chance (Easter Egg)
+            }
+        ];
+
+        // Helper function to pick based on weight
+        function getWeightedTrack(tracks) {
+            const totalWeight = tracks.reduce((sum, item) => sum + item.weight, 0);
+            let randomNum = Math.random() * totalWeight;
+
+            for (let track of tracks) {
+                if (randomNum < track.weight) {
+                    return track;
+                }
+                randomNum -= track.weight;
+            }
+            return tracks[0];
+        }
+
         function setupAudioVisualizer() {
             const audioElement = document.getElementById('bg-audio');
 
@@ -1152,20 +1211,27 @@
                 }
 
                 if (!analyser) {
+                    // Pick a weighted track dynamically
+                    const selectedTrack = getWeightedTrack(playlist);
+                    audioElement.src = selectedTrack.src;
+
+                    // Update the HUD credit text dynamically
+                    const creditElement = document.getElementById('credit-text');
+                    if (creditElement) {
+                        creditElement.textContent = selectedTrack.title;
+                    }
+
                     analyser = audioCtx.createAnalyser();
                     analyser.fftSize = 256;
                     analyser.smoothingTimeConstant = 0.72;
                     dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-                    if (audioElement.src) {
-                        // ADD THE VOLUME LINE HERE
-                        audioElement.volume = 0.25; 
-
-                        const source = audioCtx.createMediaElementSource(audioElement);
-                        source.connect(analyser);
-                        analyser.connect(audioCtx.destination);
-                        audioElement.play().catch(() => {});
-                    }
+                    audioElement.volume = 0.25; 
+                    const source = audioCtx.createMediaElementSource(audioElement);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    
+                    audioElement.play().catch(() => {});
                 }
             } catch (err) {
                 console.warn('Audio setup skipped:', err.message);
@@ -1180,7 +1246,6 @@
             requestAnimationFrame(renderVisualizers);
         }
 
-        // Bottom Perspective Visualizer
         function renderPerspectiveVisualizer() {
             const vCanvas = document.getElementById('visualizer-canvas');
             const vCtx = vCanvas.getContext('2d');
@@ -1190,22 +1255,7 @@
             const bottomY = vCanvas.height;
             const horizonY = vCanvas.height * 0.08;
 
-            if (!analyser || !dataArray) {
-                const num = 32;
-                for (let i = 0; i < num; i++) {
-                    const progress = i / num;
-                    const value = 0.08 + Math.sin(Date.now() * 0.002 + i * 0.4) * 0.06;
-                    const currentY = bottomY - progress * (bottomY - horizonY);
-                    const roadWidthAtY = (1 - progress * 0.8) * (vCanvas.width * 0.4);
-                    const heightScale = (1 - progress * 0.55) * 50;
-                    const barHeight = value * heightScale;
-
-                    vCtx.fillStyle = `rgba(255, ${Math.floor(70 + value * 120)}, 0, ${0.25 - progress * 0.15})`;
-                    vCtx.fillRect(centerX - roadWidthAtY - 5, currentY - barHeight, 4, barHeight);
-                    vCtx.fillRect(centerX + roadWidthAtY, currentY - barHeight, 4, barHeight);
-                }
-                return;
-            }
+            if (!analyser || !dataArray) return;
 
             analyser.getByteFrequencyData(dataArray);
             const numBars = Math.min(64, dataArray.length);
@@ -1222,17 +1272,12 @@
                 const leftX = centerX - roadWidthAtY;
                 const rightX = centerX + roadWidthAtY;
 
-                const r = 255;
-                const g = Math.floor(50 + value * 180);
-                const a = 0.85 - progress * 0.45;
-
-                vCtx.fillStyle = `rgba(${r}, ${g}, 0, ${a})`;
+                vCtx.fillStyle = `rgba(255, ${Math.floor(50 + value * 180)}, 0, ${0.85 - progress * 0.45})`;
                 vCtx.fillRect(leftX - 5, currentY - barHeight, 4, barHeight);
                 vCtx.fillRect(rightX + 1, currentY - barHeight, 4, barHeight);
             }
         }
 
-        // RADIAL PLANET VISUALIZER (High Energy Split)
         function renderPlanetRadialVisualizer() {
             const pCanvas = document.getElementById('planet-vis-canvas');
             if (!pCanvas) return;
@@ -1241,134 +1286,87 @@
 
             const cx = pCanvas.width / 2;
             const cy = pCanvas.height / 2;
-            const baseRadius = 215; // Placed right at planet edge
-            const numBars = 54;     // Bars per side (108 total)
+            const baseRadius = 215;
+            const numBars = 54;
             const hasData = analyser && dataArray;
 
-            if (hasData) {
-                analyser.getByteFrequencyData(dataArray);
-            }
+            if (hasData) analyser.getByteFrequencyData(dataArray);
 
             const totalBins = hasData ? Math.floor(dataArray.length * 0.75) : 54;
 
             for (let i = 0; i < numBars; i++) {
-                const progress = i / (numBars - 1); // 0 (Top) to 1 (Bottom)
-
-                // Angle mappings:
-                // Right side: -90° (top) -> +90° (bottom)
+                const progress = i / (numBars - 1);
                 const angleRight = -Math.PI / 2 + progress * Math.PI;
-                // Left side: -90° (top) -> -270° (bottom)
                 const angleLeft = -Math.PI / 2 - progress * Math.PI;
 
-                let valRight = 0;
-                let valLeft = 0;
+                let valRight = 0, valLeft = 0;
 
                 if (hasData) {
-                    // Right Side: Low Freq (index 0) to High Freq
-                    const binIdxRight = Math.floor(progress * (totalBins - 1));
-                    valRight = dataArray[binIdxRight] / 255;
-
-                    // Left Side: High Freq to Low Freq (index 0)
-                    const binIdxLeft = Math.floor((1 - progress) * (totalBins - 1));
-                    valLeft = dataArray[binIdxLeft] / 255;
+                    valRight = dataArray[Math.floor(progress * (totalBins - 1))] / 255;
+                    valLeft = dataArray[Math.floor((1 - progress) * (totalBins - 1))] / 255;
                 } else {
-                    // Dynamic fallback motion when audio is quiet or inactive
                     const pulse = Date.now() * 0.003;
-                    valRight = 0.12 + Math.sin(pulse + i * 0.18) * 0.08 + Math.cos(pulse * 1.5) * 0.04;
-                    valLeft = 0.12 + Math.cos(pulse + i * 0.18) * 0.08 + Math.sin(pulse * 1.5) * 0.04;
+                    valRight = 0.12 + Math.sin(pulse + i * 0.18) * 0.08;
+                    valLeft = 0.12 + Math.cos(pulse + i * 0.18) * 0.08;
                 }
 
-                // Boost sensitivity for high energy tracks
                 const boostedRight = Math.pow(valRight, 1.25);
                 const boostedLeft = Math.pow(valLeft, 1.25);
 
-                const maxBarLength = 95;
-                const lenRight = Math.max(3, boostedRight * maxBarLength);
-                const lenLeft = Math.max(3, boostedLeft * maxBarLength);
-
-                // Render Right Bar (Low -> High)
-                drawRadialBar(pCtx, cx, cy, baseRadius, angleRight, lenRight, boostedRight, false);
-
-                // Render Left Bar (High -> Low)
-                drawRadialBar(pCtx, cx, cy, baseRadius, angleLeft, lenLeft, boostedLeft, true);
+                drawRadialBar(pCtx, cx, cy, baseRadius, angleRight, Math.max(3, boostedRight * 95), boostedRight);
+                drawRadialBar(pCtx, cx, cy, baseRadius, angleLeft, Math.max(3, boostedLeft * 95), boostedLeft);
             }
         }
 
-        function drawRadialBar(pCtx, cx, cy, radius, angle, length, intensity, isLeft) {
+        function drawRadialBar(pCtx, cx, cy, radius, angle, length, intensity) {
             const cos = Math.cos(angle);
             const sin = Math.sin(angle);
-
             const xStart = cx + cos * radius;
             const yStart = cy + sin * radius;
             const xEnd = cx + cos * (radius + length);
             const yEnd = cy + sin * (radius + length);
 
-            // High Energy Fire/Neon Palette
             const grad = pCtx.createLinearGradient(xStart, yStart, xEnd, yEnd);
-            
-            if (intensity > 0.65) {
-                // Intense Energy Spike Peak
-                grad.addColorStop(0, 'rgba(255, 30, 0, 0.95)');
-                grad.addColorStop(0.5, 'rgba(255, 120, 0, 0.9)');
-                grad.addColorStop(1, 'rgba(255, 255, 200, 1)');
-            } else {
-                grad.addColorStop(0, 'rgba(180, 10, 0, 0.7)');
-                grad.addColorStop(0.6, 'rgba(255, 85, 0, 0.8)');
-                grad.addColorStop(1, 'rgba(255, 170, 0, 0.9)');
-            }
+            grad.addColorStop(0, 'rgba(180, 10, 0, 0.7)');
+            grad.addColorStop(0.6, 'rgba(255, 85, 0, 0.8)');
+            grad.addColorStop(1, 'rgba(255, 170, 0, 0.9)');
 
             pCtx.save();
             pCtx.strokeStyle = grad;
             pCtx.lineWidth = Math.min(3.8, 2.0 + intensity * 2.2);
             pCtx.lineCap = 'round';
-
-            // Glow on bass / transient spikes
-            if (intensity > 0.5) {
-                pCtx.shadowColor = intensity > 0.75 ? '#ff1100' : '#ff5500';
-                pCtx.shadowBlur = 10 + intensity * 15;
-            }
-
             pCtx.beginPath();
             pCtx.moveTo(xStart, yStart);
             pCtx.lineTo(xEnd, yEnd);
             pCtx.stroke();
-
-            // Energy Particle Tip on dynamic spikes
-            if (intensity > 0.45) {
-                pCtx.fillStyle = '#ffffff';
-                pCtx.beginPath();
-                pCtx.arc(xEnd, yEnd, 1.2 + intensity * 1.8, 0, Math.PI * 2);
-                pCtx.fill();
-            }
-
             pCtx.restore();
         }
 
-        // ========== 6. SEQUENCE CONTROLLER ==========
-        const statusText = document.getElementById('loader-text');
-        const lockContainer = document.getElementById('lock-container');
-        const lockStatus = document.getElementById('lock-status');
-        const loaderHud = document.getElementById('loader-hud');
+        // ========== 6. UNLOCK SEQUENCE ==========
+        const analogBtn = document.getElementById('analog-btn');
+        const consoleStatus = document.getElementById('console-status');
+        const analogConsole = document.getElementById('analog-console');
         const flash = document.getElementById('warp-flash');
         const statusBar = document.getElementById('status-bar');
 
-        function runSequence() {
-            statusBar.textContent = 'STATUS: OVERRIDE';
+        function runUnlockSequence() {
+            setupAudioVisualizer();
+            analogBtn.classList.add('pressed');
+            document.body.classList.add('beacon-active');
+            consoleStatus.textContent = "OVERRIDDEN";
+            consoleStatus.style.color = "#ff1100";
+            statusBar.textContent = 'STATUS: UNLATCHING BLAST DOORS';
 
+            // Mechanical Recoil Phase
             setTimeout(() => {
-                statusText.textContent = '> OVERRIDING HYPERDRIVE SAFETY LOCKS...';
-                statusText.style.color = '#ff5500';
-            }, 900);
+                document.body.classList.add('gate-recoil');
+            }, 300);
 
+            // Gate Sliding & Hyperdrive Warp Phase
             setTimeout(() => {
-                lockStatus.textContent = 'UNLOCKED';
-                lockStatus.style.color = '#ff1100';
-                lockContainer.style.transform = 'scale(1.25)';
-            }, 2100);
-
-            setTimeout(() => {
-                lockContainer.style.opacity = '0';
-                loaderHud.style.opacity = '0';
+                analogConsole.style.opacity = '0';
+                analogConsole.style.pointerEvents = 'none';
+                document.body.classList.remove('gate-recoil');
                 document.body.classList.add('gate-open');
                 statusBar.textContent = 'STATUS: WARPING';
 
@@ -1377,8 +1375,9 @@
                     if (warpSpeed < 48) warpSpeed += 2.4;
                     else clearInterval(accel);
                 }, 45);
-            }, 2700);
+            }, 1000);
 
+            // Warp Flash & Settle Stage
             setTimeout(() => {
                 flash.style.opacity = '0.95';
                 setTimeout(() => { flash.style.opacity = '0'; }, 600);
@@ -1393,41 +1392,43 @@
                 }, 38);
 
                 document.body.classList.add('settled');
-                loaderHud.style.display = 'none';
                 statusBar.textContent = 'STATUS: ONLINE';
                 statusBar.style.color = '#ffaa00';
-                resizeStaticCanvas();
-            }, 4500);
+            }, 2800);
         }
 
-        function initializeEntry() {
-            const modal = document.getElementById('entry-modal');
-            setupAudioVisualizer();
-            modal.style.opacity = '0';
-            setTimeout(() => {
-                modal.style.display = 'none';
-                runSequence();
-            }, 650);
-        }
+        analogBtn.addEventListener('click', runUnlockSequence);
+        
+        // Secret typed sequence listener (Easter Egg)
+        (function() {
+            const targetSequence = 'tsl';
+            let inputBuffer = '';
+            let resetTimer = null;
 
-        document.getElementById('engage-btn').addEventListener('click', initializeEntry);
+            window.addEventListener('keydown', (e) => {
+                // Prevent capturing typing inside input fields or textareas if any exist
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
-        // ========== 7. BUTTON FEEDBACK ==========
-        document.querySelectorAll('.portal-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const cmd = btn.dataset.cmd;
-                statusBar.textContent = `STATUS: LAUNCHING ${cmd.toUpperCase()}`;
-                statusBar.style.color = '#ff5500';
+                // Append lowercase character
+                inputBuffer += e.key.toLowerCase();
 
-                flash.style.opacity = '0.25';
-                setTimeout(() => { flash.style.opacity = '0'; }, 180);
+                // Keep buffer only as long as target string length
+                if (inputBuffer.length > targetSequence.length) {
+                    inputBuffer = inputBuffer.slice(-targetSequence.length);
+                }
 
-                setTimeout(() => {
-                    statusBar.textContent = 'STATUS: ONLINE';
-                    statusBar.style.color = '#ffaa00';
-                }, 1600);
+                // Trigger redirect on match
+                if (inputBuffer === targetSequence) {
+                    window.location.href = 'terminal.html';
+                }
+
+                // Reset buffer after 1.5 seconds of inactivity
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => {
+                    inputBuffer = '';
+                }, 1500);
             });
-        });
+        })();
     </script>
 </body>
 </html>

@@ -228,95 +228,264 @@
         }
 
         /* Side Nation Dossier Panel */
+       /* Optimized Holographic Nation Dossier Panel */
         #nation-dossier-panel {
             position: absolute;
-            top: 0;
-            right: -360px;
-            width: 340px;
-            height: 100%;
-            background: rgba(12, 12, 12, 0.96);
-            border-left: 2px solid #ffaa00;
+            top: 14px;
+            left: -380px;
+            width: 350px;
+            height: calc(100% - 28px);
+            /* Simplified semi-transparent dark cyan background */
+            background: rgba(8, 20, 30, 0.92);
+            border: 1px solid #00f0ff;
+            border-left: 3px solid #00f0ff;
+            border-radius: 4px;
             z-index: 250;
-            transition: right 0.3s ease-in-out;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            transition: transform 0.35s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), 0 10px 30px rgba(0, 0, 0, 0.8);
             display: flex;
             flex-direction: column;
             font-family: 'Courier New', Courier, monospace;
             box-sizing: border-box;
-            padding: 20px;
+            padding: 16px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
         }
+
         #nation-dossier-panel.open {
-            right: 0;
+            transform: translateX(394px);
+            opacity: 0.96;
+            pointer-events: auto;
         }
+
+        /* Static Retro CRT Scanlines (Lightweight SVG Data URI) */
+        #nation-dossier-panel::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(0, 240, 255, 0.05) 50%, rgba(0, 0, 0, 0.35) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.6;
+        }
+
         .dossier-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #ffaa00;
+            align-items: flex-start;
+            border-bottom: 2px solid #00f0ff;
             padding-bottom: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 3;
         }
+
+        .dossier-title-block {
+            flex: 1;
+            min-width: 0;
+        }
+
         .dossier-title {
-            color: #ffaa00;
-            font-size: 15px;
+            color: #00f0ff;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            text-shadow: 0 0 6px rgba(0, 240, 255, 0.6);
+            line-height: 1.25;
+            word-break: break-word;
         }
+
+        .dossier-subtitle {
+            color: #ffaa00;
+            font-size: 10px;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
         .dossier-close {
-            background: none;
+            background: rgba(255, 51, 0, 0.15);
             border: 1px solid #ff3300;
             color: #ff3300;
             font-family: inherit;
             font-weight: bold;
             cursor: pointer;
-            padding: 2px 8px;
+            padding: 3px 9px;
             font-size: 12px;
+            flex-shrink: 0;
+            margin-left: 10px;
+            border-radius: 2px;
+            transition: background 0.15s ease;
         }
+
         .dossier-close:hover {
             background: #ff3300;
             color: #000;
         }
-        .dossier-section {
-            margin-bottom: 15px;
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid #333;
-            padding: 12px;
+
+        .dossier-scroll {
+            overflow-y: auto;
+            overscroll-behavior: contain; /* Prevents scroll chaining to parent elements */
+            pointer-events: auto;
+            flex-grow: 1;
+            padding-right: 6px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .dossier-scroll::-webkit-scrollbar { width: 4px; }
+        .dossier-scroll::-webkit-scrollbar-track { background: rgba(0, 20, 30, 0.6); }
+        .dossier-scroll::-webkit-scrollbar-thumb { 
+            background: #00f0ff; 
             border-radius: 2px;
         }
+
+        /* Lightweight Flat Holographic Boxes */
+        .dossier-section {
+            margin-bottom: 12px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 10px 12px;
+            border-radius: 3px;
+        }
+
         .dossier-section-title {
             font-size: 11px;
-            color: #aaa;
+            color: #00f0ff;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            border-bottom: 1px dashed #444;
-            padding-bottom: 4px;
+            letter-spacing: 1.2px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed rgba(0, 240, 255, 0.3);
+            padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+
+        .dossier-section-title .sec-icon { font-size: 12px; }
+
         .dossier-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 12px;
-            margin: 6px 0;
+            margin: 7px 0;
+            gap: 8px;
         }
-        .dossier-label {
-            color: #888;
-        }
+
+        .dossier-label { color: #8ab4f8; flex-shrink: 0; }
         .dossier-value {
             font-weight: bold;
-            color: #fff;
+            color: #e0ffff;
+            text-align: right;
+            word-break: break-word;
         }
-        /* Color-coded stat bars / badges */
+
+        /* Clean Badges & Progress Elements */
         .stat-badge {
-            padding: 2px 6px;
+            display: inline-block;
+            padding: 2px 7px;
             font-size: 11px;
             font-weight: bold;
             border-radius: 2px;
             border: 1px solid currentColor;
+            letter-spacing: 0.5px;
+            min-width: 28px;
+            text-align: center;
         }
-        .stat-high { color: #00ff00; background: rgba(0, 255, 0, 0.1); }
-        .stat-med { color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
-        .stat-low { color: #ff3300; background: rgba(255, 51, 0, 0.1); }
+
+        .grade-S { color: #00ffcc; background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; }
+        .grade-A { color: #00ff66; background: rgba(0, 255, 102, 0.12); border-color: #00ff66; }
+        .grade-B { color: #ffaa00; background: rgba(255, 170, 0, 0.12); border-color: #ffaa00; }
+        .grade-C { color: #ffff55; background: rgba(255, 255, 85, 0.1); border-color: #ffff55; }
+        .grade-D { color: #ff6644; background: rgba(255, 102, 68, 0.12); border-color: #ff6644; }
+        .grade-F { color: #ff2255; background: rgba(255, 34, 85, 0.15); border-color: #ff2255; }
+
+        .dossier-power-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 15, 25, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .dossier-power-fill {
+            height: 100%;
+            width: 0%;
+            background: #00f0ff;
+            transition: width 0.3s ease;
+        }
+
+        .dossier-power-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 6px;
+            color: #8ab4f8;
+        }
+
+        .dossier-power-meta .pts { font-weight: bold; color: #00f0ff; }
+        .dossier-power-meta .pts.over { color: #ff3300; }
+
+        .dossier-flag-strip {
+            height: 3px;
+            background: linear-gradient(90deg, #00f0ff, #ffaa00, #00f0ff);
+            margin: -4px -12px 10px;
+            opacity: 0.8;
+        }
+
+        .dossier-hash {
+            font-size: 10px;
+            word-break: break-all;
+            color: #00f0ff;
+            font-family: monospace;
+            background: rgba(0, 15, 25, 0.8);
+            padding: 6px 8px;
+            border: 1px dashed rgba(0, 240, 255, 0.3);
+            margin-top: 4px;
+            border-radius: 2px;
+        }
+
+        .dossier-status-pill {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .status-valid {
+            color: #00ffaa;
+            border: 1px solid #00ffaa;
+            background: rgba(0, 255, 170, 0.1);
+        }
+
+        .status-invalid {
+            color: #ff3300;
+            border: 1px solid #ff3300;
+            background: rgba(255, 51, 0, 0.15);
+        }
+
+        .stat-row-with-bar { margin: 8px 0; }
+        .stat-row-with-bar .dossier-row { margin-bottom: 3px; }
+
+        .mini-grade-bar {
+            height: 4px;
+            background: rgba(0, 15, 25, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .mini-grade-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
 
         /* Keeps nation borders thin and crisp regardless of zoom level */
         .nation-border, #draft-layer polygon {
@@ -339,10 +508,9 @@
 
     <div id="nav-header">
         <div class="nav-links-left">
-            <a href="central.html" class="nav-link">&lt; TARGET CENTRAL DB</a>
-            <a href="analytics.html" class="nav-link">CONVERTED STATS</a>
+            <a href="creator.html" class="nav-link">CREATE NATION STATS</a>
+            <a href="stats.html" class="nav-link">NATION STATS DB</a>
             <a href="battle.html" class="nav-link">BATTLE SYSTEM</a>
-            <a href="visualizer.html" class="nav-link">Music Visualizer</a>
             <button class="nav-link" id="btn-draw-mode" onclick="toggleDrawMode()">✏️ DRAW BORDER MODE</button>
         </div>
         <div class="title">// TSL_TACTICAL_MAP_VECTOR_GRID_v2.8</div>
@@ -356,63 +524,97 @@
     </div>
 
     <div id="main-workspace">
-        <div id="map-container">
-            <div id="world-map-wrapper">
-                <!-- Floating Nation Layer Toggle -->
-                <div style="position: absolute; top: 10px; left: 10px; z-index: 100;">
-                    <button id="btn-toggle-nations" onclick="toggleNationsLayer()" 
-                            style="background: rgba(17, 17, 17, 0.85); border: 1px solid #ffaa00; color: #ffaa00; 
-                                   font-family: inherit; font-size: 11px; font-weight: bold; padding: 5px 10px; 
-                                   cursor: pointer; box-shadow: 0 0 8px rgba(0,0,0,0.8);">
-                        👁️ NATIONS: ON
-                    </button>
-                </div>
-                <div id="map-viewport-transform">
-                    <img id="vector-map" src="map.svg" alt="World Map" draggable="false">
-                    
-                    <!-- Dynamic SVG Layer for Borders & Capitals -->
-                    <svg id="map-overlay" viewBox="0 0 2271 1133" style="position: absolute; top: 0; left: 0; width: 2271px; height: 1133px; pointer-events: none;">
-                        <g id="borders-layer"></g>
-                        <g id="capitals-layer"></g>
-                    </svg>
-                </div>
-
-                <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
+    <div id="map-container">
+        <div id="world-map-wrapper">
+            <!-- Floating Nation Layer Toggle -->
+            <div style="position: absolute; top: 10px; left: 10px; z-index: 100;">
+                <button id="btn-toggle-nations" onclick="toggleNationsLayer()" 
+                        style="background: rgba(17, 17, 17, 0.85); border: 1px solid #ffaa00; color: #ffaa00; 
+                               font-family: inherit; font-size: 11px; font-weight: bold; padding: 5px 10px; 
+                               cursor: pointer; box-shadow: 0 0 8px rgba(0,0,0,0.8);">
+                    👁️ NATIONS: ON
+                </button>
             </div>
-        </div>
 
-        <!-- SIDE NATION DOSSIER PANEL -->
-        <div id="nation-dossier-panel">
-            <div class="dossier-header">
-                <span class="dossier-title" id="dos-title">NATION DOSSIER</span>
-                <button class="dossier-close" onclick="closeDossier()">[X]</button>
-            </div>
-            <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px;">
-                <div class="dossier-section">
-                    <div class="dossier-section-title">General Information</div>
-                    <div class="dossier-row"><span class="dossier-label">Capital:</span> <span class="dossier-value" id="dos-capital">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Government:</span> <span class="dossier-value" id="dos-gov">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Population:</span> <span class="dossier-value" id="dos-pop">-</span></div>
+            <!-- MOVED: Dossier Panel is now inside the map wrapper -->
+            <div id="nation-dossier-panel">
+                <div class="dossier-header">
+                    <div class="dossier-title-block">
+                        <div class="dossier-title" id="dos-title">NATION DOSSIER</div>
+                        <div class="dossier-subtitle" id="dos-subtitle">TACTICAL PROFILE</div>
+                    </div>
+                    <button class="dossier-close" onclick="closeDossier()">✕</button>
                 </div>
+                <div class="dossier-scroll">
+                    <div class="dossier-section">
+                        <div class="dossier-section-title"><span class="sec-icon">🏛️</span> General Information</div>
+                        <div class="dossier-flag-strip"></div>
+                        <div class="dossier-row"><span class="dossier-label">Capital</span> <span class="dossier-value" id="dos-capital">-</span></div>
+                        <div class="dossier-row"><span class="dossier-label">Government</span> <span class="dossier-value" id="dos-gov">-</span></div>
+                        <div class="dossier-row"><span class="dossier-label">Population</span> <span class="dossier-value" id="dos-pop">-</span></div>
+                    </div>
 
-                <div class="dossier-section">
-                    <div class="dossier-section-title">Power Budget Allocation</div>
-                    <div class="dossier-row"><span class="dossier-label">Economy:</span> <span id="dos-econ" class="stat-badge stat-med">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Technology:</span> <span id="dos-tech" class="stat-badge stat-med">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Resources:</span> <span id="dos-res" class="stat-badge stat-med">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Infrastructure:</span> <span id="dos-infra" class="stat-badge stat-med">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">Defense:</span> <span id="dos-def" class="stat-badge stat-med">-</span></div>
-                    <div class="dossier-row" style="margin-top: 10px; border-top: 1px dashed #333; padding-top: 6px;">
-                        <span class="dossier-label">Total Points:</span> <span class="dossier-value" id="dos-total-power">-</span>
+                    <div class="dossier-section">
+                        <div class="dossier-section-title"><span class="sec-icon">⚡</span> Power Budget</div>
+                        <div class="dossier-power-track">
+                            <div class="dossier-power-fill" id="dos-power-bar"></div>
+                        </div>
+                        <div class="dossier-power-meta">
+                            <span>Budget used</span>
+                            <span class="pts" id="dos-total-power">0 / 7</span>
+                        </div>
+                        <div class="dossier-row" style="margin-top: 8px;">
+                            <span class="dossier-label">Audit</span>
+                            <span id="dos-audit-status" class="dossier-status-pill status-valid">VALID</span>
+                        </div>
+                    </div>
+
+                    <div class="dossier-section">
+                        <div class="dossier-section-title"><span class="sec-icon">📊</span> Core Grades</div>
+                        <div class="stat-row-with-bar">
+                            <div class="dossier-row"><span class="dossier-label">Economy</span> <span id="dos-econ" class="stat-badge grade-B">-</span></div>
+                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-econ-bar"></div></div>
+                        </div>
+                        <div class="stat-row-with-bar">
+                            <div class="dossier-row"><span class="dossier-label">Resources</span> <span id="dos-res" class="stat-badge grade-B">-</span></div>
+                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-res-bar"></div></div>
+                        </div>
+                        <div class="stat-row-with-bar">
+                            <div class="dossier-row"><span class="dossier-label">Infrastructure</span> <span id="dos-infra" class="stat-badge grade-B">-</span></div>
+                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-infra-bar"></div></div>
+                        </div>
+                        <div class="stat-row-with-bar">
+                            <div class="dossier-row"><span class="dossier-label">Tech Tier</span> <span id="dos-tech" class="stat-badge grade-B">-</span></div>
+                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-tech-bar"></div></div>
+                        </div>
+                        <div class="stat-row-with-bar">
+                            <div class="dossier-row"><span class="dossier-label">Defense</span> <span id="dos-def" class="stat-badge grade-B">-</span></div>
+                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-def-bar"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="dossier-section">
+                        <div class="dossier-section-title"><span class="sec-icon">🔐</span> Strategic Status</div>
+                        <div class="dossier-row"><span class="dossier-label">Dispatch ID</span> <span class="dossier-value" id="dos-dispatch">-</span></div>
+                        <div class="dossier-hash" id="dos-hash">UNVERIFIED</div>
                     </div>
                 </div>
-
-                <div class="dossier-section">
-                    <div class="dossier-section-title">Strategic Status</div>
-                    <div class="dossier-row"><span class="dossier-label">Integrity Hash:</span> <span class="dossier-value" id="dos-hash" style="font-size: 10px; word-break: break-all; color: #ffaa00;">-</span></div>
-                </div>
             </div>
+
+            <div id="map-viewport-transform">
+                <img id="vector-map" src="map.svg" alt="World Map" draggable="false">
+                
+                <!-- Dynamic SVG Layer for Borders & Capitals -->
+                <svg id="map-overlay" viewBox="0 0 2271 1133" style="position: absolute; top: 0; left: 0; width: 2271px; height: 1133px; pointer-events: none;">
+                    <g id="borders-layer"></g>
+                    <g id="capitals-layer"></g>
+                </svg>
+            </div>
+
+            <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
         </div>
+    </div>
+</div>
 
         <!-- BORDER DRAWING CONTROL PANEL -->
         <div id="drawer-panel" style="display:none; position:absolute; top:15px; right:15px; z-index:300; background:#111; border:2px solid #ffaa00; padding:15px; width:300px; color:#00ff00; font-family:monospace; box-shadow: 0 0 15px rgba(0,0,0,0.9);">
@@ -648,54 +850,121 @@
         }
 
         // Nation Dossier Panel Logic
+        // Point values mirrored from central.html grade scales
+        const GRADE_POINTS = {
+            'S': 3, 'A': 2, 'B': 1, 'C': 0, 'D': -1, 'F': -2,
+            'High-Tech': 2, 'Near-Future': 1, 'Modern': 0, 'Retro': -1,
+            'Fortified': 2, 'Active Patrol': 1, 'Peacekeeping': 0, 'Demilitarized': -1
+        };
+
+        function gradeToBarPct(val) {
+            const pts = GRADE_POINTS[val];
+            if (pts === undefined) return 15;
+            return Math.max(8, Math.min(100, ((pts + 2) / 5) * 100));
+        }
+
+        function gradeColor(val) {
+            const pts = GRADE_POINTS[val];
+            if (pts === undefined) return '#555';
+            if (pts >= 3) return '#00ff88';
+            if (pts >= 2) return '#00ff00';
+            if (pts >= 1) return '#ffaa00';
+            if (pts >= 0) return '#cccc66';
+            if (pts >= -1) return '#ff6644';
+            return '#ff2233';
+        }
+
+        function cssGradeClass(val) {
+            if (!val || val === '-') return 'grade-unknown';
+            const key = String(val).replace(/[\s\/]+/g, '');
+            const known = ['S','A','B','C','D','F','HighTech','NearFuture','Modern','Retro','Fortified','ActivePatrol','Peacekeeping','Demilitarized'];
+            if (known.includes(key)) return 'grade-' + key;
+            const pts = GRADE_POINTS[val];
+            if (pts >= 3) return 'grade-S';
+            if (pts >= 2) return 'grade-A';
+            if (pts >= 1) return 'grade-B';
+            if (pts >= 0) return 'grade-C';
+            if (pts >= -1) return 'grade-D';
+            return 'grade-F';
+        }
+
+        function setStatBadge(elementId, val, barId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const display = (val === undefined || val === null || val === '') ? '-' : String(val);
+            el.textContent = display;
+            el.className = 'stat-badge ' + cssGradeClass(display);
+
+            if (barId) {
+                const bar = document.getElementById(barId);
+                if (bar) {
+                    const pct = gradeToBarPct(display);
+                    bar.style.width = pct + '%';
+                    bar.style.background = gradeColor(display);
+                    bar.style.boxShadow = '0 0 6px ' + gradeColor(display);
+                }
+            }
+        }
+
         function openNationDossier(nation) {
             const panel = document.getElementById('nation-dossier-panel');
             
-            // Extract stats and audit objects safely
             const stats = nation.stats || {};
             const audit = nation.audit || {};
 
-            document.getElementById('dos-title').textContent = stats.nation || nation.nation || 'UNKNOWN STATE';
+            const name = stats.nation || nation.nation || 'UNKNOWN STATE';
+            document.getElementById('dos-title').textContent = name;
+            document.getElementById('dos-subtitle').textContent = 'TACTICAL PROFILE • ' + (nation.color || '#ffaa00').toUpperCase();
             document.getElementById('dos-capital').textContent = stats.capital || nation.capital?.name || 'N/A';
             document.getElementById('dos-gov').textContent = stats.government || nation.government || 'N/A';
             document.getElementById('dos-pop').textContent = stats.population || nation.population || 'N/A';
-            document.getElementById('dos-hash').textContent = nation.dispatch_id ? `DISPATCH #${nation.dispatch_id}` : 'UNVERIFIED';
 
-            // Map stats attributes from region-stats-data.json
-            setStatBadge('dos-econ', stats.economy_grade ?? '-');
-            setStatBadge('dos-tech', stats.tech_tier ?? '-');
-            setStatBadge('dos-res', stats.resource_wealth ?? '-');
-            setStatBadge('dos-infra', stats.infrastructure ?? '-');
-            setStatBadge('dos-def', stats.defense_stance ?? '-');
+            setStatBadge('dos-econ', stats.economy_grade ?? '-', 'dos-econ-bar');
+            setStatBadge('dos-res', stats.resource_wealth ?? '-', 'dos-res-bar');
+            setStatBadge('dos-infra', stats.infrastructure ?? '-', 'dos-infra-bar');
+            setStatBadge('dos-tech', stats.tech_tier ?? '-', 'dos-tech-bar');
+            setStatBadge('dos-def', stats.defense_stance ?? '-', 'dos-def-bar');
 
-            // Display total power score from audit object
             const totalPower = audit.powerScore ?? 0;
             const totalEl = document.getElementById('dos-total-power');
-            totalEl.textContent = totalPower + ' / 7 Points';
-            totalEl.style.color = audit.isValid === false ? '#ff3300' : '#00ff00';
+            totalEl.textContent = totalPower + ' / 7';
+            totalEl.className = 'pts' + (totalPower > 7 || audit.isValid === false ? ' over' : '');
+
+            const powerBar = document.getElementById('dos-power-bar');
+            const fillPct = Math.min(Math.max((totalPower / 7) * 100, 0), 100);
+            powerBar.style.width = fillPct + '%';
+            if (totalPower > 7 || audit.isValid === false) {
+                powerBar.style.background = '#ff0000';
+                powerBar.style.boxShadow = '0 0 10px #ff0000';
+            } else if (totalPower >= 5) {
+                powerBar.style.background = '#ffaa00';
+                powerBar.style.boxShadow = '0 0 8px #ffaa00';
+            } else {
+                powerBar.style.background = '#00ff00';
+                powerBar.style.boxShadow = '0 0 8px #00ff00';
+            }
+
+            const auditEl = document.getElementById('dos-audit-status');
+            if (audit.isValid === false) {
+                auditEl.textContent = 'OVERPOWERED';
+                auditEl.className = 'dossier-status-pill status-invalid';
+            } else {
+                auditEl.textContent = 'VALID';
+                auditEl.className = 'dossier-status-pill status-valid';
+            }
+
+            document.getElementById('dos-dispatch').textContent = nation.dispatch_id ? '#' + nation.dispatch_id : 'N/A';
+            document.getElementById('dos-hash').textContent = nation.dispatch_id
+                ? `DISPATCH #${nation.dispatch_id} • INTEGRITY LOCKED`
+                : 'UNVERIFIED — NO DISPATCH LINKED';
 
             panel.classList.add('open');
-        }
-
-        function setStatBadge(elementId, val) {
-            const el = document.getElementById(elementId);
-            el.textContent = val;
-            el.className = 'stat-badge';
-            const num = Number(val);
-            if (isNaN(num)) {
-                el.classList.add('stat-med');
-            } else if (num >= 3) {
-                el.classList.add('stat-high');
-            } else if (num === 2) {
-                el.classList.add('stat-med');
-            } else {
-                el.classList.add('stat-low');
-            }
         }
 
         function closeDossier() {
             document.getElementById('nation-dossier-panel').classList.remove('open');
         }
+
 
         async function loadRegionMap() {
             try {
@@ -1022,6 +1291,19 @@
                 btn.style.color = '#0c0c0c';
             }
         }
+
     </script>
+    <script>
+        // Place the snippet here!
+        const dossierPanel = document.getElementById('nation-dossier-panel');
+        if (dossierPanel) {
+            dossierPanel.addEventListener('wheel', (e) => e.stopPropagation());
+            dossierPanel.addEventListener('mousedown', (e) => e.stopPropagation());
+            dossierPanel.addEventListener('touchstart', (e) => e.stopPropagation());
+        }
+    </script>
+
 </body>
 </html>
+
+

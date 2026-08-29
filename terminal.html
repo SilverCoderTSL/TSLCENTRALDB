@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[REDACTED] - Terminal</title>
+<style>
+  :root {
+    --green: #00ff66;
+    --dim-green: #005522;
+    --bg: #050a05;
+    --shadow: rgba(0, 255, 102, 0.4);
+  }
+
+  /* Color Theme Overrides */
+  body.theme-amber {
+    --green: #ffb000;
+    --dim-green: #553b00;
+    --bg: #0a0700;
+    --shadow: rgba(255, 176, 0, 0.4);
+  }
+
+  body.theme-cyan {
+    --green: #00e5ff;
+    --dim-green: #004c55;
+    --bg: #00080a;
+    --shadow: rgba(0, 229, 255, 0.4);
+  }
+
+  body.theme-red {
+    --green: #ff2222;
+    --dim-green: #550000;
+    --bg: #0a0000;
+    --shadow: rgba(255, 34, 34, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--green);
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 0 5px var(--green), 0 0 10px var(--shadow);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* CRT Screen Wrapper */
+  .crt {
+    width: 100vw;
+    height: 100vh;
+    padding: 2rem;
+    position: relative;
+    background: radial-gradient(circle, rgba(16, 32, 16, 0.15) 0%, rgba(0, 0, 0, 0.95) 100%);
+    overflow: hidden;
+  }
+
+  /* CRT Scanlines Overlay */
+  .crt::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 10;
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+  }
+
+  /* Matrix Canvas Overlay */
+  #matrix-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  #matrix-canvas.active {
+    opacity: 0.35;
+  }
+
+  /* Screen Flicker Animation */
+  .flicker {
+    animation: flickerAnimation 0.15s infinite;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 5;
+  }
+
+  @keyframes flickerAnimation {
+    0% { opacity: 0.97; }
+    50% { opacity: 1; }
+    52% { opacity: 0.88; }
+    54% { opacity: 1; }
+    80% { opacity: 0.94; }
+    100% { opacity: 0.98; }
+  }
+
+  /* Horizontal Glitch Bar */
+  .glitch-bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--green);
+    opacity: 0;
+    z-index: 11;
+    pointer-events: none;
+  }
+
+  /* Output Screen Container */
+  #terminal-output {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    scrollbar-width: none;
+  }
+  #terminal-output::-webkit-scrollbar { display: none; }
+
+  /* Input Line Setup */
+  .input-line {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+  }
+
+  .prompt {
+    margin-right: 0.5rem;
+    font-weight: bold;
+    user-select: none;
+  }
+
+  input[type="text"] {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--green);
+    font-size: 1.1rem;
+    width: 100%;
+    caret-color: var(--green);
+    text-shadow: 0 0 5px var(--green);
+  }
+
+  .ascii-header {
+    line-height: 1.1;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+
+<div class="crt">
+  <canvas id="matrix-canvas"></canvas>
+  <div class="flicker">
+    <div id="glitch-line" class="glitch-bar"></div>
+    <div id="terminal-output">
+      <pre class="ascii-header">
+ ████████╗███████╗██╗      ████████╗███████╗██████╗ ███╗   ███╗
+ ╚══██╔══╝██╔════╝██║      ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
+    ██║   ███████╗██║         ██║   █████╗  ██████╔╝██╔████╔██║
+    ██║   ╚════██║██║         ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+    ██║   ███████║███████╗    ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+    ╚═╝   ╚══════╝╚══════╝    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+      </pre>
+        <div class="glitch-text">RECOVERY NODE 09 // PACIFIC IMPACT ARCHIVE [YEAR 3005]</div>
+        <div>SYSTEM CORE ONLINE... ATMOSPHERIC SENSORS RECOVERY ACTIVE</div>
+      <div>Type '<span style="color:#fff;">help</span>' to list available system commands. Audio is <span id="audio-status" style="color:#fff;">OFF</span>.</div>
+      <div>========================================================[cite: 15]</div>
+      <br>
+    </div>
+    
+    <div class="input-line">
+      <span class="prompt">GUEST@UNKNOWN_NODE:~$</span>
+      <input type="text" id="cli" autofocus autocomplete="off" spellcheck="false" />
+    </div>
+  </div>
+</div>
+
+<script>
+  const cli = document.getElementById('cli');
+  const output = document.getElementById('terminal-output');
+  const glitchLine = document.getElementById('glitch-line');
+  const matrixCanvas = document.getElementById('matrix-canvas');
+  const mCtx = matrixCanvas.getContext('2d');
+
+  let audioEnabled = false;
+  let audioCtx = null;
+  
+  // Command History tracking
+  const commandHistory = [];
+  let historyIndex = -1;
+
+  // Command Database
+  const commands = {
+    'help': `AVAILABLE COMMANDS:
+  help      - Display system manual
+  lore      - Query archived node memory logs
+  status    - Read current hardware condition
+  whoami    - Display local operator profile
+  theme     - Change color palette (green, amber, cyan, red)
+  matrix    - Toggle background visualizer streams
+  audio     - Toggle sound effect feedback (on/off)
+  clear     - Purge terminal display
+  corrupt   - Trigger manual sync override
+  exit      - Return to primary surface UI`,
+
+    'lore': `[DECRYPTION COMPLETE: ARCHIVE RECORD 0x3005]
+...CALAMITY EVENT: Pacific Impact detected (2031 AD).
+...GLOBAL IMPACT: ~94% biosphere disruption. Coastal infrastructure dissolved.
+...CURRENT STAMP: Year 3005. Reconstruction Cycle 87.
+...NOTICE: Surface nodes remain isolated. Sub-oceanic transceivers still offline.`,
+
+    'status': `SYSTEM STATUS (CYCLE 3005.238):
+  GEOTHERMAL GRID: STABLE (42% VOLTAGE DROP)
+  CRUSTAL SEISMICS: MODERATE IMPACT VIBRATIONS
+  ATMOSPHERIC DUST: 12% SHADOW COVER REMAINING
+  RELAY NODE 09: ONLINE (RECOVERY PHASE ACTIVE)`,
+
+    'whoami': `OPERATOR: RECOVERY_RECON_UNIT_09
+ SYSTEM PERMISSIONS: LEVEL 2 SURVIVOR
+ LOC: PACIFIC COASTAL RECOVERY OUTPOST 4`
+  };
+
+  // --- AUDIO SYNTHESIZER ---
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function playSound(type) {
+    if (!audioEnabled || !audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+
+    if (type === 'key') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300 + Math.random() * 200, now);
+      gain.gain.setValueAtTime(0.015, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } else if (type === 'enter') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === 'glitch') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.linearRampToValueAtTime(400, now + 0.12);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    }
+  }
+
+  // Focus keeper
+  document.addEventListener('click', () => cli.focus());
+
+  // Input Handling
+  cli.addEventListener('keydown', (e) => {
+    initAudio();
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      autoComplete();
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        cli.value = commandHistory[commandHistory.length - 1 - historyIndex];
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        historyIndex--;
+        cli.value = commandHistory[commandHistory.length - 1 - historyIndex];
+      } else if (historyIndex === 0) {
+        historyIndex = -1;
+        cli.value = '';
+      }
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      const input = cli.value.trim().toLowerCase();
+      cli.value = '';
+      historyIndex = -1;
+
+      if (!input) return;
+
+      playSound('enter');
+      commandHistory.push(input);
+
+      printOutput(`GUEST@UNKNOWN_NODE:~$ ${input}`, 'opacity: 0.85;');
+
+      processCommand(input);
+      output.scrollTop = output.scrollHeight;
+      return;
+    }
+
+    if (e.key.length === 1 || e.key === 'Backspace') {
+      playSound('key');
+    }
+  });
+
+  function processCommand(input) {
+    const parts = input.split(' ');
+    const cmd = parts[0];
+    const arg = parts[1];
+
+    if (cmd === 'clear') {
+      output.innerHTML = '';
+      return;
+    }
+
+    if (cmd === 'exit') {
+      printOutput('CLOSING TERMINAL SESSION...', 'color: #fff;');
+      setTimeout(() => { window.location.href = 'index.html'; }, 600);
+      return;
+    }
+
+    if (cmd === 'audio') {
+      audioEnabled = !audioEnabled;
+      document.getElementById('audio-status').textContent = audioEnabled ? 'ON' : 'OFF';
+      printOutput(`Audio effects toggled: ${audioEnabled ? 'ENABLED' : 'DISABLED'}`);
+      return;
+    }
+
+    if (cmd === 'matrix') {
+      matrixCanvas.classList.toggle('active');
+      printOutput(`Matrix code stream ${matrixCanvas.classList.contains('active') ? 'ENABLED' : 'DISABLED'}`);
+      return;
+    }
+
+    if (cmd === 'theme') {
+      if (['green', 'amber', 'cyan', 'red'].includes(arg)) {
+        document.body.className = arg === 'green' ? '' : `theme-${arg}`;
+        printOutput(`Color theme set to: ${arg.toUpperCase()}`);
+      } else {
+        printOutput(`Usage: theme [green | amber | cyan | red]`);
+      }
+      return;
+    }
+
+    if (cmd === 'sudo') {
+      printOutput('PERMISSION DENIED: Operator is not in the sudoers file. This incident will be reported.');
+      return;
+    }
+
+    if (cmd === 'corrupt') {
+      playSound('glitch');
+      triggerMassiveGlitch();
+      printOutput("CRITICAL FAILURE: MEMORY LEAK DETECTED", "color: #ff3333; font-weight: bold;");
+      return;
+    }
+
+    if (commands[cmd]) {
+      printOutput(commands[cmd]);
+    } else {
+      printOutput(`Command not recognized: '${cmd}'. Type 'help' for available options.`, 'opacity: 0.7;');
+    }
+  }
+
+  function autoComplete() {
+    const current = cli.value.trim().toLowerCase();
+    if (!current) return;
+
+    const available = Object.keys(commands).concat(['clear', 'corrupt', 'exit', 'theme', 'matrix', 'audio', 'sudo']);
+    const matches = available.filter(c => c.startsWith(current));
+
+    if (matches.length === 1) {
+      cli.value = matches[0];
+      playSound('key');
+    } else if (matches.length > 1) {
+      printOutput(`GUEST@UNKNOWN_NODE:~$ ${current}`);
+      printOutput(matches.join('   '), 'color: #fff;');
+    }
+  }
+
+  function printOutput(text, style = '') {
+    const line = document.createElement('div');
+    line.style = style;
+    line.textContent = text;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  // --- MATRIX CANVAS BACKGROUND ---
+  function resizeMatrix() {
+    matrixCanvas.width = window.innerWidth;
+    matrixCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeMatrix);
+  resizeMatrix();
+
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*';
+  const fontSize = 14;
+  const columns = Math.floor(window.innerWidth / fontSize);
+  const drops = Array(columns).fill(1);
+
+  function drawMatrix() {
+    if (!matrixCanvas.classList.contains('active')) {
+      requestAnimationFrame(drawMatrix);
+      return;
+    }
+
+    mCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+    const style = getComputedStyle(document.body);
+    mCtx.fillStyle = style.getPropertyValue('--green').trim() || '#00ff66';
+    mCtx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+    requestAnimationFrame(drawMatrix);
+  }
+  drawMatrix();
+
+  // --- RANDOM GLITCH EFFECTS ---
+  setInterval(() => {
+    if (Math.random() > 0.6) {
+      const topPos = Math.floor(Math.random() * 100);
+      const height = Math.floor(Math.random() * 15) + 2;
+      glitchLine.style.top = `${topPos}%`;
+      glitchLine.style.height = `${height}px`;
+      glitchLine.style.opacity = (Math.random() * 0.7).toString();
+
+      setTimeout(() => {
+        glitchLine.style.opacity = '0';
+      }, Math.random() * 200);
+    }
+  }, 1000);
+
+  function triggerMassiveGlitch() {
+    document.body.style.filter = "invert(1) hue-rotate(180deg)";
+    setTimeout(() => document.body.style.filter = "none", 300);
+  }
+</script>
+</body>
+</html>

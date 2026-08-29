@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSL Central Dispatch Questionnaire v3.1</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #0c0c0c;
+            color: #00ff00;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            font-size: 14px;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Dynamic Alarm Mode (Overpowered) */
+        body.overpowered {
+            background-color: #1a0000;
+            color: #ff3333;
+        }
+
+        /* Tactical Header Bar */
+        #nav-header {
+            height: 50px;
+            background: #111;
+            border-bottom: 2px solid #ffaa00;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            flex-shrink: 0;
+            transition: border-color 0.4s ease, background 0.4s ease;
+        }
+        body.overpowered #nav-header {
+            border-bottom-color: #ff0000;
+            background: #250000;
+        }
+
+        .nav-link {
+            color: #ffaa00;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #ffaa00;
+            padding: 6px 18px;
+            background: #1a1a1a;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover { background: #ffaa00; color: #0c0c0c; }
+        body.overpowered .nav-link {
+            color: #ff3333;
+            border-color: #ff0000;
+            background: #330000;
+        }
+        body.overpowered .nav-link:hover {
+            background: #ff0000;
+            color: #ffffff;
+        }
+
+        .title { margin-left: auto; font-weight: bold; font-size: 15px; letter-spacing: 1px; color: #fff; }
+
+        /* Main Workspace Container */
+        #workspace {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 25px;
+            overflow-y: auto;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 170, 0, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 0, 0.02) 0%, transparent 40%);
+            transition: background 0.4s ease;
+        }
+        body.overpowered #workspace {
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(255, 0, 0, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 90% 80%, rgba(150, 0, 0, 0.1) 0%, transparent 40%);
+        }
+
+        .terminal-card {
+            width: 100%;
+            max-width: 850px;
+            background: #111;
+            border: 1px solid #ffaa00;
+            padding: 28px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.9), 0 0 8px rgba(255, 170, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+        }
+        body.overpowered .terminal-card {
+            background: #150000;
+            border-color: #ff0000;
+            box-shadow: 0 0 35px rgba(255,0,0,0.4), 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        /* Scanline Overlay */
+        .terminal-card::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
+            z-index: 10;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        body.overpowered .terminal-card::before {
+            background: linear-gradient(rgba(50, 0, 0, 0) 50%, rgba(0, 0, 0, 0.5) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.08), rgba(255, 0, 0, 0.02), rgba(255, 0, 0, 0.08));
+        }
+
+        .card-header {
+            border-bottom: 1px dashed #ffaa00;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            transition: border-color 0.4s ease;
+        }
+        body.overpowered .card-header {
+            border-bottom-color: #ff0000;
+        }
+
+        .card-header h2 {
+            color: #ffaa00;
+            font-size: 18px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.4s ease;
+        }
+        body.overpowered .card-header h2 {
+            color: #ff3333;
+        }
+
+        .card-header p {
+            color: #aaa;
+            font-size: 13px;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        body.overpowered .card-header p {
+            color: #ff8888;
+        }
+
+        /* Step Progress Tabs */
+        .step-progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .step-pill {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            background: #000;
+            border: 1px solid #333;
+            color: #666;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .step-pill.active {
+            border-color: #ffaa00;
+            color: #ffaa00;
+            background: #1a1400;
+            box-shadow: 0 0 8px rgba(255, 170, 0, 0.2);
+        }
+        .step-pill.completed {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        body.overpowered .step-pill.active {
+            border-color: #ff0000;
+            color: #ff3333;
+            background: #250000;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+        }
+
+        /* Live Power Meter Banner & Visual Bar */
+        #meter-box {
+            background: #000;
+            border: 1px solid #ffaa00;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        body.overpowered #meter-box {
+            border-color: #ff0000;
+            box-shadow: inset 0 0 10px rgba(255,0,0,0.4);
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .meter-info { font-size: 14px; font-weight: bold; }
+        .meter-status { font-size: 13px; font-weight: bold; }
+        .valid { color: #00ff00; }
+        .invalid { color: #ff3333; animation: pulseRed 1s infinite alternate; }
+
+        @keyframes pulseRed {
+            0% { opacity: 0.8; text-shadow: 0 0 2px #ff0000; }
+            100% { opacity: 1.0; text-shadow: 0 0 8px #ff0000; }
+        }
+
+        /* Redness Power Progress Bar */
+        .power-bar-track {
+            width: 100%;
+            height: 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            overflow: hidden;
+            position: relative;
+        }
+        .power-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #00ff00;
+            box-shadow: 0 0 8px #00ff00;
+            transition: width 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Carousel Slider Workspace */
+        .slider-viewport {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+        .slider-track {
+            display: flex;
+            width: 400%;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Section Headings & Steps */
+        .form-section {
+            width: 25%;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #222;
+            padding: 18px;
+            transition: border-color 0.4s ease, background 0.4s ease;
+        }
+        body.overpowered .form-section {
+            background: rgba(40, 0, 0, 0.4);
+            border-color: #550000;
+        }
+
+        .section-title {
+            color: #ffaa00;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.4s ease;
+        }
+        body.overpowered .section-title {
+            color: #ff4444;
+        }
+
+        /* Form Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .grid-full {
+            grid-column: span 2;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .input-group label {
+            font-size: 13px;
+            color: #ccc;
+            transition: color 0.4s ease;
+        }
+        body.overpowered .input-group label {
+            color: #ffaaaa;
+        }
+
+        .input-group label span.hint {
+            color: #ffaa00;
+            font-size: 11px;
+            transition: color 0.4s ease;
+        }
+        body.overpowered .input-group label span.hint {
+            color: #ff6666;
+        }
+
+        input[type="text"], input[type="number"], select {
+            background: #000;
+            border: 1px solid #ffaa00;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 12px;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.4s ease, color 0.4s ease;
+        }
+        body.overpowered input[type="text"], 
+        body.overpowered input[type="number"], 
+        body.overpowered select {
+            border-color: #ff3333;
+            color: #ff6666;
+            background: #0a0000;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: #00ff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+        }
+        body.overpowered input[type="text"]:focus, 
+        body.overpowered input[type="number"]:focus, 
+        body.overpowered select:focus {
+            border-color: #ff0000;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+        }
+
+        /* Wizard Controls & Action Buttons */
+        .wizard-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .btn-nav, .btn-submit {
+            flex: 1;
+            background: #ffaa00;
+            color: #000;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 12px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-nav:hover:not(:disabled), .btn-submit:hover:not(:disabled) {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+        .btn-nav:disabled, .btn-submit:disabled {
+            background: #220000;
+            color: #773333;
+            border: 1px solid #550000;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Modal Overlay & Output Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 700px;
+            background: #111;
+            border: 2px solid #00ff00;
+            padding: 24px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+        body.overpowered .modal-content {
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #00ff00;
+            padding-bottom: 10px;
+        }
+        .modal-header h3 {
+            color: #00ff00;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 13px;
+            padding: 12px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* ===== FIELD MANUAL EXPANSION ===== */
+        .intro-panel {
+            border: 1px solid #333;
+            border-left: 3px solid #ffaa00;
+            background: #0a0a0a;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+        .intro-panel .eyebrow,
+        .section-help .eyebrow {
+            color: #00ffff;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .intro-panel p,
+        .section-help p {
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .section-help {
+            border: 1px dashed #333;
+            background: rgba(0,255,0,0.025);
+            padding: 11px 13px;
+            margin-bottom: 15px;
+        }
+
+        .field-note {
+            margin-top: 8px;
+            color: #777;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .input-group label {
+            line-height: 1.35;
+        }
+
+        .input-group .description {
+            color: #777;
+            font-size: 10px;
+            line-height: 1.4;
+            margin-top: -2px;
+        }
+
+        .power-explanation {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .power-rule {
+            border: 1px solid #282828;
+            padding: 10px;
+            background: #080808;
+        }
+
+        .power-rule strong {
+            display: block;
+            color: #ffaa00;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .power-rule span {
+            color: #888;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .stat-guide {
+            margin-top: 15px;
+            border-top: 1px dashed #333;
+            padding-top: 12px;
+        }
+
+        .stat-guide-title {
+            color: #00ffff;
+            font-size: 10px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .grade-row {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 8px;
+            align-items: start;
+            margin-bottom: 5px;
+        }
+
+        .grade-letter {
+            color: #ffaa00;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .grade-desc {
+            color: #777;
+            font-size: 10px;
+            line-height: 1.35;
+        }
+
+        .live-advice {
+            border: 1px solid #333;
+            padding: 10px 12px;
+            margin-top: 10px;
+            background: #050505;
+            color: #888;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .live-advice b {
+            color: #00ff00;
+        }
+
+        .summary-card {
+            margin-top: 18px;
+            border: 1px solid #333;
+            background: #080808;
+            padding: 14px;
+        }
+
+        .summary-card h3 {
+            color: #ffaa00;
+            font-size: 12px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .summary-item {
+            border-left: 2px solid #333;
+            padding: 7px 9px;
+        }
+
+        .summary-item strong {
+            display: block;
+            color: #aaa;
+            font-size: 9px;
+            margin-bottom: 3px;
+        }
+
+        .summary-item span {
+            color: #00ff00;
+            font-size: 11px;
+        }
+
+        .assessment {
+            margin-top: 12px;
+            border: 1px dashed #ffaa00;
+            padding: 10px;
+            color: #aaa;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .assessment strong {
+            color: #ffaa00;
+        }
+
+        .modal-subtitle {
+            color: #777;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 650px) {
+            .power-explanation,
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-progress {
+                overflow-x: auto;
+            }
+
+            .step-pill {
+                min-width: 100px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="nav-header">
+        <a href="index.html" class="nav-link">&lt; RETURN TO HOME</a>
+        <a href="map.html" class="nav-link">GO TO MAP</a>
+        <div class="title">// TSL_NATION_PROFILE_QUESTIONNAIRE_v3.1</div>
+    </div>
+
+    <div id="workspace">
+        <div class="terminal-card">
+            <div class="card-header">
+                <h2>📑 Nation Character Sheet Generator</h2>
+                <p>Build the broad identity, capabilities and RP hooks of your nation. <strong>Hard Restrictions:</strong> Max 100M Population, Max 2 S-Tiers, and Max 7 Total Power Budget Points.</p>
+            </div>
+
+            <div class="intro-panel">
+                <div class="eyebrow">// OPERATOR_BRIEFING</div>
+                <p>
+                    This isn't meant to simulate every tank, factory, tax office and slightly angry civil servant
+                    in your country. Think of the sheet as a <strong>national snapshot</strong>: a compact way to tell
+                    other players what your nation is good at, where it struggles, and what sort of stories can happen there.
+                </p>
+                <div class="field-note">
+                    TIP: You don't need to maximize every number. A nation with obvious strengths and weaknesses
+                    is usually much more interesting to RP than a country that is mysteriously excellent at absolutely everything.
+                </div>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="step-progress">
+                <div class="step-pill active" id="pill-0">1. Identity</div>
+                <div class="step-pill" id="pill-1">2. Economy</div>
+                <div class="step-pill" id="pill-2">3. Strategic</div>
+                <div class="step-pill" id="pill-3">4. Roleplay</div>
+            </div>
+
+            <!-- Live Power Meter Banner -->
+            <div id="meter-box">
+                <div class="meter-header">
+                    <div class="meter-info">POWER BUDGET: <span id="power-score">0</span> / 7 Points</div>
+                    <div class="meter-status valid" id="meter-status">STATUS: BALANCED (OK)</div>
+                </div>
+                <div class="power-bar-track">
+                    <div class="power-bar-fill" id="power-bar"></div>
+                </div>
+                <div class="power-explanation">
+                    <div class="power-rule">
+                        <strong>7 POINT CEILING</strong>
+                        <span>Your positive and negative modifiers combine into one broad national power budget.</span>
+                    </div>
+                    <div class="power-rule">
+                        <strong>2 S-TIER MAX</strong>
+                        <span>You can have two S-tier selections at most. Greatness has paperwork.</span>
+                    </div>
+                </div>
+                <div class="live-advice" id="live-advice">
+                    <b>FIELD ADVICE //</b> Your current build is comfortably within the budget. You still have room to specialize.
+                </div>
+            </div>
+
+            <form id="profile-form">
+                <div class="slider-viewport">
+                    <div class="slider-track" id="slider-track">
+                        
+                        <!-- 1. GENERAL IDENTIFICATION -->
+                        <div class="form-section">
+                            <div class="section-title">🏛️ 1. General Identification</div>
+                            <div class="section-help">
+                                <div class="eyebrow">// WHO_ARE_YOU?</div>
+                                <p>The basic facts other players need before they start asking why your country has three capitals and a suspiciously large navy.</p>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label>Nation Name</label>
+                                    <div class="description">The official name used in RP and your Factbook.</div>
+                                    <input type="text" id="nation" placeholder="e.g. Republic of Aethelgard" required oninput="validateBalance()">
+                                </div>
+                                <div class="input-group">
+                                    <label>Capital City</label>
+                                    <div class="description">Where the government sits. Usually. Allegedly.</div>
+                                    <input type="text" id="capital" placeholder="e.g. Oakhaven" required oninput="validateBalance()">
+                                </div>
+                                <div class="input-group">
+                                    <label>Government Type</label>
+                                    <div class="description">Democracy, monarchy, federation, dictatorship, technocracy, glorious bureaucratic nightmare, etc.</div>
+                                    <input type="text" id="government" placeholder="e.g. Constitutional Federation" required oninput="validateBalance()">
+                                </div>
+                                <div class="input-group">
+                                    <label>Population (Millions) <span class="hint">(CAP: Max 100M)</span></label>
+                                    <input type="number" id="population" placeholder="e.g. 35.0" max="100" min="0.1" step="0.1" required oninput="validateBalance()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. ECONOMIC PROFILE -->
+                        <div class="form-section">
+                            <div class="section-title">📦 2. Economic & Resource Dynamics</div>
+                            <div class="section-help">
+                                <div class="eyebrow">// WHAT_PAYS_THE_BILLS?</div>
+                                <p>These values describe your economic foundation and natural-resource position. Higher grades cost Power Points; lower grades can free some up.</p>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label>Economy Grade</label>
+                                    <div class="description">Overall economic strength, productivity and financial capacity.</div>
+                                    <select id="econGrade" class="stat-grade" onchange="validateBalance()">
+                                        <option value="S">S (+3 pts) - Powerhouse</option>
+                                        <option value="A" selected>A (+2 pts) - Advanced</option>
+                                        <option value="B">B (+1 pt) - Stable</option>
+                                        <option value="C">C (0 pts) - Developing</option>
+                                        <option value="D">D (-1 pt) - Struggling</option>
+                                        <option value="F">F (-2 pts) - Collapsed</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Resource Wealth</label>
+                                    <div class="description">How naturally self-sufficient your nation is in strategic resources.</div>
+                                    <select id="resourceWealth" class="stat-grade" onchange="validateBalance()">
+                                        <option value="S">S (+3 pts) - Mega Reserves</option>
+                                        <option value="A">A (+2 pts) - Abundant</option>
+                                        <option value="B" selected>B (+1 pt) - Self-Sufficient</option>
+                                        <option value="C">C (0 pts) - Import Dependent</option>
+                                        <option value="D">D (-1 pt) - Depleted</option>
+                                        <option value="F">F (-2 pts) - Barren</option>
+                                    </select>
+                                </div>
+                                <div class="input-group grid-full">
+                                    <label>Top Exports <span class="hint">(Max 5 items, comma separated)</span></label>
+                                    <input type="text" id="exports" placeholder="e.g. Electronics, Grain, Refined Minerals, Software, Textiles">
+                                </div>
+                                <div class="input-group grid-full">
+                                    <label>Top Imports <span class="hint">(Max 5 items, comma separated)</span></label>
+                                    <input type="text" id="imports" placeholder="e.g. Crude Oil, Heavy Machinery, Medical Supplies, Coffee, Steel">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. STRATEGIC & TECH PROFILE -->
+                        <div class="form-section">
+                            <div class="section-title">🛡️ 3. Strategic & Tech Posture</div>
+                            <div class="section-help">
+                                <div class="eyebrow">// HOW_CAPABLE_ARE_YOU?</div>
+                                <p>Technology, infrastructure, defense, education and influence shape what your nation can realistically accomplish.</p>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label>Tech Tier</label>
+                                    <div class="description">The general technological era your nation operates in.</div>
+                                    <select id="techTier" class="stat-grade" onchange="validateBalance()">
+                                        <option value="Retro">Retro / Early Industrial (-1 pt)</option>
+                                        <option value="Modern" selected>Modern Standard (0 pts)</option>
+                                        <option value="Near-Future">Near-Future (+1 pt)</option>
+                                        <option value="High-Tech">High-Tech / Sci-Fi (+2 pts)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Defense Posture</label>
+                                    <div class="description">How heavily your state is organized around defense and force projection.</div>
+                                    <select id="defenseStance" class="stat-grade" onchange="validateBalance()">
+                                        <option value="Demilitarized">Demilitarized / Guard (-1 pt)</option>
+                                        <option value="Peacekeeping" selected>Peacekeeping / Defensive (0 pts)</option>
+                                        <option value="Active Patrol">Active Patrol / Expeditionary (+1 pt)</option>
+                                        <option value="Fortified">Fortified Citadel / High Alert (+2 pts)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Infrastructure Rating</label>
+                                    <div class="description">Roads, rail, utilities, ports, communications and the stuff that keeps civilization running.</div>
+                                    <select id="infraGrade" class="stat-grade" onchange="validateBalance()">
+                                        <option value="S">S (+3 pts) - World Class</option>
+                                        <option value="A">A (+2 pts) - Modernized</option>
+                                        <option value="B" selected>B (+1 pt) - Functional</option>
+                                        <option value="C">C (0 pts) - Aging</option>
+                                        <option value="D">D (-1 pt) - Severely Damaged</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Internal Stability</label>
+                                    <div class="description">How calm things are at home. This does not affect the Power Point total.</div>
+                                    <select id="stability">
+                                        <option value="High" selected>High Security</option>
+                                        <option value="Moderate">Moderate Restlessness</option>
+                                        <option value="Fragile">Fragile Unrest</option>
+                                        <option value="Unstable">Unstable Strife</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Culture & Influence</label>
+                                    <div class="description">Soft power, cultural reach and the ability to make people care what you think.</div>
+                                    <select id="cultureGrade" class="stat-grade" onchange="validateBalance()">
+                                        <option value="S">S (+3 pts) - Cultural Juggernaut</option>
+                                        <option value="A">A (+2 pts) - High Soft Power</option>
+                                        <option value="B" selected>B (+1 pt) - Regional Influence</option>
+                                        <option value="C">C (0 pts) - Low Footprint</option>
+                                        <option value="D">D (-1 pt) - Insular</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Education & R&D Tier</label>
+                                    <select id="eduGrade" class="stat-grade" onchange="validateBalance()">
+                                        <option value="S">S (+3 pts) - Cutting-Edge R&D</option>
+                                        <option value="A">A (+2 pts) - Well-Funded Literacy</option>
+                                        <option value="B" selected>B (+1 pt) - Standard Education</option>
+                                        <option value="C">C (0 pts) - Basic Access</option>
+                                        <option value="D">D (-1 pt) - Severe Brain Drain</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="stat-guide">
+                                <div class="stat-guide-title">// GRADE_REFERENCE</div>
+                                <div class="grade-row"><div class="grade-letter">S</div><div class="grade-desc">Exceptional / world-leading. Very powerful, very expensive in the budget.</div></div>
+                                <div class="grade-row"><div class="grade-letter">A</div><div class="grade-desc">Advanced / highly capable. A major national strength.</div></div>
+                                <div class="grade-row"><div class="grade-letter">B</div><div class="grade-desc">Solid / capable. Good enough to compete without being extraordinary.</div></div>
+                                <div class="grade-row"><div class="grade-letter">C</div><div class="grade-desc">Average / limited. Functional, but not a major advantage.</div></div>
+                                <div class="grade-row"><div class="grade-letter">D</div><div class="grade-desc">Weak / struggling. A meaningful disadvantage, but it gives budget room elsewhere.</div></div>
+                            </div>
+                        </div>
+
+                        <!-- 4. ROLEPLAY HOOKS -->
+                        <div class="form-section">
+                            <div class="section-title">🎯 4. Roleplay & Diplomacy Hooks</div>
+                            <div class="section-help">
+                                <div class="eyebrow">// GIVE_PEOPLE_SOMETHING_TO_WORK_WITH</div>
+                                <p>These fields don't spend Power Points. They're here to turn statistics into an actual country with goals, relationships and potential trouble.</p>
+                            </div>
+                            <div class="grid-2">
+                                <div class="input-group">
+                                    <label>Regional Alignment</label>
+                                    <input type="text" id="alignment" placeholder="e.g. Non-Aligned / Independent">
+                                </div>
+                                <div class="input-group">
+                                    <label>National Focus <span class="hint">(Current RP goal)</span></label>
+                                    <input type="text" id="focus" placeholder="e.g. Rapid Industrial Modernization">
+                                </div>
+                                <div class="input-group grid-full">
+                                    <label>Current Regional Stance</label>
+                                    <input type="text" id="stance" placeholder="e.g. Open to Trade Agreements & Non-Aggression Pacts">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="wizard-controls">
+                    <button type="button" id="prev-btn" class="btn-nav" onclick="changeStep(-1)" disabled>&lt; BACK</button>
+                    <button type="button" id="next-btn" class="btn-nav" onclick="changeStep(1)">NEXT &gt;</button>
+                    <button type="button" id="submit-btn" class="btn-submit" style="display: none;" onclick="generateBBCode()">⚡ COMPILE BBCODE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Output Modal Popup -->
+    <div class="modal-overlay" id="code-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚡ DISPATCH BBCODE GENERATED</h3>
+            </div>
+            <div class="modal-subtitle">Your nation profile is compiled below. Give it a quick sanity check before publishing the <span class="dispatch-tag">STATS</span> dispatch.</div>
+            <textarea id="dispatch-output" readonly></textarea>
+            <div class="modal-footer">
+                <button type="button" class="btn-nav" onclick="copyModalCode()">COPY TO CLIPBOARD</button>
+                <button type="button" class="btn-nav" style="background:#333; color:#fff;" onclick="closeModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const totalSteps = 4;
+
+        const gradePoints = {
+            'S': 3, 'A': 2, 'B': 1, 'C': 0, 'D': -1, 'F': -2,
+            'Retro': -1, 'Modern': 0, 'Near-Future': 1, 'High-Tech': 2,
+            'Demilitarized': -1, 'Peacekeeping': 0, 'Active Patrol': 1, 'Fortified': 2
+        };
+
+        function updateStepUI() {
+            const track = document.getElementById('slider-track');
+            track.style.transform = `translateX(-${currentStep * 25}%)`;
+
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (currentStep === totalSteps - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+
+            for (let i = 0; i < totalSteps; i++) {
+                const pill = document.getElementById(`pill-${i}`);
+                pill.classList.remove('active', 'completed');
+                if (i === currentStep) {
+                    pill.classList.add('active');
+                } else if (i < currentStep) {
+                    pill.classList.add('completed');
+                }
+            }
+        }
+
+        function changeStep(dir) {
+            const nextStep = currentStep + dir;
+            if (nextStep >= 0 && nextStep < totalSteps) {
+                currentStep = nextStep;
+                updateStepUI();
+            }
+        }
+
+        function validateBalance() {
+            const grades = document.querySelectorAll('.stat-grade');
+            let totalPoints = 0;
+            let sCount = 0;
+
+            grades.forEach(g => {
+                const val = g.value;
+                totalPoints += gradePoints[val] || 0;
+                if (val === 'S') sCount++;
+            });
+
+            const popInput = parseFloat(document.getElementById('population').value) || 0;
+            const scoreDisp = document.getElementById('power-score');
+            const statusDisp = document.getElementById('meter-status');
+            const submitBtn = document.getElementById('submit-btn');
+            const powerBar = document.getElementById('power-bar');
+
+            scoreDisp.textContent = totalPoints;
+
+            const fillPercentage = Math.min(Math.max((totalPoints / 7) * 100, 0), 100);
+            powerBar.style.width = `${fillPercentage}%`;
+
+            let errors = [];
+            if (popInput > 100) errors.push("POPULATION EXCEEDS 100M CAP");
+            if (sCount > 2) errors.push("MAX 2 S-TIERS ALLOWED");
+            if (totalPoints > 7) errors.push("POWER BUDGET EXCEEDED (>7 PTS)");
+
+            const isOp = errors.length > 0;
+
+            if (totalPoints > 7 || isOp) {
+                powerBar.style.backgroundColor = '#ff0000';
+                powerBar.style.boxShadow = '0 0 12px #ff0000';
+            } else if (totalPoints >= 5) {
+                powerBar.style.backgroundColor = '#ffaa00';
+                powerBar.style.boxShadow = '0 0 10px #ffaa00';
+            } else {
+                powerBar.style.backgroundColor = '#00ff00';
+                powerBar.style.boxShadow = '0 0 8px #00ff00';
+            }
+
+            const advice = document.getElementById('live-advice');
+
+            if (isOp) {
+                document.body.classList.add('overpowered');
+                statusDisp.className = "meter-status invalid";
+                statusDisp.textContent = "⚠️ ALARM: OVERPOWERED (" + errors.join(" | ") + ")";
+                submitBtn.disabled = true;
+                if (advice) {
+                    advice.innerHTML = "<b>COMMAND WARNING //</b> Your nation is currently exceeding the allowed limits. Reduce one or more high-end selections before compilation.";
+                }
+            } else {
+                document.body.classList.remove('overpowered');
+                statusDisp.className = "meter-status valid";
+                statusDisp.textContent = "STATUS: BALANCED (VALID)";
+                submitBtn.disabled = false;
+
+                if (advice) {
+                    if (totalPoints < 0) {
+                        advice.innerHTML = "<b>FIELD ADVICE //</b> You are operating below zero. That's perfectly legal—and gives you a lot of room to build strengths elsewhere.";
+                    } else if (totalPoints <= 3) {
+                        advice.innerHTML = "<b>FIELD ADVICE //</b> Conservative build. You have plenty of headroom for specialization.";
+                    } else if (totalPoints <= 5) {
+                        advice.innerHTML = "<b>FIELD ADVICE //</b> Strong build. Your nation is starting to look distinctly capable.";
+                    } else if (totalPoints === 6) {
+                        advice.innerHTML = "<b>FIELD ADVICE //</b> One point from the ceiling. Choose your remaining strength carefully.";
+                    } else {
+                        advice.innerHTML = "<b>FIELD ADVICE //</b> Budget fully allocated. Your nation is operating at the maximum permitted power level.";
+                    }
+                }
+            }
+        }
+
+        function formatList(rawInput) {
+            if (!rawInput.trim()) return "N/A";
+            const items = rawInput.split(/[,/]/).map(item => item.trim()).filter(item => item.length > 0).slice(0, 5);
+            return items.join(', ');
+        }
+
+        function generateBBCode() {
+            const nation = document.getElementById('nation').value || 'Republic of Aethelgard';
+            const capital = document.getElementById('capital').value || 'Oakhaven';
+            const government = document.getElementById('government').value || 'Constitutional Federation';
+            const population = (document.getElementById('population').value || '35.0') + ' Million';
+
+            const econGrade = document.getElementById('econGrade').value;
+            const resourceWealth = document.getElementById('resourceWealth').value;
+            const exports = formatList(document.getElementById('exports').value || 'Electronics, Grain, Refined Minerals');
+            const imports = formatList(document.getElementById('imports').value || 'Crude Oil, Heavy Machinery, Medical Supplies');
+
+            const techTier = document.getElementById('techTier').value;
+            const infraGrade = document.getElementById('infraGrade').value;
+            const defenseStance = document.getElementById('defenseStance').value;
+            const stability = document.getElementById('stability').value;
+            const cultureGrade = document.getElementById('cultureGrade').value;
+            const eduGrade = document.getElementById('eduGrade').value;
+
+            const alignment = document.getElementById('alignment').value || 'Non-Aligned / Independent';
+            const focus = document.getElementById('focus').value || 'Rapid Industrial Modernization';
+            const stance = document.getElementById('stance').value || 'Open to Trade Treaties';
+
+            const bbcode = `[code]
+Nation: ${nation}
+Capital: ${capital}
+Government: ${government}
+Population: ${population}
+
+=== ECONOMIC PROFILE ===
+Economy Grade: ${econGrade}
+Resource Wealth: ${resourceWealth}
+Top Exports: ${exports}
+Top Imports: ${imports}
+
+=== STRATEGIC & TECH PROFILE ===
+Tech Tier: ${techTier}
+Infrastructure: ${infraGrade}
+Defense Stance: ${defenseStance}
+Internal Stability: ${stability}
+Culture & Influence: ${cultureGrade}
+Education & R&D: ${eduGrade}
+
+=== FLAVOR & ROLEPLAY HOOKS ===
+Regional Alignment: ${alignment}
+National Focus: ${focus}
+Current Regional Stance: ${stance}
+[/code]`;
+
+            const outputBox = document.getElementById('dispatch-output');
+            outputBox.value = bbcode;
+            document.getElementById('code-modal').classList.add('active');
+        }
+
+        async function copyModalCode() {
+            const outputBox = document.getElementById('dispatch-output');
+
+            try {
+                await navigator.clipboard.writeText(outputBox.value);
+                alert("Copied Nation Character Sheet BBCode to clipboard!");
+            } catch (err) {
+                outputBox.focus();
+                outputBox.select();
+                document.execCommand('copy');
+                alert("Copied Nation Character Sheet BBCode to clipboard!");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('code-modal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeModal();
+            if (event.key === 'ArrowRight' && currentStep < totalSteps - 1) changeStep(1);
+            if (event.key === 'ArrowLeft' && currentStep > 0) changeStep(-1);
+        });
+
+        window.onload = () => {
+            validateBalance();
+            updateStepUI();
+        };
+    </script>
+</body>
+</html>
