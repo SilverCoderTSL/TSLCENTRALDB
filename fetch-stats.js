@@ -53,8 +53,11 @@ function parseCodeBlock(codeText) {
             const rawKey = trimmed.slice(0, colonIdx).trim();
             const rawVal = trimmed.slice(colonIdx + 1).trim();
 
-            // Normalize key name (e.g. "Economy Grade" -> "economy_grade")
-            const normalizedKey = rawKey.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            // Patch: Collapse consecutive non-alphanumeric characters into a single underscore
+            const normalizedKey = rawKey
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
             
             if (normalizedKey && rawVal) {
                 stats[normalizedKey] = rawVal;
@@ -81,23 +84,25 @@ function auditPowerBudget(stats) {
         auditLog.push(`Population (${popVal}M) exceeds 100M cap.`);
     }
 
-    // Inspect grade fields for points and S-tier limits
+    // Patch: Normalized keys matching HTML BBCode output
     const gradeFields = [
-        'economy_grade', 'resource_wealth', 'tech_tier', 
-        'infrastructure', 'defense_stance', 'culture___influence', 'education___r_d'
+        'economy_grade', 
+        'resource_wealth', 
+        'tech_tier', 
+        'infrastructure', 
+        'defense_stance', 
+        'culture_influence', 
+        'education_r_d'
     ];
 
     gradeFields.forEach(field => {
         if (stats[field]) {
-            const valUpper = stats[field].toUpperCase();
+            const valUpper = stats[field].trim().toUpperCase();
             
-            // Check for explicit grade tokens
-            for (const [token, pts] of Object.entries(GRADE_POINTS)) {
-                if (valUpper.includes(token)) {
-                    powerPoints += pts;
-                    if (token === 'S') sTierCount++;
-                    break;
-                }
+            if (valUpper in GRADE_POINTS) {
+                const pts = GRADE_POINTS[valUpper];
+                powerPoints += pts;
+                if (valUpper === 'S') sTierCount++;
             }
         }
     });
@@ -142,7 +147,6 @@ async function buildRegionStats() {
 
             await sleep(650); // API Rate Limiting Compliance
 
-            // Fetch nation's dispatch list
             const dispatchListXml = await makeApiRequest(`/cgi-bin/api.cgi?q=dispatchlist&nation=${nation}`);
             
             if (!dispatchListXml.includes('<DISPATCH')) {
@@ -162,11 +166,9 @@ async function buildRegionStats() {
                 if (idMatch && titleMatch) {
                     const id = idMatch[1];
                     const rawTitle = titleMatch[1].trim();
-
                     const cleanTitle = rawTitle.replace(/<!\[CDATA\[|\]\]>/g, '').trim().toUpperCase();
 
-                    // Targets STATS titles
-                    if (['STATS', 'STATISTICS', 'NATION STATS', 'CHARACTER SHEET'].includes(cleanTitle)) {
+                    if (cleanTitle === 'STATS') {
                         targetDispatchId = id;
                         console.log(`     └── 🎯 MATCH FOUND! "STATS" Dispatch ID: ${targetDispatchId}`);
                         break;
@@ -179,11 +181,11 @@ async function buildRegionStats() {
                 continue;
             }
 
-            // Fetch target STATS dispatch content
             await sleep(650);
             const dispatchXml = await makeApiRequest(`/cgi-bin/api.cgi?q=dispatch&dispatchid=${targetDispatchId}`);
 
             const cleanText = dispatchXml
+                .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
                 .replace(/&lt;/g, '<')
                 .replace(/&gt;/g, '>')
                 .replace(/&quot;/g, '"')
@@ -200,12 +202,17 @@ async function buildRegionStats() {
             try {
                 const rawCodeBlock = codeMatch[1].trim();
                 const parsedStats = parseCodeBlock(rawCodeBlock);
-
-                // Audit power balance integrity
                 const auditResults = auditPowerBudget(parsedStats);
+                const canonicalId = nation.toLowerCase().trim().replace(/[^a-z0-9_]/g, '');
+
+                // Ensure the stats sub-object also reflects the canonical nation name for fallback matchers
+                if (!parsedStats.nation) {
+                    parsedStats.nation = nation;
+                }
 
                 const nationRecord = {
-                    nation_id: nation,
+                    nation_id: canonicalId,
+                    nation_canonical_name: nation,
                     dispatch_id: targetDispatchId,
                     last_updated: new Date().toISOString(),
                     stats: parsedStats,

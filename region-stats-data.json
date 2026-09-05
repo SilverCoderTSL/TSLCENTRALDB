@@ -1,8 +1,9 @@
 [
   {
     "nation_id": "union_of_silver_states_union",
+    "nation_canonical_name": "union_of_silver_states_union",
     "dispatch_id": "2808233",
-    "last_updated": "2026-08-27T05:38:49.316Z",
+    "last_updated": "2026-09-04T15:16:05.793Z",
     "stats": {
       "nation": "Test Nation",
       "capital": "Bleh",
@@ -16,25 +17,24 @@
       "infrastructure": "A",
       "defense_stance": "Demilitarized",
       "internal_stability": "Unstable",
-      "culture___influence": "D",
-      "education___r_d": "S",
+      "culture_influence": "D",
+      "education_r_d": "S",
       "regional_alignment": "Testing",
       "national_focus": "For Testing",
       "current_regional_stance": "None"
     },
     "audit": {
-      "powerScore": 8,
+      "powerScore": 5,
       "sTierCount": 1,
-      "isValid": false,
-      "violations": [
-        "Power Budget exceeded (8/7 Points)."
-      ]
+      "isValid": true,
+      "violations": []
     }
   },
   {
     "nation_id": "the_ypres_front",
+    "nation_canonical_name": "the_ypres_front",
     "dispatch_id": "2810109",
-    "last_updated": "2026-08-27T05:38:50.823Z",
+    "last_updated": "2026-09-04T15:16:08.253Z",
     "stats": {
       "nation": "The Ypres Front",
       "capital": "Ypres",
@@ -48,8 +48,8 @@
       "infrastructure": "B",
       "defense_stance": "Active Patrol",
       "internal_stability": "Moderate",
-      "culture___influence": "D",
-      "education___r_d": "B",
+      "culture_influence": "D",
+      "education_r_d": "B",
       "regional_alignment": "Ocean",
       "national_focus": "Maintainence",
       "current_regional_stance": "Currently Uncontactable"
@@ -62,15 +62,109 @@
     }
   },
   {
-    "nation_id": "silver_republics",
-    "dispatch_id": "2808224",
-    "last_updated": "2026-08-27T05:39:02.105Z",
+    "nation_id": "the_dragon_empire_of_united_states",
+    "nation_canonical_name": "the_dragon_empire_of_united_states",
+    "dispatch_id": "2811042",
+    "last_updated": "2026-09-04T15:16:15.696Z",
+    "stats": {
+      "nation": "The Dragon Empire of United States",
+      "capital": "Deyp Hayven",
+      "government": "Trade Federation",
+      "population": "50 Million",
+      "economy_grade": "A",
+      "resource_wealth": "C",
+      "top_exports": "Transportation services, Free Merchants, Mercenaries, Piracy, Hide-outs",
+      "top_imports": "Refined fuels, Food, Ammunition, Weapons, Steel",
+      "tech_tier": "High-Tech",
+      "infrastructure": "C",
+      "defense_stance": "Active Patrol",
+      "internal_stability": "Unstable",
+      "culture_influence": "D",
+      "education_r_d": "S",
+      "regional_alignment": "Independent City States",
+      "national_focus": "Trade, Piracy, Fleeing national law enforcement",
+      "current_regional_stance": "You fly the Flag of D.E.U.S you're one of us, which means you play by our rules. Else, we're in it for the money."
+    },
+    "audit": {
+      "powerScore": 7,
+      "sTierCount": 1,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
+    "nation_id": "stransistria",
+    "nation_canonical_name": "stransistria",
+    "dispatch_id": "2812030",
+    "last_updated": "2026-09-04T15:16:21.629Z",
+    "stats": {
+      "nation": "Stransistria",
+      "capital": "Stransinople",
+      "government": "fascist dictatorship",
+      "population": "85 Million",
+      "economy_grade": "B",
+      "resource_wealth": "S",
+      "top_exports": "Oil, Iron, Music, Sports",
+      "top_imports": "Technology, Medical supplys",
+      "tech_tier": "Modern",
+      "infrastructure": "C",
+      "defense_stance": "Peacekeeping",
+      "internal_stability": "high",
+      "culture_influence": "B",
+      "education_r_d": "B",
+      "regional_alignment": "fascism",
+      "national_focus": "expanding our economy",
+      "current_regional_stance": "trade aggreements"
+    },
+    "audit": {
+      "powerScore": 6,
+      "sTierCount": 1,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
+    "nation_id": "avstraliys",
+    "nation_canonical_name": "avstraliys",
+    "dispatch_id": "2811732",
+    "last_updated": "2026-09-04T15:16:30.480Z",
+    "stats": {
+      "nation": "Avstraliys",
+      "capital": "Basdrien",
+      "government": "Proto-Internationalist Free Territory",
+      "population": "63.5 Million",
+      "economy_grade": "B",
+      "resource_wealth": "A",
+      "top_exports": "Bulk Armaments, Music, Construction Materials",
+      "top_imports": "Crude Oil, Microchips, Luxury Goods",
+      "tech_tier": "Near-Future",
+      "infrastructure": "B",
+      "defense_stance": "Demilitarized",
+      "internal_stability": "High",
+      "culture_influence": "D",
+      "education_r_d": "A",
+      "regional_alignment": "Independent Socialist",
+      "national_focus": "Economic Scaling, Military Structuring",
+      "current_regional_stance": "Mildly Hostile Isolationism, Opening Up while Maintaining Assertiveness"
+    },
+    "audit": {
+      "powerScore": 5,
+      "sTierCount": 0,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
+    "nation_id": "silver_republicz",
+    "nation_canonical_name": "silver_republicz",
+    "dispatch_id": "2812072",
+    "last_updated": "2026-09-04T15:16:34.055Z",
     "stats": {
       "nation": "Federation of Silver Republics",
       "capital": "Silberstadt",
       "government": "Federal Republic",
-      "population": "45.2 Million",
-      "economy_grade": "A",
+      "population": "35.6 Million",
+      "economy_grade": "B",
       "resource_wealth": "C",
       "top_exports": "Automobiles, IT Services, Palm Oil, Processed Nickel Products, Military Equipment",
       "top_imports": "Crude Oil, Natural Gas, Heavy Machinery, Rare Metals",
@@ -78,15 +172,15 @@
       "infrastructure": "A",
       "defense_stance": "Peacekeeping",
       "internal_stability": "Moderate",
-      "culture___influence": "C",
-      "education___r_d": "A",
+      "culture_influence": "B",
+      "education_r_d": "S",
       "regional_alignment": "Non-Aligned",
       "national_focus": "Industrial Modernization and Might",
       "current_regional_stance": "Open to Trade Agreements"
     },
     "audit": {
       "powerScore": 7,
-      "sTierCount": 0,
+      "sTierCount": 1,
       "isValid": true,
       "violations": []
     }

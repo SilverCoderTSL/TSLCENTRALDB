@@ -43,54 +43,27 @@
         }
         .nav-link:hover { background: #ffaa00; color: #0c0c0c; }
         .title { margin-left: 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; color: #fff; }
-        
-        .map-coordinate-controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-left: 25px;
-            font-size: 12px;
-            color: #ffaa00;
-            border-left: 1px dashed #ffaa00;
-            padding-left: 15px;
-        }
-        .map-coordinate-controls label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .map-coordinate-controls input {
-            background: #000;
-            border: 1px solid #ffaa00;
-            color: #00ff00;
-            font-family: inherit;
-            font-size: 12px;
-            padding: 2px 5px;
-            width: 55px;
-            text-align: center;
-        }
-        .map-coordinate-controls input:focus {
-            outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-        }
-        .map-coordinate-controls button {
-            background: #1a1a1a;
-            border: 1px solid #ffaa00;
-            color: #ffaa00;
-            font-family: inherit;
-            font-size: 11px;
-            padding: 3px 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .map-coordinate-controls button:hover {
-            background: #ffaa00;
-            color: #0c0c0c;
-        }
 
-        #main-workspace { display: flex; flex: 1; width: 100vw; height: calc(100vh - 45px); position: relative; }
-        #map-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; width: 100%; height: calc(100vh - 45px); }
+        /* Workspace flex alignment */
+        #main-workspace { 
+            display: flex; 
+            flex-direction: row;
+            flex: 1; 
+            width: 100vw; 
+            height: calc(100vh - 45px); 
+            position: relative; 
+            overflow: hidden;
+        }
+        
+        #map-container { 
+            flex: 1 1 auto; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+            position: relative; 
+            height: 100%; 
+        }
         
         #world-map-wrapper { 
             position: relative; 
@@ -118,7 +91,6 @@
             pointer-events: none; 
         }
 
-        /* Container that scales and pans - sized to original SVG dimensions */
         #map-viewport-transform {
             position: absolute;
             top: 0;
@@ -129,7 +101,6 @@
             will-change: transform;
         }
 
-        /* SVG map */
         #vector-map {
             width: 2271px;
             height: 1133px;
@@ -141,7 +112,7 @@
         #audio-popup-container {
             position: absolute;
             bottom: 20px;
-            right: 20px;
+            right: 80px;
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -182,14 +153,26 @@
             z-index: 50;
             pointer-events: none;
         }
-        /* Styling for nation borders on hover */
+
+        /* SVG Event Passthrough Rules */
+        #map-overlay {
+            pointer-events: none !important;
+        }
+        #borders-layer path,
+        #borders-layer polygon,
+        #capitals-layer circle,
+        .nation-border,
+        .capital-marker-dot {
+            pointer-events: all !important;
+            cursor: pointer !important;
+        }
+
         .nation-border {
             transition: fill-opacity 0.2s ease, stroke-width 0.2s ease;
-            cursor: pointer;
         }
         .nation-border:hover {
-            fill-opacity: 0.5 !important;
-            stroke-width: 3px !important;
+            fill-opacity: 0.8 !important;
+            stroke-width: 3.5px !important;
             filter: drop-shadow(0 0 8px currentColor);
         }
 
@@ -227,15 +210,13 @@
             color: #aaa;
         }
 
-        /* Side Nation Dossier Panel */
-       /* Optimized Holographic Nation Dossier Panel */
+        /* Holographic Nation Dossier Panel */
         #nation-dossier-panel {
             position: absolute;
             top: 14px;
             left: -380px;
             width: 350px;
             height: calc(100% - 28px);
-            /* Simplified semi-transparent dark cyan background */
             background: rgba(8, 20, 30, 0.92);
             border: 1px solid #00f0ff;
             border-left: 3px solid #00f0ff;
@@ -259,7 +240,6 @@
             pointer-events: auto;
         }
 
-        /* Static Retro CRT Scanlines (Lightweight SVG Data URI) */
         #nation-dossier-panel::before {
             content: "";
             position: absolute;
@@ -282,11 +262,7 @@
             z-index: 3;
         }
 
-        .dossier-title-block {
-            flex: 1;
-            min-width: 0;
-        }
-
+        .dossier-title-block { flex: 1; min-width: 0; }
         .dossier-title {
             color: #00f0ff;
             font-size: 16px;
@@ -298,12 +274,7 @@
             word-break: break-word;
         }
 
-        .dossier-subtitle {
-            color: #ffaa00;
-            font-size: 10px;
-            margin-top: 4px;
-            letter-spacing: 1px;
-        }
+        .dossier-subtitle { color: #ffaa00; font-size: 10px; margin-top: 4px; letter-spacing: 1px; }
 
         .dossier-close {
             background: rgba(255, 51, 0, 0.15);
@@ -320,14 +291,11 @@
             transition: background 0.15s ease;
         }
 
-        .dossier-close:hover {
-            background: #ff3300;
-            color: #000;
-        }
+        .dossier-close:hover { background: #ff3300; color: #000; }
 
         .dossier-scroll {
             overflow-y: auto;
-            overscroll-behavior: contain; /* Prevents scroll chaining to parent elements */
+            overscroll-behavior: contain;
             pointer-events: auto;
             flex-grow: 1;
             padding-right: 6px;
@@ -337,12 +305,8 @@
 
         .dossier-scroll::-webkit-scrollbar { width: 4px; }
         .dossier-scroll::-webkit-scrollbar-track { background: rgba(0, 20, 30, 0.6); }
-        .dossier-scroll::-webkit-scrollbar-thumb { 
-            background: #00f0ff; 
-            border-radius: 2px;
-        }
+        .dossier-scroll::-webkit-scrollbar-thumb { background: #00f0ff; border-radius: 2px; }
 
-        /* Lightweight Flat Holographic Boxes */
         .dossier-section {
             margin-bottom: 12px;
             background: rgba(0, 240, 255, 0.05);
@@ -364,8 +328,6 @@
             gap: 6px;
         }
 
-        .dossier-section-title .sec-icon { font-size: 12px; }
-
         .dossier-row {
             display: flex;
             justify-content: space-between;
@@ -376,14 +338,8 @@
         }
 
         .dossier-label { color: #8ab4f8; flex-shrink: 0; }
-        .dossier-value {
-            font-weight: bold;
-            color: #e0ffff;
-            text-align: right;
-            word-break: break-word;
-        }
+        .dossier-value { font-weight: bold; color: #e0ffff; text-align: right; word-break: break-word; }
 
-        /* Clean Badges & Progress Elements */
         .stat-badge {
             display: inline-block;
             padding: 2px 7px;
@@ -413,12 +369,7 @@
             overflow: hidden;
         }
 
-        .dossier-power-fill {
-            height: 100%;
-            width: 0%;
-            background: #00f0ff;
-            transition: width 0.3s ease;
-        }
+        .dossier-power-fill { height: 100%; width: 0%; background: #00f0ff; transition: width 0.3s ease; }
 
         .dossier-power-meta {
             display: flex;
@@ -430,13 +381,6 @@
 
         .dossier-power-meta .pts { font-weight: bold; color: #00f0ff; }
         .dossier-power-meta .pts.over { color: #ff3300; }
-
-        .dossier-flag-strip {
-            height: 3px;
-            background: linear-gradient(90deg, #00f0ff, #ffaa00, #00f0ff);
-            margin: -4px -12px 10px;
-            opacity: 0.8;
-        }
 
         .dossier-hash {
             font-size: 10px;
@@ -459,17 +403,8 @@
             letter-spacing: 0.5px;
         }
 
-        .status-valid {
-            color: #00ffaa;
-            border: 1px solid #00ffaa;
-            background: rgba(0, 255, 170, 0.1);
-        }
-
-        .status-invalid {
-            color: #ff3300;
-            border: 1px solid #ff3300;
-            background: rgba(255, 51, 0, 0.15);
-        }
+        .status-valid { color: #00ffaa; border: 1px solid #00ffaa; background: rgba(0, 255, 170, 0.1); }
+        .status-invalid { color: #ff3300; border: 1px solid #ff3300; background: rgba(255, 51, 0, 0.15); }
 
         .stat-row-with-bar { margin: 8px 0; }
         .stat-row-with-bar .dossier-row { margin-bottom: 3px; }
@@ -482,17 +417,10 @@
             overflow: hidden;
         }
 
-        .mini-grade-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-        }
+        .mini-grade-fill { height: 100%; transition: width 0.3s ease; }
 
-        /* Keeps nation borders thin and crisp regardless of zoom level */
-        .nation-border, #draft-layer polygon {
-            vector-effect: non-scaling-stroke;
-        }
+        .nation-border, #draft-layer polygon { vector-effect: non-scaling-stroke; }
 
-        /* Dynamically resizes dots so they maintain a fixed visual pixel size on screen */
         .map-marker-dot {
             r: calc(4px / var(--map-zoom, 1));
             stroke-width: calc(1px / var(--map-zoom, 1));
@@ -502,145 +430,260 @@
             r: calc(6px / var(--map-zoom, 1));
             stroke-width: calc(1.5px / var(--map-zoom, 1));
         }
+        
+        /* Right Side Controls Panel Fix */
+        #map-side-controls {
+            position: relative;
+            width: 65px;
+            height: 100%;
+            background: #111111;
+            border-left: 2px solid #ffaa00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 5px;
+            gap: 10px;
+            z-index: 200;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .side-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .side-btn:hover { background: #ffaa00; color: #0c0c0c; box-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
+        .side-btn.active { background: #ffaa00; color: #111; }
+
+        .side-btn-divider { width: 30px; height: 1px; background: #ffaa00; opacity: 0.3; }
+
+        .side-coord-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            color: #ffaa00;
+            text-align: center;
+            padding-top: 5px;
+            border-top: 1px dashed rgba(255, 170, 0, 0.4);
+            width: 100%;
+        }
+
+        .side-coord-panel label { display: flex; flex-direction: column; align-items: center; font-weight: bold; }
+        .side-coord-panel input {
+            width: 42px;
+            background: #000;
+            border: 1px solid #ffaa00;
+            color: #fff;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 2px;
+        }
+        
+        header, #nav-header {
+            height: 45px;
+            background: #0c0c0c;
+            border-bottom: 2px solid var(--border-color, #ffaa00);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 170, 0, 0.2);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-links-left, .header-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--highlight-text, #ffffff);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--border-color, #ffaa00);
+            padding: 5px 15px;
+            background: #1a0f00;
+            font-size: 13px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link:hover {
+            background: var(--accent-color, #ffaa00);
+            color: #000000;
+            box-shadow: 0 0 10px var(--accent-color, #ffaa00);
+        }
+
+        .nav-link.active {
+            background: var(--border-color, #ffaa00);
+            color: #000000;
+        }
+
+        .title, .title-bar {
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: var(--highlight-text, #ffffff);
+            text-shadow: 0 0 8px var(--accent-color, #ffaa00);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-    <div id="nav-header">
+    <header id="nav-header">
         <div class="nav-links-left">
-            <a href="creator.html" class="nav-link">CREATE NATION STATS</a>
-            <a href="stats.html" class="nav-link">NATION STATS DB</a>
-            <a href="battle.html" class="nav-link">BATTLE SYSTEM</a>
-            <button class="nav-link" id="btn-draw-mode" onclick="toggleDrawMode()">✏️ DRAW BORDER MODE</button>
+            <a href="creator.html" class="nav-link">CREATE NATION</a>
+            <a href="stats.html" class="nav-link">STATS VIEWER</a>
+            <a href="battle.html" class="nav-link">BATTLE</a>
+            <a href="map.html" class="nav-link active">MAP</a>
         </div>
         <div class="title">// TSL_TACTICAL_MAP_VECTOR_GRID_v2.8</div>
-        
-        <div class="map-coordinate-controls">
-            <label>X-POS: <input type="number" id="ctrl-map-x" value="0" step="25" oninput="setMapX(this.value)"></label>
-            <label>Y-POS: <input type="number" id="ctrl-map-y" value="0" step="25" oninput="setMapY(this.value)"></label>
-            <label>ZOOM-MAG: <input type="number" id="ctrl-map-zoom" value="1.0" step="0.1" min="0.1" oninput="setMapZoom(this.value)"></label>
-            <button onclick="resetMap()" title="Reset view">RESET</button>
-        </div>
-    </div>
+    </header>
 
     <div id="main-workspace">
-    <div id="map-container">
-        <div id="world-map-wrapper">
-            <!-- Floating Nation Layer Toggle -->
-            <div style="position: absolute; top: 10px; left: 10px; z-index: 100;">
-                <button id="btn-toggle-nations" onclick="toggleNationsLayer()" 
-                        style="background: rgba(17, 17, 17, 0.85); border: 1px solid #ffaa00; color: #ffaa00; 
-                               font-family: inherit; font-size: 11px; font-weight: bold; padding: 5px 10px; 
-                               cursor: pointer; box-shadow: 0 0 8px rgba(0,0,0,0.8);">
-                    👁️ NATIONS: ON
-                </button>
+        <!-- Holographic Dossier Panel -->
+        <div id="nation-dossier-panel">
+            <div class="dossier-header">
+                <div class="dossier-title-block">
+                    <div class="dossier-title" id="dos-title">NATION NAME</div>
+                    <div class="dossier-subtitle" id="dos-subtitle">TACTICAL PROFILE</div>
+                </div>
+                <button class="dossier-close" onclick="closeDossier()">✖</button>
             </div>
 
-            <!-- MOVED: Dossier Panel is now inside the map wrapper -->
-            <div id="nation-dossier-panel">
-                <div class="dossier-header">
-                    <div class="dossier-title-block">
-                        <div class="dossier-title" id="dos-title">NATION DOSSIER</div>
-                        <div class="dossier-subtitle" id="dos-subtitle">TACTICAL PROFILE</div>
-                    </div>
-                    <button class="dossier-close" onclick="closeDossier()">✕</button>
-                </div>
-                <div class="dossier-scroll">
-                    <div class="dossier-section">
-                        <div class="dossier-section-title"><span class="sec-icon">🏛️</span> General Information</div>
-                        <div class="dossier-flag-strip"></div>
-                        <div class="dossier-row"><span class="dossier-label">Capital</span> <span class="dossier-value" id="dos-capital">-</span></div>
-                        <div class="dossier-row"><span class="dossier-label">Government</span> <span class="dossier-value" id="dos-gov">-</span></div>
-                        <div class="dossier-row"><span class="dossier-label">Population</span> <span class="dossier-value" id="dos-pop">-</span></div>
-                    </div>
-
-                    <div class="dossier-section">
-                        <div class="dossier-section-title"><span class="sec-icon">⚡</span> Power Budget</div>
-                        <div class="dossier-power-track">
-                            <div class="dossier-power-fill" id="dos-power-bar"></div>
-                        </div>
-                        <div class="dossier-power-meta">
-                            <span>Budget used</span>
-                            <span class="pts" id="dos-total-power">0 / 7</span>
-                        </div>
-                        <div class="dossier-row" style="margin-top: 8px;">
-                            <span class="dossier-label">Audit</span>
-                            <span id="dos-audit-status" class="dossier-status-pill status-valid">VALID</span>
-                        </div>
-                    </div>
-
-                    <div class="dossier-section">
-                        <div class="dossier-section-title"><span class="sec-icon">📊</span> Core Grades</div>
-                        <div class="stat-row-with-bar">
-                            <div class="dossier-row"><span class="dossier-label">Economy</span> <span id="dos-econ" class="stat-badge grade-B">-</span></div>
-                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-econ-bar"></div></div>
-                        </div>
-                        <div class="stat-row-with-bar">
-                            <div class="dossier-row"><span class="dossier-label">Resources</span> <span id="dos-res" class="stat-badge grade-B">-</span></div>
-                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-res-bar"></div></div>
-                        </div>
-                        <div class="stat-row-with-bar">
-                            <div class="dossier-row"><span class="dossier-label">Infrastructure</span> <span id="dos-infra" class="stat-badge grade-B">-</span></div>
-                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-infra-bar"></div></div>
-                        </div>
-                        <div class="stat-row-with-bar">
-                            <div class="dossier-row"><span class="dossier-label">Tech Tier</span> <span id="dos-tech" class="stat-badge grade-B">-</span></div>
-                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-tech-bar"></div></div>
-                        </div>
-                        <div class="stat-row-with-bar">
-                            <div class="dossier-row"><span class="dossier-label">Defense</span> <span id="dos-def" class="stat-badge grade-B">-</span></div>
-                            <div class="mini-grade-bar"><div class="mini-grade-fill" id="dos-def-bar"></div></div>
-                        </div>
-                    </div>
-
-                    <div class="dossier-section">
-                        <div class="dossier-section-title"><span class="sec-icon">🔐</span> Strategic Status</div>
-                        <div class="dossier-row"><span class="dossier-label">Dispatch ID</span> <span class="dossier-value" id="dos-dispatch">-</span></div>
-                        <div class="dossier-hash" id="dos-hash">UNVERIFIED</div>
+            <div class="dossier-scroll">
+                <div class="dossier-section">
+                    <div class="dossier-section-title"><span class="sec-icon">🏛️</span> GOVERNANCE & DEMOGRAPHICS</div>
+                    <div class="dossier-row"><span class="dossier-label">CAPITAL:</span> <span class="dossier-value" id="dos-capital">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">GOVERNMENT:</span> <span class="dossier-value" id="dos-gov">-</span></div>
+                    <div class="dossier-row"><span class="dossier-label">POPULATION:</span> <span class="dossier-value" id="dos-pop">-</span></div>
+                    <div class="dossier-row">
+                        <span class="dossier-label">NS PROFILE:</span> 
+                        <a id="dos-ns-link" href="#" target="_blank" style="color: #00f0ff; text-decoration: underline; font-size: 11px; font-weight: bold;">VIEW ON NATIONSTATES ↗</a>
                     </div>
                 </div>
-            </div>
 
-            <div id="map-viewport-transform">
-                <img id="vector-map" src="map.svg" alt="World Map" draggable="false">
-                
-                <!-- Dynamic SVG Layer for Borders & Capitals -->
-                <svg id="map-overlay" viewBox="0 0 2271 1133" style="position: absolute; top: 0; left: 0; width: 2271px; height: 1133px; pointer-events: none;">
-                    <g id="borders-layer"></g>
-                    <g id="capitals-layer"></g>
-                </svg>
-            </div>
+                <div class="dossier-section">
+                    <div class="dossier-section-title"><span class="sec-icon">📊</span> STRATEGIC METRICS</div>
+                    
+                    <div class="stat-row-with-bar">
+                        <div class="dossier-row"><span class="dossier-label">ECONOMY:</span> <span id="dos-econ" class="stat-badge">-</span></div>
+                        <div class="mini-grade-bar"><div id="dos-econ-bar" class="mini-grade-fill"></div></div>
+                    </div>
 
-            <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
+                    <div class="stat-row-with-bar">
+                        <div class="dossier-row"><span class="dossier-label">RESOURCES:</span> <span id="dos-res" class="stat-badge">-</span></div>
+                        <div class="mini-grade-bar"><div id="dos-res-bar" class="mini-grade-fill"></div></div>
+                    </div>
+
+                    <div class="stat-row-with-bar">
+                        <div class="dossier-row"><span class="dossier-label">INFRASTRUCTURE:</span> <span id="dos-infra" class="stat-badge">-</span></div>
+                        <div class="mini-grade-bar"><div id="dos-infra-bar" class="mini-grade-fill"></div></div>
+                    </div>
+
+                    <div class="stat-row-with-bar">
+                        <div class="dossier-row"><span class="dossier-label">TECH TIER:</span> <span id="dos-tech" class="stat-badge">-</span></div>
+                        <div class="mini-grade-bar"><div id="dos-tech-bar" class="mini-grade-fill"></div></div>
+                    </div>
+
+                    <div class="stat-row-with-bar">
+                        <div class="dossier-row"><span class="dossier-label">DEFENSE STANCE:</span> <span id="dos-def" class="stat-badge">-</span></div>
+                        <div class="mini-grade-bar"><div id="dos-def-bar" class="mini-grade-fill"></div></div>
+                    </div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title"><span class="sec-icon">⚡</span> POWER SCORE & INTEGRITY</div>
+                    <div class="dossier-power-track">
+                        <div id="dos-power-bar" class="dossier-power-fill"></div>
+                    </div>
+                    <div class="dossier-power-meta">
+                        <span>POWER ALLOCATION:</span>
+                        <span id="dos-total-power" class="pts">0 / 7</span>
+                    </div>
+                    <div class="dossier-row" style="margin-top:10px;">
+                        <span class="dossier-label">SYSTEM AUDIT:</span>
+                        <span id="dos-audit-status" class="dossier-status-pill status-valid">VALID</span>
+                    </div>
+                    <div class="dossier-row">
+                        <span class="dossier-label">DISPATCH ID:</span>
+                        <span class="dossier-value" id="dos-dispatch">N/A</span>
+                    </div>
+                    <div id="dos-hash" class="dossier-hash">UNVERIFIED — NO DISPATCH LINKED</div>
+                </div>
+            </div>
+        </div>
+        <div id="map-container">
+            <div id="world-map-wrapper">
+
+                <div id="map-viewport-transform">
+                    <img id="vector-map" src="map.svg" alt="World Map" draggable="false">
+                    <svg id="map-overlay" viewBox="0 0 2271 1133" style="position: absolute; top: 0; left: 0; width: 2271px; height: 1133px; pointer-events: none;">
+                        <g id="borders-layer" style="pointer-events: none;"></g>
+                        <g id="capitals-layer" style="pointer-events: none;"></g>
+                    </svg>
+                </div>
+
+                <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE CONTROL TOOLBAR -->
+        <div id="map-side-controls">
+            <button class="side-btn draw-btn" id="btn-draw-mode" onclick="toggleDrawMode()" title="Toggle Draw Mode">✏️</button>
+            <div class="side-btn-divider"></div>
+            <button class="side-btn" id="btn-toggle-nations" onclick="toggleNationsLayer()" title="Toggle Nations Layer">👁️</button>
+            <button class="side-btn" onclick="resetMap()" title="Reset View">🎯</button>
+            
+            <div class="side-btn-divider"></div>
+
+            <button class="side-btn" onclick="toggleCoordPanel()" title="Toggle Coordinates Panel">📐</button>
+            
+            <div id="side-coord-panel" class="side-coord-panel" style="display: none;">
+                <label>X <input type="number" id="ctrl-map-x" value="0" step="25" oninput="setMapX(this.value)"></label>
+                <label>Y <input type="number" id="ctrl-map-y" value="0" step="25" oninput="setMapY(this.value)"></label>
+                <label>Z <input type="number" id="ctrl-map-zoom" value="1.0" step="0.1" min="0.1" oninput="setMapZoom(this.value)"></label>
+            </div>
         </div>
     </div>
-</div>
 
-        <!-- BORDER DRAWING CONTROL PANEL -->
-        <div id="drawer-panel" style="display:none; position:absolute; top:15px; right:15px; z-index:300; background:#111; border:2px solid #ffaa00; padding:15px; width:300px; color:#00ff00; font-family:monospace; box-shadow: 0 0 15px rgba(0,0,0,0.9);">
-            <h4 style="margin:0 0 8px 0; color:#ffaa00; font-size:13px;">✏️ NATION BORDER CREATOR</h4>
-            <!-- Live map coordinate tracker inside drawer -->
-            <div id="cursor-coords" style="font-size:11px; color:#00ff00; margin-bottom:8px; font-weight:bold;">
-                MAP COORDS: [X: --, Y: --]
-            </div>
+    <!-- BORDER DRAWING CONTROL PANEL -->
+    <div id="drawer-panel" style="display:none; position:absolute; top:15px; right:85px; z-index:300; background:#111; border:2px solid #ffaa00; padding:15px; width:300px; color:#00ff00; font-family:monospace; box-shadow: 0 0 15px rgba(0,0,0,0.9);">
+        <h4 style="margin:0 0 8px 0; color:#ffaa00; font-size:13px;">✏️ NATION BORDER CREATOR</h4>
+        <div id="cursor-coords" style="font-size:11px; color:#00ff00; margin-bottom:8px; font-weight:bold;">MAP COORDS: [X: --, Y: --]</div>
 
-            <p style="font-size:10px; color:#aaa; margin-bottom:10px; line-height:1.3;">
-                1. Click 'SET CAPITAL' to click capital location.<br>
-                2. Click on map to add border points.<br>
-                3. Click 'FINISH ISLAND' to start another island.<br>
-                4. Click 'COPY JSON' when done.
-            </p>
+        <p style="font-size:10px; color:#aaa; margin-bottom:10px; line-height:1.3;">
+            1. Click 'SET CAPITAL' to click capital location.<br>
+            2. Click on map to add border points.<br>
+            3. Click 'FINISH ISLAND' to start another island.<br>
+            4. Click 'COPY JSON' when done.
+        </p>
 
-            <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
-                <button id="btn-cap-mode" onclick="toggleCapitalMode()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">📍 SET CAPITAL</button>
-                <button onclick="finishIsland()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">➕ FINISH ISLAND</button>
-                <button onclick="undoLastPoint()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">Undo</button>
-                <button onclick="clearDrawing()" style="background:#222; color:#ff3300; border:1px solid #ff3300; font-size:10px; padding:3px 5px; cursor:pointer;">Clear</button>
-                <button onclick="generateDispatchJSON()" style="background:#ffaa00; color:#000; border:none; font-weight:bold; font-size:10px; padding:3px 5px; cursor:pointer;">COPY JSON</button>
-            </div>
-
-            <textarea id="output-json" rows="8" style="width:100%; background:#000; color:#00ff00; border:1px solid #333; font-size:10px; box-sizing:border-box;" readonly placeholder="Your generated code will appear here..."></textarea>
+        <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
+            <button id="btn-cap-mode" onclick="toggleCapitalMode()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">📍 SET CAPITAL</button>
+            <button onclick="finishIsland()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">➕ FINISH ISLAND</button>
+            <button onclick="undoLastPoint()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">Undo</button>
+            <button onclick="clearDrawing()" style="background:#222; color:#ff3300; border:1px solid #ff3300; font-size:10px; padding:3px 5px; cursor:pointer;">Clear</button>
+            <button onclick="generateDispatchJSON()" style="background:#ffaa00; color:#000; border:none; font-weight:bold; font-size:10px; padding:3px 5px; cursor:pointer;">COPY JSON</button>
         </div>
+
+        <textarea id="output-json" rows="8" style="width:100%; background:#000; color:#00ff00; border:1px solid #333; font-size:10px; box-sizing:border-box;" readonly placeholder="Your generated code will appear here..."></textarea>
     </div>
 
     <div id="audio-popup-container">
@@ -648,19 +691,17 @@
         <div id="soundcloud-audio-dock">
             <iframe src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/zero-official-production/dawn-of-a-new-chapter&color=%23ffaa00&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
         </div>
-        <!-- Floating Nation Info Tooltip -->
-    <div id="map-tooltip">
-        <div class="tooltip-header" id="tt-nation">NATION NAME</div>
-        <div class="tooltip-row"><span class="tooltip-label">CAPITAL:</span> <span id="tt-capital">-</span></div>
-        <div class="tooltip-row"><span class="tooltip-label">GOVERNMENT:</span> <span id="tt-gov">-</span></div>
-        <div class="tooltip-row"><span class="tooltip-label">POPULATION:</span> <span id="tt-pop">-</span></div>
+        <div id="map-tooltip">
+            <div class="tooltip-header" id="tt-nation">NATION NAME</div>
+            <div class="tooltip-row"><span class="tooltip-label">CAPITAL:</span> <span id="tt-capital">-</span></div>
+            <div class="tooltip-row"><span class="tooltip-label">GOVERNMENT:</span> <span id="tt-gov">-</span></div>
+            <div class="tooltip-row"><span class="tooltip-label">POPULATION:</span> <span id="tt-pop">-</span></div>
+        </div>
     </div>
-    </div>
-    <!-- Integrity checker  -->
+
     <script src="utils/integrity.js"></script>
     
     <script>
-        // Original SVG dimensions
         const MAP_W = 2271;
         const MAP_H = 1133;
 
@@ -677,13 +718,11 @@
 
         function applyTransform() {
             viewport.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.zoom})`;
-            
-            // Pass the zoom scale to CSS variables so SVG dots stay small
             viewport.style.setProperty('--map-zoom', state.zoom);
             
-            inputX.value = Math.round(state.x);
-            inputY.value = Math.round(state.y);
-            inputZoom.value = state.zoom.toFixed(1);
+            if (inputX) inputX.value = Math.round(state.x);
+            if (inputY) inputY.value = Math.round(state.y);
+            if (inputZoom) inputZoom.value = state.zoom.toFixed(1);
         }
 
         function setMapX(val) { state.x = parseFloat(val) || 0; applyTransform(); }
@@ -693,20 +732,25 @@
             applyTransform(); 
         }
 
+        function toggleCoordPanel() {
+            const panel = document.getElementById('side-coord-panel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
         function resetMap() {
-            // Fit map nicely into the wrapper on load / reset
             const rect = wrapper.getBoundingClientRect();
             const scaleX = rect.width / MAP_W;
             const scaleY = rect.height / MAP_H;
-            // Use the smaller scale so it fits completely (contain)
             state.zoom = Math.min(scaleX, scaleY) * 0.95;
-            // Center it
             state.x = (rect.width - MAP_W * state.zoom) / 2;
             state.y = (rect.height - MAP_H * state.zoom) / 2;
             applyTransform();
         }
 
-        // Mouse Drag Handlers
         wrapper.addEventListener("mousedown", (e) => {
             if (e.button !== 0) return;
             isDragging = true;
@@ -727,24 +771,18 @@
         window.addEventListener("mouseup", () => { isDragging = false; });
         window.addEventListener("mouseleave", () => { isDragging = false; });
 
-        // Wheel Zoom Handler - zoom toward mouse cursor
         wrapper.addEventListener("wheel", (e) => {
             e.preventDefault();
-            
             const rect = wrapper.getBoundingClientRect();
-            // Mouse position relative to wrapper
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
-            // Point in map space under the mouse before zoom
             const mapX = (mouseX - state.x) / state.zoom;
             const mapY = (mouseY - state.y) / state.zoom;
 
-            // Zoom step
             const delta = e.deltaY > 0 ? -0.12 : 0.12;
             const newZoom = Math.max(0.1, Math.min(8, parseFloat((state.zoom + delta).toFixed(2))));
 
-            // Keep the same map point under the mouse after zoom
             state.x = mouseX - mapX * newZoom;
             state.y = mouseY - mapY * newZoom;
             state.zoom = newZoom;
@@ -752,73 +790,17 @@
             applyTransform();
         }, { passive: false });
 
-        // Double-click to reset
         wrapper.addEventListener("dblclick", (e) => {
             e.preventDefault();
             resetMap();
-        });
-
-        // Touch support (basic)
-        let lastTouchDist = 0;
-        wrapper.addEventListener("touchstart", (e) => {
-            if (e.touches.length === 1) {
-                isDragging = true;
-                const t = e.touches[0];
-                startX = t.clientX - state.x;
-                startY = t.clientY - state.y;
-            } else if (e.touches.length === 2) {
-                isDragging = false;
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastTouchDist = Math.hypot(dx, dy);
-            }
-        }, { passive: true });
-
-        wrapper.addEventListener("touchmove", (e) => {
-            e.preventDefault();
-            if (e.touches.length === 1 && isDragging) {
-                const t = e.touches[0];
-                state.x = t.clientX - startX;
-                state.y = t.clientY - startY;
-                applyTransform();
-            } else if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.hypot(dx, dy);
-                if (lastTouchDist > 0) {
-                    const scaleFactor = dist / lastTouchDist;
-                    const rect = wrapper.getBoundingClientRect();
-                    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
-                    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-                    const mapX = (midX - state.x) / state.zoom;
-                    const mapY = (midY - state.y) / state.zoom;
-                    const newZoom = Math.max(0.1, Math.min(8, state.zoom * scaleFactor));
-                    state.x = midX - mapX * newZoom;
-                    state.y = midY - mapY * newZoom;
-                    state.zoom = newZoom;
-                    applyTransform();
-                }
-                lastTouchDist = dist;
-            }
-        }, { passive: false });
-
-        wrapper.addEventListener("touchend", () => {
-            isDragging = false;
-            lastTouchDist = 0;
         });
 
         function toggleAudioDock() {
             document.getElementById('soundcloud-audio-dock').classList.toggle('active');
         }
 
-        // Initial fit
         window.addEventListener("load", resetMap);
-        window.addEventListener("resize", () => {
-            // Keep current relative position roughly, or just re-fit if desired
-            // For simplicity, do nothing on resize (user can hit RESET)
-        });
 
-        // Setup Hover Tooltip Listeners Safely
         const tooltip = document.getElementById('map-tooltip');
 
         window.addEventListener('mousemove', (e) => {
@@ -849,8 +831,6 @@
             if (tooltip) tooltip.style.display = 'none';
         }
 
-        // Nation Dossier Panel Logic
-        // Point values mirrored from central.html grade scales
         const GRADE_POINTS = {
             'S': 3, 'A': 2, 'B': 1, 'C': 0, 'D': -1, 'F': -2,
             'High-Tech': 2, 'Near-Future': 1, 'Modern': 0, 'Retro': -1,
@@ -908,7 +888,6 @@
 
         function openNationDossier(nation) {
             const panel = document.getElementById('nation-dossier-panel');
-            
             const stats = nation.stats || {};
             const audit = nation.audit || {};
 
@@ -918,6 +897,13 @@
             document.getElementById('dos-capital').textContent = stats.capital || nation.capital?.name || 'N/A';
             document.getElementById('dos-gov').textContent = stats.government || nation.government || 'N/A';
             document.getElementById('dos-pop').textContent = stats.population || nation.population || 'N/A';
+
+            // Build & attach NationStates URL
+            const nsLinkEl = document.getElementById('dos-ns-link');
+            if (nsLinkEl) {
+                const slug = name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+                nsLinkEl.href = `https://www.nationstates.net/nation=${slug}`;
+            }
 
             setStatBadge('dos-econ', stats.economy_grade ?? '-', 'dos-econ-bar');
             setStatBadge('dos-res', stats.resource_wealth ?? '-', 'dos-res-bar');
@@ -965,7 +951,6 @@
             document.getElementById('nation-dossier-panel').classList.remove('open');
         }
 
-
         async function loadRegionMap() {
             try {
                 const [mapRes, statsRes] = await Promise.all([
@@ -976,23 +961,20 @@
                 const mapData = await mapRes.json();
                 const statsData = await statsRes.json();
 
-                // Create a lookup map for stats using normalized nation names or IDs
                 const statsMap = new Map();
                 statsData.forEach(item => {
-                    const nameKey = item.stats?.nation?.trim().toLowerCase();
-                    if (nameKey) statsMap.set(nameKey, item);
-                    if (item.nation_id) statsMap.set(item.nation_id, item);
+                    const idKey = item.nation_id || item.stats?.nation?.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    if (idKey) statsMap.set(idKey, item);
                 });
 
-                // Merge both files into a single unified array
                 const nations = mapData.map(nation => {
-                    const key = nation.nation.trim().toLowerCase();
+                    const key = nation.nation_id || nation.nation?.toLowerCase().replace(/[^a-z0-9_]/g, '');
                     const matchedStats = statsMap.get(key) || {};
                     
                     return {
                         ...nation,
                         dispatch_id: matchedStats.dispatch_id || null,
-                        nation_id: matchedStats.nation_id || null,
+                        nation_id: matchedStats.nation_id || nation.nation_id || null,
                         stats: matchedStats.stats || {},
                         audit: matchedStats.audit || { powerScore: 0, isValid: true, violations: [] }
                     };
@@ -1004,10 +986,10 @@
                 bordersLayer.innerHTML = '';
                 capitalsLayer.innerHTML = '';
 
-                nations.forEach(nation => {
-                    const themeColor = nation.color || '#00ff00';
+                nations.forEach((nation, index) => {
+                    const hue = (index * (360 / Math.max(nations.length, 1)) + 25) % 360;
+                    const themeColor = `hsl(${Math.round(hue)}, 65%, 50%)`;
 
-                    // 1. Draw Border Polygons (Handles single islands and multi-islands)
                     if (nation.border && nation.border.length > 0) {
                         const isMultiIsland = Array.isArray(nation.border[0][0]);
                         const islands = isMultiIsland ? nation.border : [nation.border];
@@ -1019,21 +1001,23 @@
                                 polygon.setAttribute('points', pointsString);
                                 polygon.setAttribute('class', 'nation-border');
                                 polygon.setAttribute('fill', themeColor);
-                                polygon.setAttribute('fill-opacity', '0.25');
+                                polygon.setAttribute('fill-opacity', '0.6');
                                 polygon.setAttribute('stroke', themeColor);
-                                polygon.setAttribute('stroke-width', '2');
+                                polygon.setAttribute('stroke-width', '2.5');
                                 polygon.style.pointerEvents = 'all';
 
                                 polygon.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
                                 polygon.addEventListener('mouseleave', hideNationTooltip);
-                                polygon.addEventListener('click', () => openNationDossier(nation));
+                                polygon.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    openNationDossier(nation);
+                                });
 
                                 bordersLayer.appendChild(polygon);
                             }
                         });
                     }
 
-                    // 2. Draw Capital Marker
                     if (nation.capital && nation.capital.x && nation.capital.y) {
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', nation.capital.x);
@@ -1048,7 +1032,10 @@
 
                         circle.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
                         circle.addEventListener('mouseleave', hideNationTooltip);
-                        circle.addEventListener('click', () => openNationDossier(nation));
+                        circle.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openNationDossier(nation);
+                        });
 
                         capitalsLayer.appendChild(circle);
                     }
@@ -1060,11 +1047,12 @@
 
         window.addEventListener("load", loadRegionMap);
     </script>
+
     <script>
         let isDrawMode = false;
         let isCapitalMode = false;
-        let islands = [[]]; // Array of islands: [[ [x,y], [x,y] ], [ [x,y], [x,y] ]]
-        let selectedCapital = null; // { x, y }
+        let islands = [[]];
+        let selectedCapital = null;
 
         function toggleDrawMode() {
             isDrawMode = !isDrawMode;
@@ -1095,19 +1083,16 @@
             }
         }
 
-        // 1. Live Coordinates Display (ONLY when hovering inside the 2271x1133 map area)
         wrapper.addEventListener('mousemove', (e) => {
             const rect = wrapper.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
-            // Convert screen coordinates to SVG Map coordinates
             const svgX = Math.round((mouseX - state.x) / state.zoom);
             const svgY = Math.round((mouseY - state.y) / state.zoom);
 
             const coordsDisplay = document.getElementById('cursor-coords');
 
-            // Check if cursor is strictly inside the map bounds (2271 x 1133)
             if (svgX >= 0 && svgX <= MAP_W && svgY >= 0 && svgY <= MAP_H) {
                 coordsDisplay.textContent = `MAP COORDS: [X: ${svgX}, Y: ${svgY}]`;
             } else {
@@ -1115,7 +1100,6 @@
             }
         });
 
-        // 2. Click Handling for Drawing Points & Setting Capital
         wrapper.addEventListener('click', (e) => {
             if (!isDrawMode) return;
 
@@ -1126,7 +1110,6 @@
             const svgX = Math.round((mouseX - state.x) / state.zoom);
             const svgY = Math.round((mouseY - state.y) / state.zoom);
 
-            // Ignore clicks outside the 2271x1133 map frame
             if (svgX < 0 || svgX > MAP_W || svgY < 0 || svgY > MAP_H) return;
 
             if (isCapitalMode) {
@@ -1137,7 +1120,6 @@
                 return;
             }
 
-            // Add point to current island
             const currentIsland = islands[islands.length - 1];
             currentIsland.push([svgX, svgY]);
             renderDraftBorder();
@@ -1152,6 +1134,7 @@
             islands.push([]);
             renderDraftBorder();
         }
+
         function undoLastPoint() {
             const currentIsland = islands[islands.length - 1];
             
@@ -1253,12 +1236,12 @@
             const secureData = window.TSL_Integrity.generateCode(spatialPayload);
 
             const formattedOutput = `[code]
-        Nation: Your Nation
-        Capital: Your Capital
-        Government: Your Government
-        Population: XX Million
-        Data: ${secureData}
-        [/code]`;
+Nation: Your Nation
+Capital: Your Capital
+Government: Your Government
+Population: XX Million
+Data: ${secureData}
+[/code]`;
             
             const textarea = document.getElementById('output-json');
             textarea.value = formattedOutput;
@@ -1280,21 +1263,18 @@
             if (nationsVisible) {
                 borders.style.display = 'inline';
                 capitals.style.display = 'inline';
-                btn.textContent = '👁️ NATIONS: ON';
+                btn.textContent = '👁️';
                 btn.style.background = 'rgba(17, 17, 17, 0.85)';
                 btn.style.color = '#ffaa00';
             } else {
                 borders.style.display = 'none';
                 capitals.style.display = 'none';
-                btn.textContent = '🙈 NATIONS: OFF';
+                btn.textContent = '🙈';
                 btn.style.background = '#ffaa00';
                 btn.style.color = '#0c0c0c';
             }
         }
 
-    </script>
-    <script>
-        // Place the snippet here!
         const dossierPanel = document.getElementById('nation-dossier-panel');
         if (dossierPanel) {
             dossierPanel.addEventListener('wheel', (e) => e.stopPropagation());
@@ -1302,8 +1282,5 @@
             dossierPanel.addEventListener('touchstart', (e) => e.stopPropagation());
         }
     </script>
-
 </body>
 </html>
-
-

@@ -152,7 +152,10 @@ async function buildRegionMap() {
                 if (verification.valid) {
                     const nationData = verification.data;
 
-                    // Combine spatial data with flexible metadata
+                    // Always derive nation_id deterministically from the canonical NationStates API loop variable
+                    const canonicalId = nation.toLowerCase().trim().replace(/[^a-z0-9_]/g, '');
+
+                    nationData.nation_id = canonicalId;
                     nationData.nation = meta['nation'] || nation;
                     
                     if (!nationData.capital) nationData.capital = {};
@@ -162,10 +165,9 @@ async function buildRegionMap() {
                     nationData.government = meta['government'] || "Unknown";
                     nationData.population = meta['population'] || "Unknown";
 
-                    // Dynamically attach ANY extra stats added in the future!
-                    // (e.g. Economy, Religion, Tech Level, etc.)
+                    // Dynamically attach extra stats
                     for (const [k, v] of Object.entries(meta)) {
-                        if (!['nation', 'capital', 'government', 'population', 'data'].includes(k)) {
+                        if (!['nation', 'capital', 'government', 'population', 'data', 'nation_id'].includes(k)) {
                             nationData[k] = v;
                         }
                     }

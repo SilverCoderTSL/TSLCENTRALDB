@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>[REDACTED] - Terminal</title>
+<title>SILVER CONTINUUM // RECOVERY NODE 09</title>
 <style>
   :root {
     --green: #00ff66;
@@ -12,7 +12,6 @@
     --shadow: rgba(0, 255, 102, 0.4);
   }
 
-  /* Color Theme Overrides */
   body.theme-amber {
     --green: #ffb000;
     --dim-green: #553b00;
@@ -53,7 +52,6 @@
     transition: background-color 0.3s, color 0.3s;
   }
 
-  /* CRT Screen Wrapper */
   .crt {
     width: 100vw;
     height: 100vh;
@@ -63,7 +61,6 @@
     overflow: hidden;
   }
 
-  /* CRT Scanlines Overlay */
   .crt::before {
     content: " ";
     display: block;
@@ -76,7 +73,6 @@
     pointer-events: none;
   }
 
-  /* Matrix Canvas Overlay */
   #matrix-canvas {
     position: absolute;
     top: 0;
@@ -93,7 +89,6 @@
     opacity: 0.35;
   }
 
-  /* Screen Flicker Animation */
   .flicker {
     animation: flickerAnimation 0.15s infinite;
     height: 100%;
@@ -112,7 +107,6 @@
     100% { opacity: 0.98; }
   }
 
-  /* Horizontal Glitch Bar */
   .glitch-bar {
     position: absolute;
     left: 0;
@@ -124,7 +118,6 @@
     pointer-events: none;
   }
 
-  /* Output Screen Container */
   #terminal-output {
     flex-grow: 1;
     overflow-y: auto;
@@ -132,10 +125,11 @@
     white-space: pre-wrap;
     word-break: break-word;
     scrollbar-width: none;
+    font-size: 0.95rem;
+    line-height: 1.35;
   }
   #terminal-output::-webkit-scrollbar { display: none; }
 
-  /* Input Line Setup */
   .input-line {
     display: flex;
     align-items: center;
@@ -165,32 +159,121 @@
     margin-bottom: 1rem;
     color: var(--green);
   }
+  
+  /* Dark Analog CRT Green Severance Static */
+    #severance-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: 
+            repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.92) 1px, transparent 1px, transparent 2px),
+            repeating-radial-gradient(circle at 50% 50%, #000, #001a0a 1px, #00ff66 2px, #000800 3px);
+        background-size: 100% 100%, 3px 3px;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 99999;
+        filter: brightness(1.1) contrast(220%) saturate(1.4);
+        mix-blend-mode: hard-light;
+    }
+
+    #severance-overlay.active {
+        animation: staticFlash 0.55s steps(6) forwards;
+    }
+
+    #severance-overlay.heavy {
+        animation: staticHeavy 0.9s steps(8) forwards;
+    }
+
+    @keyframes staticFlash {
+        0%   { opacity: 0.98; transform: scale(1.03) translateY(-3px) skewX(2deg); background-position: 0 0, 0 0; filter: brightness(1.4) contrast(300%); }
+        20%  { opacity: 0.85; transform: scale(0.97) translateY(4px) skewX(-5deg); background-position: 0 6px, 8px -4px; }
+        40%  { opacity: 0.95; transform: scale(1.02) translateY(-2px) skewX(3deg); background-position: 0 -3px, -6px 5px; }
+        60%  { opacity: 0.7;  transform: scale(0.99) translateY(1px) skewX(-2deg); background-position: 0 2px, 4px 2px; }
+        80%  { opacity: 0.9;  transform: scale(1.01) translateY(-1px); background-position: 0 -1px, -2px -3px; }
+        100% { opacity: 0;    transform: scale(1); background-position: 0 0, 0 0; filter: brightness(1.1) contrast(220%); }
+    }
+
+    @keyframes staticHeavy {
+        0%   { opacity: 1;    transform: scale(1.05) translateX(-4px) skewX(6deg); filter: invert(0.3) brightness(1.6) contrast(400%); }
+        15%  { opacity: 0.9;  transform: scale(0.95) translateX(6px) skewX(-8deg); background-position: 0 10px, 12px -8px; }
+        30%  { opacity: 1;    transform: scale(1.04) translateY(-5px) skewX(4deg); background-position: 0 -8px, -10px 7px; }
+        45%  { opacity: 0.75; transform: scale(0.98) translateX(-3px); filter: invert(0.1) brightness(0.8) contrast(250%); }
+        60%  { opacity: 0.95; transform: scale(1.02) translateY(3px) skewX(-3deg); }
+        80%  { opacity: 0.6;  transform: scale(1); }
+        100% { opacity: 0;    transform: none; filter: brightness(1.1) contrast(220%); }
+    }
+
+    .corrupted-line {
+        animation: textCorrupt 0.4s steps(3) forwards;
+        color: #88ffaa !important;
+        text-shadow: 0 0 8px #00ff66, 2px 0 #ff0044, -2px 0 #00ffff !important;
+    }
+
+    @keyframes textCorrupt {
+        0%   { opacity: 0.3; letter-spacing: 2px; filter: blur(1px); }
+        50%  { opacity: 1;   letter-spacing: -1px; }
+        100% { opacity: 0.85; letter-spacing: 0; filter: none; }
+    }
+
+    .screen-shake {
+        animation: screenShake 0.35s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes screenShake {
+        10%, 90% { transform: translate3d(-2px, 0, 0); }
+        20%, 80% { transform: translate3d(3px, 1px, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, -1px, 0); }
+        40%, 60% { transform: translate3d(3px, 2px, 0); }
+    }
+
+    .pixel-tear {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 8px;
+        background: linear-gradient(90deg, transparent, var(--green), transparent);
+        opacity: 0;
+        z-index: 12;
+        pointer-events: none;
+        mix-blend-mode: screen;
+    }
 </style>
 </head>
 <body>
 
+<div id="severance-overlay"></div>
 <div class="crt">
   <canvas id="matrix-canvas"></canvas>
   <div class="flicker">
     <div id="glitch-line" class="glitch-bar"></div>
     <div id="terminal-output">
       <pre class="ascii-header">
- ████████╗███████╗██╗      ████████╗███████╗██████╗ ███╗   ███╗
- ╚══██╔══╝██╔════╝██║      ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
-    ██║   ███████╗██║         ██║   █████╗  ██████╔╝██╔████╔██║
-    ██║   ╚════██║██║         ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
-    ██║   ███████║███████╗    ██║   ███████╗██║  ██║██║ ╚═╝ ██║
-    ╚═╝   ╚══════╝╚══════╝    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+ ███████╗██╗██╗    ██╗   ██╗███████╗██████╗ 
+ ██╔════╝██║██║    ██║   ██║██╔════╝██╔══██╗
+ ███████╗██║██║    ██║   ██║█████╗  ██████╔╝
+ ╚════██║██║██║    ╚██╗ ██╔╝██╔══╝  ██╔══██╗
+ ███████║██║███████╗╚████╔╝ ███████╗██║  ██║
+ ╚══════╝╚═╝╚══════╝ ╚═══╝  ╚══════╝╚═╝  ╚═╝
+  ██████╗ ██████╗ ███╗   ██╗████████╗██╗███╗   ██╗██╗   ██╗██╗   ██╗███╗   ███╗
+ ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██║████╗  ██║██║   ██║██║   ██║████╗ ████║
+ ██║     ██║   ██║██╔██╗ ██║   ██║   ██║██╔██╗ ██║██║   ██║██║   ██║██╔████╔██║
+ ██║     ██║   ██║██║╚██╗██║   ██║   ██║██║╚██╗██║██║   ██║██║   ██║██║╚██╔╝██║
+ ╚██████╗╚██████╔╝██║ ╚████║   ██║   ██║██║ ╚████║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
+  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
       </pre>
         <div class="glitch-text">RECOVERY NODE 09 // PACIFIC IMPACT ARCHIVE [YEAR 3005]</div>
-        <div>SYSTEM CORE ONLINE... ATMOSPHERIC SENSORS RECOVERY ACTIVE</div>
+        <div>SYSTEM CORE ONLINE... SILVER CONTINUUM MEMORY FRAGMENTS DETECTED</div>
+        <div>ATMOSPHERIC SENSORS RECOVERY ACTIVE // ARCHIVE DEPTH: 4 CIVILIZATIONAL LAYERS</div>
       <div>Type '<span style="color:#fff;">help</span>' to list available system commands. Audio is <span id="audio-status" style="color:#fff;">OFF</span>.</div>
-      <div>========================================================[cite: 15]</div>
+      <div>========================================================</div>
+      <div style="opacity:0.7;">Fragment Integrity: USSR [92%] | SSR [78%] | TSR [85%] | FSR [61%]</div>
       <br>
     </div>
     
     <div class="input-line">
-      <span class="prompt">GUEST@UNKNOWN_NODE:~$</span>
+      <span class="prompt">GUEST@SILVER_NODE:~$</span>
       <input type="text" id="cli" autofocus autocomplete="off" spellcheck="false" />
     </div>
   </div>
@@ -202,44 +285,3068 @@
   const glitchLine = document.getElementById('glitch-line');
   const matrixCanvas = document.getElementById('matrix-canvas');
   const mCtx = matrixCanvas.getContext('2d');
+  const overlay = document.getElementById('severance-overlay');
+  const crt = document.querySelector('.crt');
 
   let audioEnabled = false;
   let audioCtx = null;
   
-  // Command History tracking
   const commandHistory = [];
   let historyIndex = -1;
+  let currentGlitchLevel = 0;
+  let cwd = '/archive/continuum';
+  let lastExitCode = 0;
+  const aliases = { ll: 'ls -la', la: 'ls -a', '..': 'cd ..' };
 
-  // Command Database
+  // ============================================================
+  //  SILVER CONTINUUM ARCHIVE DATABASE
+  //  Reconstructed from pre-Impact civilizational strata
+  // ============================================================
+
   const commands = {
-    'help': `AVAILABLE COMMANDS:
-  help      - Display system manual
-  lore      - Query archived node memory logs
-  status    - Read current hardware condition
-  whoami    - Display local operator profile
-  theme     - Change color palette (green, amber, cyan, red)
-  matrix    - Toggle background visualizer streams
-  audio     - Toggle sound effect feedback (on/off)
-  clear     - Purge terminal display
-  corrupt   - Trigger manual sync override
-  exit      - Return to primary surface UI`,
 
-    'lore': `[DECRYPTION COMPLETE: ARCHIVE RECORD 0x3005]
-...CALAMITY EVENT: Pacific Impact detected (2031 AD).
-...GLOBAL IMPACT: ~94% biosphere disruption. Coastal infrastructure dissolved.
-...CURRENT STAMP: Year 3005. Reconstruction Cycle 87.
-...NOTICE: Surface nodes remain isolated. Sub-oceanic transceivers still offline.`,
+  // ================================================================
+  // CORE SHELL / OPERATING SYSTEM
+  // ================================================================
 
-    'status': `SYSTEM STATUS (CYCLE 3005.238):
-  GEOTHERMAL GRID: STABLE (42% VOLTAGE DROP)
-  CRUSTAL SEISMICS: MODERATE IMPACT VIBRATIONS
-  ATMOSPHERIC DUST: 12% SHADOW COVER REMAINING
-  RELAY NODE 09: ONLINE (RECOVERY PHASE ACTIVE)`,
+  'help': `
+SILVER CONTINUUM RECOVERY ENVIRONMENT
+=====================================
+RECOVERY SHELL VERSION: SCRE-3005
+NODE: 09
+SYSTEM STATUS: OPERATIONAL
+OPERATOR CLEARANCE: LEVEL 2 / SURVIVOR
 
-    'whoami': `OPERATOR: RECOVERY_RECON_UNIT_09
- SYSTEM PERMISSIONS: LEVEL 2 SURVIVOR
- LOC: PACIFIC COASTAL RECOVERY OUTPOST 4`
-  };
+This interface provides forensic access to surviving records of the
+Silver Continuum and its predecessor / successor states.
+
+GENERAL SYNTAX
+--------------
+  command
+  command [argument]
+  command [options]
+  command [options] [target]
+
+COMMON OPTIONS
+--------------
+  -v, --verbose       Increase diagnostic detail
+  -q, --quiet         Suppress non-critical messages
+  -a, --all           Query all available records
+  -r, --recursive     Search descendant archives
+  -f, --force         Override normal recovery restrictions
+  -c, --confidence    Display archival confidence
+  --raw               Display minimally processed source fragments
+  --json              Return machine-readable structure
+  --long              Extended output
+  --history           Include historical revisions
+  --crossref          Resolve linked records
+  --uncertain         Include disputed / low-confidence records
+
+CORE COMMANDS
+-------------
+  help
+  man
+  about
+  clear
+  reset
+  status
+  whoami
+  hostname
+  uptime
+  version
+  date
+  env
+  history
+  alias
+  echo
+  pwd
+  ls
+  cd
+  cat
+  less
+  head
+  tail
+  grep
+  find
+  tree
+  stat
+  strings
+  hexdump
+  xxd
+
+ARCHIVE COMMANDS
+----------------
+  archive
+  index
+  locate
+  recover
+  decrypt
+  decode
+  verify
+  integrity
+  checksum
+  fragment
+  reconstruct
+  compare
+  provenance
+  crossref
+
+HISTORICAL COMMANDS
+-------------------
+  lore
+  timeline
+  era
+  history
+  succession
+  collapse
+  impact
+  rift
+  reconstruction
+
+STATE / CIVILIZATION
+--------------------
+  ussr
+  ssr
+  tsr
+  fsr
+  state
+  government
+  constitution
+  doctrine
+  military
+  industry
+  technology
+  society
+  culture
+  economy
+  diplomacy
+  territory
+  cities
+  capital
+  silberstadt
+
+PERSON / ORGANIZATION
+---------------------
+  people
+  person
+  leadership
+  founder
+  silverknight
+  organizations
+  military-unit
+
+EVENTS / CONFLICT
+-----------------
+  wars
+  war
+  battle
+  incident
+  operation
+  campaign
+  rift
+  impact
+  disaster
+
+FORENSIC / ANALYTICAL
+---------------------
+  compare
+  evolution
+  contradictions
+  anomalies
+  confidence
+  gaps
+  deadends
+  signals
+  signatures
+  lineage
+  genealogy
+
+INTERFACE
+---------
+  theme
+  matrix
+  audio
+  effects
+  glitch
+  corrupt
+  sync
+  reboot
+  exit
+
+Try:
+  man archive
+  timeline --long
+  history --all
+  grep "Silberstadt" /archive
+`,
+
+  'man': `
+MANUAL SYSTEM
+=============
+
+Usage:
+  man <command>
+
+Examples:
+  man archive
+  man history
+  man grep
+  man reconstruct
+  man doctrine
+
+The manual system describes command syntax and known archive behavior.
+
+CAUTION
+-------
+Some commands expose reconstructed information rather than primary
+source material. The system therefore distinguishes between:
+
+  [PRIMARY]     Direct surviving record
+  [SECONDARY]   Corroborated archival reference
+  [RECONSTRUCT] Historical inference from multiple records
+  [ESTIMATE]    Approximate chronology or interpretation
+  [DISPUTED]    Conflicting surviving records
+  [CORRUPTED]   Incomplete / damaged data
+  [UNKNOWN]     No reliable evidence recovered
+
+The Recovery System is forbidden from presenting [ESTIMATE],
+[DISPUTED], or [UNKNOWN] material as confirmed fact.
+`,
+
+  'about': `
+SILVER CONTINUUM RECOVERY ENVIRONMENT
+=====================================
+
+Purpose:
+  Recovery, reconstruction, and preservation of surviving records
+  belonging to the historical Silver Continuum.
+
+Current year:
+  3005
+
+Known surviving historical layers:
+  I     Union of Silver States Republic
+  II    Silver State Republic / ASIDS
+  III   The Silver Directive
+  IV    Federation of Silver Republics
+
+The system is not a conventional historical database.
+
+It is an archaeological interface.
+
+Much of the civilization's history survives only through partial
+political records, military archives, technical documentation,
+personal signatures, institutional references, and damaged metadata.
+
+As such, absence of evidence does not necessarily constitute
+evidence of absence.
+
+SYSTEM PRINCIPLE:
+  "Recover before interpreting.
+   Interpret before declaring."
+`,
+
+  'status': `
+RECOVERY NODE 09 — SYSTEM STATUS
+=================================
+
+CURRENT YEAR:                3005
+RECOVERY CYCLE:              ACTIVE
+NODE STATE:                  ONLINE
+POWER GRID:                  FUNCTIONAL
+ARCHIVE MOUNT:               PARTIAL
+REMOTE NETWORK:              UNAVAILABLE
+
+ARCHIVE LAYERS
+--------------
+USSR   [92%]
+SSR    [78%]
+TSR    [85%]
+FSR    [61%]
+
+OVERALL CONTINUUM RECOVERY: VARIABLE
+
+KNOWN HAZARDS
+-------------
+  * Long-term archival degradation
+  * Corrupted metadata
+  * Missing transitions between political eras
+  * Contradictory records
+  * Lost geographical references
+  * Possible chronology distortion
+  * Atmospheric / geological damage following the Impact
+
+NOTICE:
+  The lowest-integrity records are not necessarily the least
+  historically important.
+
+RECOMMENDATION:
+  Cross-reference before concluding.
+`,
+
+  'whoami': `
+OPERATOR PROFILE
+================
+
+UNIT:        RECOVERY RECON UNIT 09
+CLEARANCE:   LEVEL 2 / SURVIVOR
+ROLE:        ARCHIVE RECONSTRUCTION OPERATOR
+NODE:        PACIFIC COASTAL RECOVERY OUTPOST 4
+
+AUTHORIZED:
+  ✓ Read recovered records
+  ✓ Search archive
+  ✓ Compare layers
+  ✓ Reconstruct timelines
+  ✓ Examine doctrinal evolution
+
+RESTRICTED:
+  ✗ Destroy archive
+  ✗ Modify primary records
+  ✗ Alter historical provenance
+  ✗ Claim uncertain records as fact
+
+NOTE:
+  You are not authorized to decide what history was.
+
+You are authorized to determine what survived.
+`,
+
+  'version': `
+SILVER CONTINUUM RECOVERY ENVIRONMENT
+VERSION 3005.09-r
+
+Archive Protocol: SCP
+Historical Resolution Engine: HRE-4
+Fragment Reconstruction Engine: FREC
+Cross-Layer Analysis: ENABLED
+Uncertainty Preservation: ENABLED
+False Certainty Suppression: ENABLED
+`,
+
+  'hostname': `
+recovery-node-09.silver-continuum.local
+`,
+
+  'uptime': `
+NODE 09 UPTIME
+
+Current session: ACTIVE
+Power continuity: STABLE
+Archive mount: 00:47:13
+Recovery process: RUNNING
+
+WARNING:
+  "Uptime" refers to the current recovery node, not uninterrupted
+  continuity of the civilization being reconstructed.
+`,
+
+  'date': `
+SYSTEM DATE
+==========
+
+YEAR: 3005
+
+No universally reliable sub-year calendar survives across all
+historical layers.
+
+Exact current date unavailable.
+`,
+
+  'history': `
+COMMAND HISTORY — LOCAL OPERATOR
+
+Recent commands:
+  help
+  status
+  lore
+  timeline
+  archive list
+  grep "Silberstadt"
+  doctrine
+  fsr
+
+Use:
+  history --all
+  history --search <term>
+  history --clear
+`,
+
+  'pwd': `
+/recovery/continuum
+`,
+
+  'env': `
+RECOVERY ENVIRONMENT
+====================
+
+NODE_ID=09
+YEAR=3005
+ARCHIVE=/archive
+PRIMARY_MOUNT=/archive/continuum
+RECOVERY_MODE=FORENSIC
+AUTO_CORRECTION=OFF
+UNCERTAINTY_PRESERVATION=ON
+PRIMARY_RECORD_PROTECTION=ON
+REMOTE_NETWORK=OFFLINE
+`,
+
+  // ================================================================
+  // UNIX-LIKE FILE / ARCHIVE INTERFACE
+  // ================================================================
+
+  'ls': `
+ARCHIVE DIRECTORY LISTING
+=========================
+
+/archive
+├── continuum/
+│   ├── layer-I-ussr/
+│   ├── layer-II-ssr/
+│   ├── layer-III-tsr/
+│   ├── layer-IV-fsr/
+│   ├── transitions/
+│   ├── doctrine/
+│   ├── people/
+│   ├── military/
+│   ├── industry/
+│   ├── geography/
+│   └── unresolved/
+│
+├── catastrophe/
+│   ├── impact/
+│   ├── post-impact/
+│   └── survivor-records/
+│
+├── fragments/
+├── corrupted/
+├── signatures/
+└── indexes/
+
+Use:
+  ls /archive/continuum/
+  ls -la /archive/continuum/
+  tree /archive
+`,
+
+  'tree': `
+ARCHIVE TREE
+
+/archive/
+  continuum/
+    layer-I-ussr/
+      government/
+      military/
+      doctrine/
+      culture/
+      diplomacy/
+      technology/
+    layer-II-ssr/
+      government/
+      military/
+      orders/
+      research/
+      industry/
+    layer-III-tsr/
+      leadership/
+      military/
+      erken/
+      rift/
+      argus/
+      wachsamkeitsprinzip/
+    layer-IV-fsr/
+      constitution/
+      government/
+      industry/
+      automotive/
+      society/
+      geography/
+    transitions/
+    unresolved/
+
+  catastrophe/
+    impact/
+    flood/
+    recovery/
+
+  signatures/
+    silverknight/
+    institutional/
+
+Some directories represent reconstructed classifications rather than
+literal surviving filesystem paths.
+`,
+
+  'cat': `
+CAT — ARCHIVAL RECORD READER
+
+Usage:
+  cat <record>
+  cat --raw <record>
+  cat --crossref <record>
+
+Examples:
+  cat /archive/continuum/layer-I-ussr/declaration
+  cat /archive/continuum/layer-III-tsr/argus
+  cat /archive/continuum/layer-IV-fsr/constitution
+
+The system preserves original fragment boundaries whenever possible.
+`,
+
+  'less': `
+LESS — PAGINATED ARCHIVE READER
+
+Usage:
+  less <record>
+
+Navigation:
+  SPACE       next page
+  b           previous page
+  g           beginning
+  G           end
+  /term       search
+  n           next result
+  q           exit
+
+Use this command for major records such as declarations,
+constitutions, military reports, and reconstructed historical files.
+`,
+
+  'head': `
+HEAD — DISPLAY RECORD BEGINNING
+
+Usage:
+  head [--lines N] <record>
+
+Useful for determining:
+  * record identity
+  * author
+  * date
+  * originating institution
+  * classification
+  * fragment integrity
+`,
+
+  'tail': `
+TAIL — DISPLAY RECORD TERMINUS
+
+Usage:
+  tail [--lines N] <record>
+
+Particularly useful for damaged records.
+
+Many recovered documents contain surviving signatures, approval
+stamps, amendments, disposition notices, or final transmissions near
+their ends even when their main body is corrupted.
+`,
+
+  'grep': `
+GREP — CROSS-ARCHIVE TEXT SEARCH
+
+Usage:
+  grep <term> [path]
+
+Examples:
+  grep "Silberstadt" /archive
+  grep "Rift" /archive
+  grep "Dönutz" /archive
+  grep "Progress over Perfection" /archive
+  grep "ARGUS" /archive
+  grep -R "Silver Doctrine" /archive
+
+OPTIONS
+-------
+  -i          Ignore case
+  -r, -R      Recursive search
+  -n          Show record position
+  -v          Invert match
+  -c          Count matching records
+  --era X     Restrict to historical layer
+  --exact     Exact phrase match
+  --related   Include semantically linked records
+
+NOTICE:
+  Search results are evidence, not interpretation.
+`,
+
+  'find': `
+FIND — RECORD LOCATOR
+
+Usage:
+  find <path> [criteria]
+
+Examples:
+  find /archive -name "doctrine"
+  find /archive -era ussr
+  find /archive -integrity 90
+  find /archive -person "Karl Dönutz"
+  find /archive -status corrupted
+
+Supported criteria:
+  -name
+  -era
+  -person
+  -organization
+  -location
+  -integrity
+  -status
+  -before
+  -after
+  -type
+`,
+
+  'strings': `
+STRINGS — RAW TEXT EXTRACTION
+
+Usage:
+  strings <fragment>
+  strings --long <fragment>
+  strings --offsets <fragment>
+
+Extracts surviving human-readable strings from damaged archival
+records.
+
+Useful for:
+  * broken documents
+  * equipment manifests
+  * degraded metadata
+  * recovered storage media
+  * corrupted command logs
+
+WARNING:
+  Extracted text may be out of context.
+`,
+
+  'hexdump': `
+HEXDUMP — RAW FRAGMENT INSPECTION
+
+Usage:
+  hexdump <fragment>
+
+Shows raw archival bytes where available.
+
+Common interpretation markers:
+  PRINTABLE     surviving text
+  NULL          erased / empty region
+  CORRUPT       damaged block
+  UNKNOWN       undeciphered sequence
+`,
+
+  'xxd': `
+XXD — HEX + TEXT FORENSIC VIEW
+
+Usage:
+  xxd <fragment>
+  xxd --offset <N> <fragment>
+
+For advanced recovery operators.
+
+Most operators should prefer:
+  strings
+  fragment
+  recover
+  decrypt
+`,
+
+  // ================================================================
+  // ARCHIVE COMMANDS
+  // ================================================================
+
+  'archive': `
+SILVER CONTINUUM ARCHIVE MANAGER
+=================================
+
+Usage:
+  archive
+  archive list
+  archive show <id>
+  archive tree
+  archive search <term>
+  archive mount <layer>
+  archive compare <A> <B>
+  archive recover <id>
+  archive verify <id>
+
+KNOWN LAYERS
+
+  I      USSR
+  II     SSR / ASIDS
+  III    TSR / Silver Directive
+  IV     FSR
+
+ARCHIVE MOUNTS
+--------------
+  /archive/continuum/layer-I-ussr
+  /archive/continuum/layer-II-ssr
+  /archive/continuum/layer-III-tsr
+  /archive/continuum/layer-IV-fsr
+
+SPECIAL DIRECTORIES
+-------------------
+  /archive/transitions
+  /archive/unresolved
+  /archive/signatures
+  /archive/catastrophe
+
+The archive does not assume that political boundaries correspond
+perfectly to historical continuity.
+`,
+
+  'index': `
+ARCHIVE INDEX
+
+LAYER I — USSR
+  declaration
+  silver-doctrine
+  government
+  military
+  cyber-rüstung
+  naval-forces
+  pacific-pact
+  project-eisenblitz
+  silberstadt
+  silver-knight
+
+LAYER II — SSR / ASIDS
+  government
+  council-of-ministers
+  social-orders
+  department-of-military-research
+  armor-program
+  aerospace
+  intelligence
+  yprian-exchange
+  silberstadt
+
+LAYER III — TSR
+  rift
+  erwin-pummler
+  erken
+  adolf-hissler
+  karl-dönutz
+  argus
+  wachsamkeitsprinzip
+  formations
+  silberstadt
+
+LAYER IV — FSR
+  constitution
+  progress-over-perfection
+  federal-government
+  industrial-modernization
+  travolt
+  garuda
+  island-chain
+  pre-impact-records
+`,
+
+  'recover': `
+ARCHIVE RECOVERY ENGINE
+
+Usage:
+  recover <record>
+  recover --deep <record>
+  recover --from-fragments <record>
+  recover --crossref <record>
+
+RECOVERY PIPELINE
+-----------------
+  1. Identify surviving fragment
+  2. Verify source signature
+  3. Repair readable structure
+  4. Compare duplicate records
+  5. Cross-reference names / locations
+  6. Mark uncertain sections
+  7. Produce reconstruction
+  8. Preserve original uncertainty
+
+IMPORTANT:
+  Recovery does not mean invention.
+
+Unrecoverable sections remain unrecovered.
+`,
+
+  'decrypt': `
+DECRYPTION INTERFACE
+
+Usage:
+  decrypt <record>
+  decrypt --attempt <record>
+  decrypt --raw <record>
+
+Possible results:
+  DECRYPTED
+  PARTIAL
+  CORRUPTED
+  UNKNOWN
+  NO VALID KEY
+  FALSE POSITIVE
+
+Some historical records are not encrypted at all and merely
+appear unreadable because of physical degradation.
+`,
+
+  'decode': `
+ARCHIVAL DECODER
+
+Usage:
+  decode <record> [format]
+
+Supported conceptual formats:
+  TEXT
+  METADATA
+  MILITARY
+  POLITICAL
+  TECHNICAL
+  GEOGRAPHICAL
+
+The decoder attempts structural interpretation without changing the
+underlying recovered record.
+`,
+
+  'integrity': `
+ARCHIVE INTEGRITY REPORT
+
+USSR
+  ████████████████████░ 92%
+
+SSR
+  ███████████████░░░░░ 78%
+
+TSR
+  █████████████████░░░ 85%
+
+FSR
+  ████████████░░░░░░░░ 61%
+
+GENERAL RULE:
+  High integrity does not automatically mean historical importance.
+
+The USSR layer is currently the earliest and among the most coherent.
+The FSR layer is chronologically latest and therefore more exposed
+to later archival damage in the surviving collection.
+
+Use:
+  integrity --era ussr
+  integrity --era fsr
+  integrity --all
+`,
+
+  'verify': `
+SOURCE VERIFICATION
+
+Usage:
+  verify <record>
+  verify --deep <record>
+  verify --crossref <record>
+
+Verification checks:
+  * internal consistency
+  * repeated signatures
+  * institutional references
+  * duplicate fragments
+  * terminology continuity
+  * date consistency
+  * geographic consistency
+
+Results may be:
+  CONFIRMED
+  PROBABLE
+  PLAUSIBLE
+  DISPUTED
+  UNVERIFIED
+  CONTRADICTED
+`,
+
+  'fragment': `
+FRAGMENT ANALYSIS
+
+Usage:
+  fragment <record>
+  fragment --all <era>
+  fragment --damaged
+  fragment --orphans
+
+Fragment states:
+
+  COMPLETE
+  PARTIAL
+  BROKEN
+  CORRUPTED
+  ORPHANED
+  REFERENCED-BUT-MISSING
+
+A fragment may be historically important even when only a single
+sentence, signature, unit name, or technical designation survives.
+`,
+
+  'reconstruct': `
+HISTORICAL RECONSTRUCTION ENGINE
+
+Usage:
+  reconstruct <era>
+  reconstruct transition <A> <B>
+  reconstruct timeline
+  reconstruct --confidence
+  reconstruct --strict
+
+The engine combines surviving records without silently replacing
+uncertainty.
+
+Example:
+  reconstruct transition ussr ssr
+
+Possible output categories:
+
+  DIRECTLY SUPPORTED
+  CORROBORATED
+  STRONGLY INFERRED
+  WEAKLY INFERRED
+  UNKNOWN
+
+STRICT MODE refuses to bridge unsupported gaps.
+`,
+
+  'provenance': `
+PROVENANCE ANALYSIS
+
+Usage:
+  provenance <record>
+  provenance --deep <record>
+
+Attempts to identify:
+  * originating institution
+  * likely author
+  * political era
+  * military branch
+  * document lineage
+  * amendments
+  * successor references
+
+The system distinguishes between:
+  "this document says X"
+
+and
+
+  "later documents claim this document said X."
+
+That distinction is critical.
+`,
+
+  'crossref': `
+CROSS-REFERENCE ENGINE
+
+Usage:
+  crossref <term>
+  crossref <record>
+  crossref person <name>
+  crossref location <name>
+  crossref event <name>
+
+Example:
+  crossref Silberstadt
+
+May return references across:
+  USSR
+  SSR
+  TSR
+  FSR
+  post-Impact recovery records
+
+A recurring name does not automatically prove uninterrupted institutional
+continuity.
+`,
+
+  // ================================================================
+  // BIG HISTORICAL COMMANDS
+  // ================================================================
+
+  'lore': `
+SILVER CONTINUUM — HIGH LEVEL RECONSTRUCTION
+=============================================
+
+Recovered historical layers:
+
+[I] UNION OF SILVER STATES REPUBLIC
+    The earliest currently recovered Silver state.
+
+    Major surviving themes:
+      * liberty
+      * justice
+      * service
+      * liberal democratic socialism
+      * rejection of tyranny
+      * military readiness
+      * innovation
+      * human rights
+      * accountability
+
+    Key surviving concepts:
+      Silver Doctrine
+      Cyber-Rüstung
+      Pacific Pact
+      Adlerträger
+      Project Eisenblitz
+      Silberstadt
+      Silver Knight
+
+[II] SILVER STATE REPUBLIC / ASIDS
+
+    A more militarized and structured phase.
+
+    Surviving records describe:
+      * advanced military research
+      * five civic / social Orders
+      * centralized executive authority
+      * Council of Ministers
+      * increasingly elaborate military technology
+      * continuing interaction with Yprian technology
+
+[III] THE SILVER DIRECTIVE
+
+    A fragmented survival state emerging around the event known as
+    "the Rift."
+
+    Surviving records identify:
+      * approximately 2,000 personnel of the 15th Armored Division
+      * Erwin Pummler
+      * Erken
+      * Adolf Hissler
+      * Karl Dönutz
+      * ARGUS
+      * Wachsamkeitsprinzip
+      * specialized military formations
+
+[IV] FEDERATION OF SILVER REPUBLICS
+
+    A later political reconstitution centered upon:
+
+      "Progress over Perfection."
+
+    Surviving constitutional fragments emphasize:
+      * liberty
+      * dignity
+      * federalism
+      * institutional accountability
+      * continuous improvement
+      * science
+      * education
+      * industry
+      * future generations
+
+The system cannot presently prove that every institution, population,
+territory, or person remained continuously connected between layers.
+
+It can, however, identify strong recurring cultural, institutional,
+geographical, and doctrinal threads.
+
+QUERY:
+  Does this constitute one civilization?
+
+ARCHIVAL ANSWER:
+  HIGHLY PROBABLE.
+
+PROOF OF PERFECT CONTINUITY:
+  NOT RECOVERED.
+`,
+
+  'timeline': `
+SILVER CONTINUUM
+CHRONOLOGICAL RECONSTRUCTION
+============================
+
+IMPORTANT:
+The historical years visible in surviving meta-records are not treated
+as automatically equivalent to the present recovery calendar.
+
+The exact conversion between early records and the Year 3005 calendar
+is incomplete.
+
+CURRENT CERTAINTY:
+
+  FOUNDING AGE
+      |
+      v
+  USSR
+      |
+      v
+  SSR / ASIDS
+      |
+      v
+  THE RIFT
+      |
+      v
+  TSR
+      |
+      v
+  FSR
+      |
+      v
+  GREAT IMPACT / COLLAPSE
+      |
+      v
+  LONG RECOVERY INTERVAL
+      |
+      v
+  YEAR 3005
+
+KNOWN / STRONGLY SUPPORTED THREADS
+-----------------------------------
+
+USSR
+  Declaration of Existence
+  Silberstadt
+  Silver Doctrine
+  major territorial claims
+  Pacific Pact
+  Cyber-Rüstung
+  naval development
+  Project Eisenblitz
+
+SSR / ASIDS
+  militarized development
+  advanced weapons programs
+  five Orders
+  Council of Ministers
+  strengthened state structure
+
+TSR
+  Rift
+  surviving elements of 15th Armored Division
+  Erken
+  Pummler
+  Hissler
+  Dönutz
+  ARGUS
+  Wachsamkeitsprinzip
+
+FSR
+  federal democratic reconstruction
+  "Progress over Perfection"
+  industrial modernization
+  Travolt / automotive development
+  island-chain civilization
+
+POST-IMPACT
+  civilization-wide disruption
+  widespread destruction of infrastructure
+  loss of archives
+  long-term recovery
+
+YEAR 3005
+  Recovery Node 09 active.
+
+Use:
+  timeline --strict
+  timeline --confidence
+  timeline --long
+  timeline --era ussr
+  timeline --era fsr
+  timeline --transitions
+`,
+
+  'era': `
+ERA QUERY
+
+Usage:
+  era <name>
+
+Known eras:
+  ussr
+  ssr
+  tsr
+  fsr
+  impact
+  recovery
+
+Usage examples:
+  era ussr
+  era tsr --long
+  era fsr --confidence
+
+The shell treats "era" as a historical abstraction rather than a
+guarantee of exact calendar duration.
+`,
+
+  'succession': `
+SUCCESSION ANALYSIS
+
+Usage:
+  succession
+  succession ussr ssr
+  succession ssr tsr
+  succession tsr fsr
+  succession --all
+  succession --strict
+
+CURRENT RECONSTRUCTION
+
+USSR -> SSR
+  Political continuity: PARTIAL
+  Institutional continuity: PROBABLE
+  Military continuity: PROBABLE
+  Ideological continuity: MIXED
+  Exact transition mechanism: INCOMPLETE
+
+SSR -> TSR
+  Direct political continuity: DISPUTED / INCOMPLETE
+  Military continuity: STRONG
+  Personnel continuity: STRONGLY SUPPORTED IN SELECT RECORDS
+  Territorial continuity: INCOMPLETE
+  Doctrinal continuity: STRONG
+  Trigger event: "THE RIFT"
+
+TSR -> FSR
+  Direct institutional continuity: INCOMPLETE
+  Cultural continuity: PROBABLE
+  Political continuity: RECONSTRUCTED
+  Ideological relationship: EVOLUTIONARY RATHER THAN IDENTICAL
+
+FSR -> POST-IMPACT RECOVERY
+  Evidence of survival: PARTIAL
+  Long-term political continuity: UNKNOWN
+`,
+
+  'collapse': `
+COLLAPSE ANALYSIS
+
+The archive contains evidence for multiple distinct forms of collapse:
+
+1. Political transformation
+2. Military fragmentation
+3. Territorial discontinuity
+4. Institutional replacement
+5. Catastrophic environmental disruption
+
+The historical record should not reduce these to one "fall."
+
+The Silver states repeatedly changed form.
+
+Some transformations appear deliberate.
+Others appear forced.
+The Rift marks one major rupture.
+The later Impact represents a civilization-scale discontinuity.
+
+Use:
+  collapse --political
+  collapse --military
+  collapse --impact
+  collapse --all
+`,
+
+  'impact': `
+CATASTROPHIC IMPACT RECORD
+==========================
+
+EVENT CLASSIFICATION:
+  PLANETARY / CIVILIZATIONAL
+
+PRIMARY EFFECTS RECOVERED:
+  * extreme environmental disruption
+  * destruction of coastal infrastructure
+  * massive interruption of communications
+  * archival loss
+  * political fragmentation
+  * long-duration recovery
+
+WARNING:
+Exact casualty totals, geographical boundaries, and precise
+chronological conversion remain incompletely reconstructed.
+
+The terminal therefore refuses to replace missing figures with
+invented precision.
+
+CURRENT YEAR:
+  3005
+
+TIME SINCE IMPACT:
+  NOT RELIABLY CALCULABLE FROM ALL SURVIVING CALENDARS
+
+ARCHIVAL STATUS:
+  Recovery ongoing.
+`,
+
+  'rift': `
+THE RIFT
+========
+
+EVENT NAME:
+  THE RIFT
+
+KNOWN ASSOCIATIONS:
+  * 15th Armored Division
+  * approximately 2,000 personnel
+  * island south of Arach
+  * Brigadier General Erwin Pummler
+  * establishment of Erken
+  * contact with local population
+  * alliance with Vangorian forces
+  * emergence / development of The Silver Directive
+
+SIGNIFICANCE:
+  The Rift appears to represent a major discontinuity between the
+  earlier Silver State structures and the surviving Directive.
+
+It is simultaneously:
+
+  a military dispersal event,
+  a political rupture,
+  a survival event,
+  and the origin point of a new Silver polity.
+
+OPEN QUESTIONS:
+  * Exact cause
+  * Exact date
+  * Full list of displaced units
+  * Fate of all separated personnel
+  * What remained of earlier institutions
+  * What territory was lost
+
+Use:
+  rift --military
+  rift --pummler
+  rift --erken
+  rift --timeline
+`,
+
+  'reconstruction': `
+YEAR 3005 — RECONSTRUCTION AGE
+==============================
+
+The civilization being studied no longer exists in the same form as
+the archived Silver states.
+
+The present recovery operation is therefore archaeological.
+
+The operator is reconstructing:
+
+  People
+  Governments
+  Wars
+  Doctrine
+  Cities
+  Technology
+  Geography
+  Memory
+
+The archive suggests a recurring pattern:
+
+  BUILD
+    ->
+  CENTRALIZE
+    ->
+  ADAPT
+    ->
+  SURVIVE
+    ->
+  RECONSTITUTE
+    ->
+  IMPROVE
+
+Whether this represents deliberate evolution or simply the result of
+survival pressure remains unresolved.
+`,
+
+  // ================================================================
+  // ERA COMMANDS
+  // ================================================================
+
+  'ussr': `
+LAYER I — UNION OF SILVER STATES REPUBLIC
+=========================================
+
+ARCHIVAL CONFIDENCE: HIGH
+
+IDENTITY
+--------
+Union of Silver States Republic
+
+FOUNDING MEMORY
+---------------
+The Declaration of Existence identifies Silberstadt as the capital
+and describes a broad Silver political project spanning territories
+across Southeast Asia and Oceania.
+
+FOUNDATIONAL THEMES
+-------------------
+  Liberty
+  Justice
+  Service
+  Human rights
+  International law
+  Accountability
+  Innovation
+  Readiness
+  Protection of innocents
+
+IDEOLOGY
+--------
+Liberal democratic socialism.
+
+Justice is explicitly prioritized over mere equality.
+
+THE SILVER DOCTRINE
+-------------------
+  1. Loyalty Above All
+  2. Disobedience in the Face of Absurdity
+  3. Protection of Innocents
+  4. Honor and Integrity
+  5. International Law
+  6. Continuous Training and Readiness
+  7. Innovation and Adaptability
+  8. Human Rights
+  9. Transparency and Accountability
+
+CULTURE
+-------
+Military service carries prestige.
+
+Education and healthcare are described as free.
+
+Community, family, physical fitness, and national ceremony feature
+prominently in surviving cultural records.
+
+MILITARY
+--------
+Cyber-Rüstung I-VII
+Adlerträger carriers
+Granitspalter battleships
+Schattentaucher submarines
+Monsoon Guardians
+Pacific Storm
+Island Hoppers
+Rising Tide
+Sunset Horizon
+
+TECHNOLOGY
+----------
+Project Eisenblitz
+Cyber-Rüstung
+Naval modernization
+
+FOUNDING SIGNATURE
+------------------
+THE SILVER KNIGHT
+
+Residual message:
+  "We exist."
+
+This remains the oldest coherent signature presently recovered.
+`,
+
+  'ssr': `
+LAYER II — SILVER STATE REPUBLIC / ASIDS
+========================================
+
+ARCHIVAL CONFIDENCE: MODERATE-HIGH
+
+This period shows a substantial escalation in institutional,
+technological, and military organization.
+
+MILITARY RESEARCH
+-----------------
+Flugabwehrsystem 30A
+  "Wetterhammer"
+
+Luftsensor 30B
+  "Wetterauge"
+
+Panzerkamfwagen 130A5
+  "Stahlschrecken"
+
+Selbstfahrgeschütz 155A
+  "Höllensturm"
+
+Mehrzweckbomber F-205D
+  "Donnerklinge"
+
+Krakenfürst IIB
+  "Herr des Abgrunds"
+
+Aegis-L Trägerpanzer
+  "Wendigo"
+
+SOCIAL ORDERS
+-------------
+1. Initiates
+2. Servitors
+3. Guardians
+4. Achievers
+5. Exemplars
+
+The Orders are described as non-hereditary.
+
+They represent training, service, defense, achievement, and state
+recognition.
+
+GOVERNMENT
+----------
+Premier:
+  Supreme Commander
+
+Council of Ministers:
+  Defense
+  Intelligence
+  Agriculture & Industry
+  Foreign Affairs
+  Finance
+  Justice
+  Culture & Propaganda
+  R&D
+
+IMPORTANT CONTINUITY
+--------------------
+Military personnel retain a stated ability to disobey unjust or rash
+orders.
+
+This is notable because the state simultaneously becomes more
+hierarchical while retaining a doctrine against absolute obedience.
+
+That tension becomes historically significant.
+
+YPRIAN CONNECTION
+-----------------
+Multiple fragments reference Yprian technological support / exchange.
+
+Full scope remains incomplete.
+`,
+
+  'tsr': `
+LAYER III — THE SILVER DIRECTIVE
+================================
+
+ARCHIVAL CONFIDENCE: HIGH IN CORE RECORDS
+
+THE RIFT
+--------
+Approximately 2,000 men of the 15th Armored Division were scattered
+across an island south of Arach.
+
+Under Brigadier General Erwin Pummler they regrouped.
+
+Equipment was burned, salvaged, or repurposed.
+
+Local inhabitants initially interpreted the survivors in extraordinary
+terms.
+
+ERKEN
+------
+The first city established by the regrouped force.
+
+Subsequent records describe expansion and an alliance with Vangorian
+forces during their civil war.
+
+COMMAND
+-------
+Premier Adolf Hissler
+General Karl Dönutz
+Brigadier General Erwin Pummler
+
+FORMATIONS
+----------
+Bodentruppen
+Spezialeinsatztruppen aus Silber
+Überlegene Weltuntergangstruppen aus Silber
+Reinmesser-Kommando
+
+DOCTRINE
+--------
+Wachsamkeitsprinzip
+
+Principle of Vigilance.
+
+The system's central concept:
+detection is not merely something to avoid.
+
+Detection itself can become a weapon.
+
+ARGUS
+-----
+Adaptive Recursive Geospatial Uncertainty System
+
+Core concepts:
+  * Nothing is permanently unseen
+  * Every asset leaves signatures over time
+  * Stealth delays confirmation
+  * Uncertainty creates strategic value
+  * Enemy reaction reveals intent
+  * Persistence can outperform brief intensity
+
+The Directive therefore develops warfare around:
+
+  exposure
+  uncertainty
+  reaction
+  persistence
+  exhaustion
+
+rather than simply overwhelming the enemy immediately.
+
+CAPITAL
+-------
+Silberstadt remains referenced.
+
+The full institutional relationship between the former Silver states
+and the Directive remains incompletely reconstructed.
+
+`,
+
+  'fsr': `
+LAYER IV — FEDERATION OF SILVER REPUBLICS
+=========================================
+
+ARCHIVAL CONFIDENCE: MODERATE / FRAGMENTARY
+
+This is the latest major coherent political layer currently recovered.
+
+FOUNDATIONAL PRINCIPLE
+----------------------
+"Progress over Perfection"
+
+CONSTITUTIONAL THEMES
+---------------------
+  Liberty
+  Dignity
+  Cooperation
+  Understanding
+  Continuous improvement
+  Accountability
+  Federalism
+  Education
+  Science
+  Industry
+  Justice
+  Protection of future generations
+
+CORE CONSTITUTIONAL PHILOSOPHY
+------------------------------
+Human beings are imperfect.
+
+Therefore institutions must remain open to correction.
+
+The archive explicitly rejects the idea that:
+
+  a law is too sacred to improve,
+  a leader is too powerful to question,
+  or a citizen is too insignificant to matter.
+
+POLITICAL STRUCTURE
+-------------------
+Federal democratic republic.
+
+Republics retain local authority.
+
+NATIONAL CHARACTER
+------------------
+Regional alignment:
+  Non-Aligned
+
+National focus:
+  Industrial Modernization and Might
+
+INDUSTRY
+--------
+Automotive and industrial capacity appear prominently.
+
+TRAVOLT
+-------
+A major surviving industrial / automotive reference.
+
+GARUDA
+------
+Multiple vehicle references survive in coastal records.
+
+Associated names include:
+  Petir Stargrid
+  P-TR
+
+GEOGRAPHY
+---------
+Late records describe:
+
+  eleven islands
+  emerald mountains
+  black volcanic stone
+  turquoise water
+  volcanic coastlines
+
+The sea remains a recurring cultural image.
+
+THE GREAT DIFFERENCE
+--------------------
+Where earlier layers emphasize loyalty, structure, readiness,
+survival, and vigilance, the FSR records place exceptional emphasis
+on the idea that institutions themselves must remain corrigible.
+
+This may represent the greatest philosophical transformation in the
+entire recovered Silver Continuum.
+`,
+
+  // ================================================================
+  // GOVERNMENT / SOCIETY / MILITARY / INDUSTRY
+  // ================================================================
+
+  'state': `
+STATE ANALYSIS
+
+Usage:
+  state <era>
+  state compare <A> <B>
+
+Known:
+  ussr
+  ssr
+  tsr
+  fsr
+
+Outputs:
+  government
+  ideology
+  military relationship
+  society
+  economy
+  institutional structure
+  transition evidence
+`,
+
+  'government': `
+GOVERNMENTAL EVOLUTION
+======================
+
+USSR
+----
+Liberal democratic socialism.
+Justice prioritized over equality.
+Strong civic / military ethos.
+
+SSR
+---
+Premier authority.
+Council of Ministers.
+Premier acts as Supreme Commander.
+Emergency authority exists.
+
+TSR
+---
+Leadership centered around:
+  Adolf Hissler
+  Karl Dönutz
+  Erwin Pummler
+
+Political and military organization becomes highly survival-oriented.
+
+FSR
+---
+Federal democratic republic.
+
+Local republics retain authority.
+
+Constitutional philosophy centers around continuous improvement and
+limitation of concentrated authority.
+
+EVOLUTIONARY QUESTION
+---------------------
+Was the FSR a rejection of everything before it?
+
+ARCHIVAL ANSWER:
+  No.
+
+It appears more consistent with selective retention and reform:
+
+  readiness retained
+  industrial ambition retained
+  sovereignty retained
+  institutional humility increased
+`,
+
+  'doctrine': `
+DOCTRINAL CONTINUUM
+===================
+
+USSR — SILVER DOCTRINE
+----------------------
+Core:
+  Loyalty
+  Justice
+  Protection
+  Honor
+  Law
+  Readiness
+  Innovation
+  Human Rights
+  Accountability
+
+SSR
+---
+The principles become embedded in a more structured hierarchy.
+
+The state emphasizes:
+  service
+  achievement
+  military capability
+  centralized coordination
+
+TSR — WACHSAMKEITSPRINZIP
+--------------------------
+The focus changes from:
+
+  "How should power behave?"
+
+toward:
+
+  "How should power survive when constantly exposed?"
+
+ARGUS turns uncertainty and detection into operational concepts.
+
+FSR — PROGRESS OVER PERFECTION
+------------------------------
+The question changes again:
+
+  "How should a civilization ensure its institutions remain capable
+   of correcting themselves?"
+
+EVOLUTIONARY THREAD
+-------------------
+  ETHICS
+    ->
+  STRUCTURE
+    ->
+  SURVIVAL
+    ->
+  SELF-CORRECTION
+
+The archive cannot prove that this evolution was consciously planned.
+
+But the thematic continuity is unusually strong.
+`,
+
+  'military': `
+SILVER MILITARY INDEX
+=====================
+
+USSR
+----
+Cyber-Rüstung I-VII
+Adlerträger
+Granitspalter
+Schattentaucher
+Monsoon Guardians
+Pacific Storm
+Island Hoppers
+Rising Tide
+Sunset Horizon
+Project Eisenblitz
+
+SSR
+---
+Wetterhammer
+Wetterauge
+Stahlschrecken
+Höllensturm
+Donnerklinge
+Krakenfürst IIB
+Wendigo
+
+TSR
+---
+Bodentruppen
+Spezialeinsatztruppen aus Silber
+Überlegene Weltuntergangstruppen aus Silber
+Reinmesser-Kommando
+
+Doctrinal emphasis:
+  persistence
+  detection
+  uncertainty
+  reaction
+  endurance
+
+FSR
+---
+Surviving records place greater emphasis upon industrial and
+automotive capability.
+
+The surviving FSR material does not contain enough military detail
+to reconstruct a complete order of battle.
+
+DO NOT ASSUME ABSENCE OF EVIDENCE = ABSENCE OF MILITARY CAPABILITY.
+`,
+
+  'technology': `
+TECHNOLOGICAL CONTINUUM
+=======================
+
+EARLY SILVER PERIOD
+-------------------
+Cyber-Rüstung
+Naval fleets
+Project Eisenblitz
+
+SSR / ASIDS
+-----------
+Advanced armor
+Networked surveillance
+Air defense
+Long-range artillery
+Advanced aircraft
+Specialized armored systems
+
+TSR
+---
+Technology is integrated into a doctrine of persistence,
+uncertainty, and detection.
+
+FSR
+---
+Industrial modernization becomes a major national focus.
+
+Automotive technology becomes particularly visible in surviving
+records.
+
+ARCHIVAL PATTERN
+----------------
+The technology changes dramatically.
+
+The underlying obsession does not:
+
+  capability
+  adaptability
+  readiness
+  independence
+`,
+
+  'industry': `
+INDUSTRIAL HISTORY
+
+USSR
+----
+Military-industrial capability strongly represented.
+
+SSR
+---
+Department of Military Research indicates increasing technical
+specialization.
+
+TSR
+---
+Resource scarcity and battlefield salvage become part of the survival
+narrative.
+
+FSR
+---
+Industrial modernization becomes a central national objective.
+
+Travolt and the Garuda vehicle lineage appear repeatedly in surviving
+industrial / coastal records.
+
+The archive suggests that manufacturing was not merely an economic
+activity.
+
+It was part of Silver sovereignty.
+`,
+
+  'society': `
+SOCIAL EVOLUTION
+================
+
+USSR
+----
+Community
+Family
+Service
+Education
+Healthcare
+Physical fitness
+Ceremonial culture
+
+SSR
+---
+Formalized Five Orders:
+
+  Initiates
+  Servitors
+  Guardians
+  Achievers
+  Exemplars
+
+These were explicitly described as non-hereditary.
+
+TSR
+---
+Survival-oriented military society.
+
+Contact with local populations around Erken becomes historically
+important.
+
+FSR
+---
+Federal civic identity.
+
+Constitutional emphasis shifts toward:
+
+  dignity
+  cooperation
+  understanding
+  accountability
+  future generations
+
+POSSIBLE CONTINUITY:
+The civilization repeatedly attempts to define what a citizen owes
+to society—and what society owes to the citizen.
+`,
+
+  'culture': `
+CULTURAL CONTINUUM
+==================
+
+Recurring cultural motifs:
+
+  Silver identity
+  Service
+  Military prestige
+  National dignity
+  Industrial ambition
+  Adaptability
+  Community
+  Sovereignty
+
+Later records introduce stronger themes of:
+
+  institutional humility
+  self-correction
+  plural federal identity
+  coexistence
+
+The archive suggests that cultural continuity survives political
+revolution more strongly than terminology does.
+`,
+
+  'diplomacy': `
+DIPLOMATIC RECORDS
+
+USSR
+----
+Pacific Pact referenced.
+
+SSR
+---
+Yprian technological support / exchange referenced.
+
+TSR
+---
+Alliance with Vangorian forces during civil war.
+
+FSR
+---
+Regional alignment:
+  Non-Aligned
+
+Diplomatic records are incomplete enough that a complete list of
+allies and enemies cannot currently be reconstructed.
+`,
+
+  'territory': `
+TERRITORIAL MEMORY
+==================
+
+EARLY SILVER RECORDS
+--------------------
+Territorial claims include extensive parts of Southeast Asia and
+Oceania.
+
+Later layers show significant territorial discontinuity.
+
+TSR
+---
+Island south of Arach.
+Erken established there.
+
+FSR
+---
+Island-chain geography is prominent.
+Late records describe eleven islands becoming one political /
+geographical memory.
+
+POST-IMPACT
+----------
+Many coastal references become unusable.
+
+Geographical reconstruction remains one of the archive's weakest
+areas.
+`,
+
+  // ================================================================
+  // PEOPLE
+  // ================================================================
+
+  'people': `
+PERSONNEL DATABASE
+
+Usage:
+  people
+  people list
+  people search <name>
+  people --era <era>
+
+KNOWN HIGH-VALUE IDENTITIES
+---------------------------
+
+THE SILVER KNIGHT
+  Founding signature.
+  Early Declaration of Existence.
+  Institutional legacy extends beyond personal references.
+
+GENERAL KARL DÖNUTZ
+  SSR / TSR military leadership references.
+  Later associated with The Silver Directive.
+
+PREMIER ADOLF HISSLER
+  TSR political leadership.
+
+BRIGADIER GENERAL ERWIN PUMMLER
+  Commander associated with the surviving 15th Armored Division
+  contingent after the Rift.
+  Founder of Erken.
+
+Additional names may be recovered through:
+  grep
+  crossref
+  person
+`,
+
+  'person': `
+PERSON QUERY
+
+Usage:
+  person <name>
+  person <name> --long
+  person <name> --crossref
+  person <name> --timeline
+
+The system separates:
+  * verified identity
+  * title
+  * office
+  * military rank
+  * associated institution
+  * archival appearances
+  * inferred continuity
+
+Example:
+  person "Karl Dönutz"
+  person "Erwin Pummler" --long
+`,
+
+  'leadership': `
+LEADERSHIP INDEX
+================
+
+EARLY FOUNDING PERIOD
+  The Silver Knight
+
+SSR / ASIDS
+  Premier
+  General Karl Dönutz
+  Council of Ministers
+
+TSR
+  Premier Adolf Hissler
+  General Karl Dönutz
+  Brigadier General Erwin Pummler
+
+FSR
+  Federal leadership structure exists,
+  but surviving command-level material is incomplete.
+
+NOTICE:
+The archive should not infer that a title appearing in multiple eras
+belongs to the same office with identical powers.
+`,
+
+  'founder': `
+FOUNDING SIGNATURE ANALYSIS
+
+PRIMARY IDENTITY:
+  The Silver Knight
+
+ASSOCIATION:
+  SK and A
+  Silver Knight and Associates
+
+PRIMARY RECORD:
+  Declaration of Existence — Order 001
+
+SIGNATURE:
+  "We exist."
+
+SIGNIFICANCE:
+  The phrase is the oldest coherent surviving statement associated
+  with Silver political identity.
+
+LATER EVOLUTION:
+  The personal founder gradually becomes less visible in later records.
+
+Possible interpretation:
+  founding intent became institutional identity.
+
+Certainty:
+  HIGH for early records.
+  LOW for claims about later personal involvement.
+`,
+
+  'silverknight': `
+FOUNDER SIGNATURE RESIDUE
+========================
+
+THE SILVER KNIGHT
+
+Earliest identified Silver institutional signature.
+
+Document association:
+  Declaration of Existence
+  Order 001
+
+Organization:
+  SK and A
+
+Historical significance:
+  Establishes the earliest currently recovered explicit statement
+  that the Silver political community understood itself as an entity.
+
+SURVIVING MESSAGE:
+
+  "We exist."
+
+Later records increasingly refer to institutions rather than the
+founder personally.
+
+This raises an unresolved question:
+
+Did the founder disappear from the archive,
+or did the institution outgrow the founder?
+
+STATUS:
+  UNRESOLVED
+`,
+
+  // ================================================================
+  // CAPITAL / CITIES
+  // ================================================================
+
+  'silberstadt': `
+SILBERSTADT — CAPITAL MEMORY INDEX
+==================================
+
+Silberstadt is one of the most important recurring geographical
+references in the archive.
+
+EARLY ROLE
+----------
+Capital of the Union of Silver States Republic.
+
+LATER REFERENCES
+---------------
+The city continues to appear in records associated with later Silver
+political structures.
+
+THE SILVER HOUSE
+----------------
+Recovered descriptions include:
+
+  marble staircases
+  silver linings
+  red carpets
+  patriotic murals
+  flags of successive Silver states
+  gardens
+  helicopter pads
+
+Security references include:
+  SS
+  SDI
+  Uber-Welt units
+
+SYMBOLIC SIGNIFICANCE
+---------------------
+Silberstadt is more than a capital reference.
+
+It appears to represent institutional memory itself.
+
+The archive repeatedly returns to this location even when political
+structures change.
+
+OPEN QUESTIONS
+--------------
+  * Was the city continuously inhabited?
+  * Was the same political capital maintained?
+  * How much of the described Silver House survived?
+  * What happened to Silberstadt after the Impact?
+
+CURRENT ANSWER:
+  UNKNOWN.
+`,
+
+  'capital': `
+CAPITAL QUERY
+
+Known major Silver capital reference:
+  SILBERSTADT
+
+Use:
+  capital --history
+  capital --architecture
+  capital --security
+  capital --eras
+  capital --post-impact
+
+The command treats geographical identity separately from political
+ownership.
+`,
+
+  'cities': `
+CITY INDEX
+
+KNOWN / RECOVERED:
+  Silberstadt
+  Erken
+
+Additional settlements are referenced indirectly.
+
+ERKEN
+------
+Established by surviving TSR forces after the Rift.
+
+SILBERSTADT
+-----------
+The recurring capital of the Silver political tradition.
+
+USE:
+  cities --era tsr
+  cities --era fsr
+  cities --crossref
+`,
+
+  // ================================================================
+  // EVENTS / WARS
+  // ================================================================
+
+  'wars': `
+WAR INDEX
+=========
+
+The surviving archive contains extensive military terminology but
+does not yet permit a complete chronological catalogue of every war.
+
+KNOWN MAJOR CONFLICT REFERENCES
+-------------------------------
+
+TSR / RIFT PERIOD
+  Alliance with Vangorian forces
+  during the Vangorian civil war
+
+OTHER CONFLICT RECORDS
+  numerous military programs and strategic doctrines
+  are referenced without enough context to reconstruct every war
+
+Use:
+  wars --all
+  wars --era tsr
+  wars --incomplete
+  wars --confidence
+`,
+
+  'war': `
+WAR QUERY
+
+Usage:
+  war list
+  war <name>
+  war --era <era>
+  war --participants <name>
+
+The archive deliberately distinguishes between:
+
+  war
+  campaign
+  operation
+  battle
+  civil war
+  military deployment
+  doctrinal exercise
+
+A weapon program is not automatically evidence of a war.
+`,
+
+  'battle': `
+BATTLE DATABASE
+
+No complete battle chronology is currently recoverable.
+
+Use broad searches:
+
+  grep "battle" /archive
+  grep "campaign" /archive
+  grep "operation" /archive
+  wars --all
+
+Incomplete records will be marked accordingly.
+`,
+
+  'operation': `
+OPERATION DATABASE
+
+Usage:
+  operation list
+  operation <name>
+  operation --era <era>
+  operation --person <name>
+
+Some operations may survive only as unit references or equipment
+logs.
+
+No operation will be reconstructed solely from equipment presence.
+`,
+
+  'incident': `
+INCIDENT DATABASE
+
+Possible incident classes:
+
+  POLITICAL
+  MILITARY
+  INDUSTRIAL
+  TECHNOLOGICAL
+  GEOLOGICAL
+  CATASTROPHIC
+  UNKNOWN
+
+Usage:
+  incident list
+  incident --era tsr
+  incident --critical
+  incident --unresolved
+`,
+
+  // ================================================================
+  // COMPARISON / FORENSIC ANALYSIS
+  // ================================================================
+
+  'compare': `
+COMPARISON ENGINE
+
+Usage:
+  compare <A> <B>
+  compare <A> <B> --long
+  compare doctrine <A> <B>
+  compare government <A> <B>
+  compare military <A> <B>
+  compare society <A> <B>
+  compare technology <A> <B>
+  compare ideology <A> <B>
+
+Examples:
+  compare ussr ssr
+  compare ssr tsr
+  compare tsr fsr
+  compare ussr fsr
+  compare doctrine ussr tsr
+  compare doctrine tsr fsr
+
+The final comparison command is particularly useful for identifying
+what changed and what survived.
+`,
+
+  'evolution': `
+EVOLUTION ANALYSIS
+==================
+
+SILVER POLITICAL EVOLUTION
+
+USSR
+  PRINCIPLE
+
+SSR
+  STRUCTURE
+
+TSR
+  SURVIVAL
+
+FSR
+  SELF-CORRECTION
+
+This is an analytical reconstruction, not a literal slogan sequence
+found in one document.
+
+It is derived from the themes represented throughout the archive.
+
+Use:
+  evolution --military
+  evolution --political
+  evolution --social
+  evolution --doctrine
+  evolution --all
+`,
+
+  'contradictions': `
+CONTRADICTION REPORT
+====================
+
+The archive contains several important tensions:
+
+1. LIBERTY VS AUTHORITY
+   Early records emphasize liberty and accountability.
+   Later structures grant stronger central powers.
+
+2. DISOBEDIENCE VS LOYALTY
+   The Silver Doctrine contains both loyalty and a right to resist
+   absurdity or unjust orders.
+
+3. HIERARCHY VS NON-HEREDITARY MERIT
+   SSR Orders create hierarchy while explicitly rejecting hereditary
+   status.
+
+4. WARFARE VS LAW
+   Military capability expands while earlier commitments to
+   international law remain part of the inherited record.
+
+5. MILITARISM VS DEMOCRACY
+   TSR is explicitly described as a militaristic democracy aware of
+   its own nature.
+
+6. CONTINUITY VS REINVENTION
+   FSR retains Silver identity while deliberately changing its
+   institutional philosophy.
+
+These contradictions should not automatically be considered errors.
+
+They may represent historical evolution.
+`,
+
+  'anomalies': `
+ARCHIVAL ANOMALY INDEX
+=====================
+
+Known anomaly classes:
+
+  A-001  Founder signature persists institutionally
+  A-002  Silberstadt persists across changing governments
+  A-003  Military obedience doctrine contains explicit disobedience
+  A-004  SSR hierarchy is officially non-hereditary
+  A-005  TSR adopts highly aggressive doctrine while retaining
+         democratic framing
+  A-006  FSR retains Silver identity while rejecting ideological
+         rigidity
+  A-007  Major chronological gaps remain between political layers
+  A-008  Impact-era records abruptly terminate
+
+Use:
+  anomalies --open
+  anomalies --critical
+  anomalies --resolved
+`,
+
+  'confidence': `
+ARCHIVAL CONFIDENCE MODEL
+=========================
+
+HIGH
+  Direct record with corroboration.
+
+MODERATE
+  Strong surviving evidence but incomplete context.
+
+LOW
+  Limited surviving evidence.
+
+RECONSTRUCTED
+  Logical reconstruction from multiple fragments.
+
+ESTIMATED
+  Approximation required.
+
+DISPUTED
+  Multiple incompatible surviving records.
+
+UNKNOWN
+  Evidence insufficient.
+
+The system is intentionally biased toward admitting uncertainty.
+`,
+
+  'gaps': `
+HISTORICAL GAP ANALYSIS
+
+MAJOR GAPS
+----------
+
+  * Exact founding chronology
+  * Complete transition from USSR to SSR
+  * Full circumstances of the Rift
+  * Complete fate of all 15th Armored Division personnel
+  * Full relationship between SSR and TSR institutions
+  * Complete FSR military structure
+  * Exact Impact chronology
+  * Immediate post-Impact survival
+  * Long-term fate of Silberstadt
+
+Use:
+  gaps --critical
+  gaps --era tsr
+  gaps --era fsr
+  gaps --all
+`,
+
+  'lineage': `
+INSTITUTIONAL LINEAGE ENGINE
+
+Usage:
+  lineage <term>
+  lineage doctrine
+  lineage military
+  lineage government
+  lineage silberstadt
+  lineage silverknight
+
+The system attempts to determine whether a concept:
+
+  disappeared,
+  transformed,
+  persisted,
+  fragmented,
+  reappeared,
+  or remains unknown.
+
+IMPORTANT:
+Similarity is not proof of continuity.
+`,
+
+  // ================================================================
+  // SPECIAL LORE COMMANDS
+  // ================================================================
+
+  'doctrine-history': `
+DOCTRINAL HISTORY
+=================
+
+SILVER DOCTRINE
+  "How should a Silver citizen and soldier behave?"
+
+WACHSAMKEITSPRINZIP
+  "How does a Silver force survive under continuous exposure?"
+
+PROGRESS OVER PERFECTION
+  "How does a Silver institution prevent itself from becoming
+   incapable of correction?"
+
+Three different answers to three different existential problems.
+
+The system currently considers them related.
+It does not consider them identical.
+`,
+
+  'orders': `
+SSR ORDER SYSTEM
+
+Five known non-hereditary Orders:
+
+  I.   INITIATES
+       Training / probation
+
+  II.  SERVITORS
+       Completed mandatory service year
+
+  III. GUARDIANS
+       Military / police / defense engineering
+
+  IV.  ACHIEVERS
+       Recognized excellence
+
+  V.   EXEMPLARS
+       Heroes of the state
+
+Historical interpretation:
+  hierarchy was framed as earned rather than inherited.
+
+The surviving propaganda metaphor describes the Orders as a living
+pyramid in which each level supports and is supported by the others.
+`,
+
+  'argus': `
+ARGUS
+====
+
+FULL NAME:
+Adaptive Recursive Geospatial Uncertainty System
+
+Associated era:
+  The Silver Directive
+
+CONCEPT
+-------
+Nothing remains permanently unseen.
+
+Every asset leaves signatures over time.
+
+Therefore stealth is not absolute invisibility.
+
+It is delay.
+
+ARGUS attempts to exploit the interval between:
+
+  PRESENCE
+      ->
+  DETECTION
+      ->
+  CONFIRMATION
+      ->
+  REACTION
+      ->
+  EXPOSURE
+
+STRATEGIC PRINCIPLE
+-------------------
+Increase uncertainty.
+
+Delay confirmation.
+
+Force inefficient reaction.
+
+Treat reaction itself as intelligence.
+
+CORE IDEA:
+  "Detection is not merely the enemy's advantage.
+   Detection can reveal the enemy."
+
+This doctrine is specifically associated with TSR.
+Do not back-project it into earlier eras without evidence.
+`,
+
+  'silver-doctrine': `
+THE SILVER DOCTRINE
+
+The earliest recovered formal Silver doctrinal framework.
+
+TENETS
+------
+
+1. Loyalty Above All
+
+2. Disobedience in the Face of Absurdity
+   Last resort.
+   Respect maintained.
+
+3. Protection of Innocents
+
+4. Honor and Integrity
+
+5. Adherence to International Law
+
+6. Continuous Training and Readiness
+
+7. Innovation and Adaptability
+
+8. Respect for Human Rights
+
+9. Transparency and Accountability
+
+HISTORICAL SIGNIFICANCE
+-----------------------
+This doctrine is important because it combines:
+
+  military seriousness
+  obedience
+  moral restraint
+  individual responsibility
+  institutional accountability
+
+It is not simply a military code.
+
+It appears to be part of the early Silver conception of citizenship.
+`,
+
+  'progress': `
+FSR PHILOSOPHICAL CORE
+======================
+
+PROGRESS OVER PERFECTION
+
+The FSR constitution contains a profound shift in political emphasis.
+
+Earlier state traditions often focus upon:
+
+  strength
+  readiness
+  loyalty
+  order
+  survival
+
+The FSR retains strength and industrial ambition but introduces an
+explicit institutional admission:
+
+  governments are imperfect.
+
+Therefore:
+
+  laws must remain revisable
+  leaders must remain question-able
+  citizens must remain politically significant
+  society must continue learning
+
+The archive identifies this as continuous improvement.
+
+It is not perfection.
+
+It is institutional humility.
+`,
+
+  // ================================================================
+  // FORENSIC / SIGNAL COMMANDS
+  // ================================================================
+
+  'signals': `
+SIGNAL ANALYSIS
+
+Usage:
+  signals
+  signals --founder
+  signals --institutional
+  signals --era <era>
+
+Known recurring signals:
+
+  SILVER
+  SILBERSTADT
+  SERVICE
+  READINESS
+  ADAPTABILITY
+  MILITARY
+  INDUSTRY
+  SOVEREIGNTY
+  CONTINUITY
+  IMPROVEMENT
+
+Strongest known personal signature:
+  The Silver Knight
+
+Strongest known doctrinal signature:
+  Silver Doctrine
+
+Strongest known TSR signature:
+  Wachsamkeitsprinzip / ARGUS
+
+Strongest known FSR signature:
+  Progress over Perfection
+`,
+
+  'signatures': `
+SIGNATURE DATABASE
+
+Personal:
+  The Silver Knight
+  Adolf Hissler
+  Karl Dönutz
+  Erwin Pummler
+
+Institutional:
+  Silberstadt
+  Silver Doctrine
+  Five Orders
+  ARGUS
+  Wachsamkeitsprinzip
+  Progress over Perfection
+  Travolt / Garuda
+
+A signature is not necessarily a proof of direct succession.
+
+The system classifies signatures as:
+
+  PERSONAL
+  INSTITUTIONAL
+  CULTURAL
+  MILITARY
+  GEOGRAPHICAL
+  INDUSTRIAL
+`,
+
+  // ================================================================
+  // USER EXPERIENCE / TERMINAL ATMOSPHERE
+  // ================================================================
+
+  'theme': `
+TERMINAL THEME MANAGER
+
+Usage:
+  theme
+  theme green
+  theme amber
+  theme cyan
+  theme red
+  theme silver
+  theme white
+
+Available palettes:
+  GREEN      classic recovery terminal
+  AMBER      degraded archival instrumentation
+  CYAN       cold technological mode
+  RED        military emergency mode
+  SILVER     Silver Continuum archival mode
+  WHITE      high-visibility reconstruction mode
+
+Current theme:
+  SILVER
+`,
+
+  'matrix': `
+BACKGROUND VISUALIZER
+
+Usage:
+  matrix
+  matrix on
+  matrix off
+  matrix intensity low
+  matrix intensity high
+
+Visualizer represents:
+  residual data traffic,
+  corrupted archive streams,
+  and active reconstruction processes.
+
+It is decorative and does not itself represent actual historical data.
+`,
+
+  'audio': `
+AUDIO FEEDBACK
+
+Usage:
+  audio
+  audio on
+  audio off
+  audio volume <0-100>
+
+Available effects:
+  command acknowledgement
+  archive mount
+  decryption success
+  warning
+  corruption
+  recovery completion
+
+Default:
+  ON
+`,
+
+  'glitch': `
+GLITCH MODE
+
+Usage:
+  glitch
+  glitch on
+  glitch off
+  glitch level <0-5>
+
+Purpose:
+  Simulate archival degradation.
+
+Glitches should never alter the actual stored command definitions.
+
+Recommended:
+  Level 1 for normal recovery
+  Level 3 for damaged archives
+  Level 5 for catastrophic synchronization failures
+`,
+
+  'corrupt': `
+MANUAL SYNC OVERRIDE
+
+Usage:
+  corrupt
+  corrupt --minor
+  corrupt --major
+  corrupt --layer <era>
+
+WARNING:
+  This function simulates recovery instability.
+
+No historical record is permanently modified.
+
+Possible effects:
+  * interrupted output
+  * duplicated fragments
+  * missing lines
+  * false terminal warnings
+  * visual corruption
+  * temporary command lockout
+
+Use only for interface demonstration.
+`,
+
+  'sync': `
+ARCHIVE SYNCHRONIZATION
+
+Usage:
+  sync
+  sync --quick
+  sync --deep
+  sync --layer <era>
+
+SYNC PROCEDURE
+--------------
+  verify storage
+  compare metadata
+  locate missing fragments
+  rebuild indexes
+  cross-reference signatures
+  refresh confidence model
+
+DEEP SYNC may expose previously inaccessible records.
+`,
+
+  'reset': `
+RECOVERY NODE SOFT RESET
+
+All temporary interface state will be cleared.
+
+Historical archives are not modified.
+
+Type:
+  reset --confirm
+
+to initiate.
+`,
+
+  'reboot': `
+RECOVERY NODE REBOOT
+
+WARNING:
+  Active reconstruction sessions will terminate.
+
+Recovered historical data remains intact.
+
+Usage:
+  reboot
+  reboot --safe
+  reboot --diagnostic
+`,
+
+  'clear': `
+DISPLAY BUFFER PURGED.
+ARCHIVE STATE UNCHANGED.
+`,
+
+  'exit': `
+TERMINATING RECOVERY SHELL...
+
+Historical archive remains mounted.
+
+NODE 09 STATUS:
+  ONLINE
+
+SESSION:
+  CLOSED
+
+The archive will continue waiting.
+`
+};
 
   // --- AUDIO SYNTHESIZER ---
   function initAudio() {
@@ -287,10 +3394,8 @@
     }
   }
 
-  // Focus keeper
   document.addEventListener('click', () => cli.focus());
 
-  // Input Handling
   cli.addEventListener('keydown', (e) => {
     initAudio();
 
@@ -322,7 +3427,8 @@
     }
 
     if (e.key === 'Enter') {
-      const input = cli.value.trim().toLowerCase();
+      const raw = cli.value;
+      const input = raw.trim();
       cli.value = '';
       historyIndex = -1;
 
@@ -331,7 +3437,9 @@
       playSound('enter');
       commandHistory.push(input);
 
-      printOutput(`GUEST@UNKNOWN_NODE:~$ ${input}`, 'opacity: 0.85;');
+      // show what the user actually typed (preserve case)
+      const promptText = document.querySelector('.prompt')?.textContent || 'GUEST@SILVER_NODE:~$';
+      printOutput(`${promptText} ${input}`, 'opacity: 0.85;');
 
       processCommand(input);
       output.scrollTop = output.scrollHeight;
@@ -342,87 +3450,603 @@
       playSound('key');
     }
   });
+    
+  // ================================================================
+  //  SHELL ENGINE — Linux-like behavior with edge cases
+  // ================================================================
 
-  function processCommand(input) {
-    const parts = input.split(' ');
-    const cmd = parts[0];
-    const arg = parts[1];
+  // Virtual filesystem — every listed child gets a real entry
+  const VFS = {};
+  function addDir(path, children) {
+    VFS[path] = { type: 'dir', children: children.slice() };
+    children.forEach(name => {
+      const child = path === '/' ? '/' + name : path + '/' + name;
+      if (!VFS[child]) {
+        // default: treat unknown children as empty directories
+        // files are marked later
+        VFS[child] = { type: 'dir', children: [] };
+      }
+    });
+  }
 
-    if (cmd === 'clear') {
+  addDir('/', ['archive', 'recovery', 'tmp', 'proc']);
+  addDir('/archive', ['continuum', 'catastrophe', 'fragments', 'corrupted', 'signatures', 'indexes']);
+  addDir('/archive/continuum', [
+    'layer-I-ussr', 'layer-II-ssr', 'layer-III-tsr', 'layer-IV-fsr',
+    'transitions', 'doctrine', 'people', 'military', 'industry', 'geography', 'unresolved'
+  ]);
+  addDir('/archive/continuum/layer-I-ussr', ['declaration', 'silver-doctrine', 'government', 'military', 'cyber-rüstung', 'silberstadt']);
+  addDir('/archive/continuum/layer-II-ssr', ['government', 'council-of-ministers', 'orders', 'armor-program']);
+  addDir('/archive/continuum/layer-III-tsr', ['rift', 'erken', 'argus', 'wachsamkeitsprinzip']);
+  addDir('/archive/continuum/layer-IV-fsr', ['constitution', 'progress-over-perfection', 'travolt']);
+  addDir('/archive/catastrophe', ['impact', 'post-impact', 'survivor-records']);
+  addDir('/archive/fragments', ['frag_001_raw.bin', 'frag_089_sig.log', 'frag_104_corrupted.dat']);
+  addDir('/archive/corrupted', ['UNKNOWN_SECTOR_HEADER.RAW', 'SYSTEM_FAULT_3005.LOG']);
+  addDir('/archive/signatures', ['silverknight.sig', 'institutional_seal.sig']);
+  addDir('/archive/indexes', ['master_index.db', 'layer_crossref.map']);
+  addDir('/recovery', ['continuum']);
+  addDir('/tmp', []);
+  addDir('/proc', ['status', 'version', 'uptime']);
+
+  // Mark known files (not directories)
+  const FILE_ENTRIES = [
+    '/archive/continuum/layer-I-ussr/declaration',
+    '/archive/continuum/layer-I-ussr/silver-doctrine',
+    '/archive/continuum/layer-I-ussr/government',
+    '/archive/continuum/layer-I-ussr/military',
+    '/archive/continuum/layer-I-ussr/cyber-rüstung',
+    '/archive/continuum/layer-I-ussr/silberstadt',
+    '/archive/continuum/layer-II-ssr/government',
+    '/archive/continuum/layer-II-ssr/council-of-ministers',
+    '/archive/continuum/layer-II-ssr/orders',
+    '/archive/continuum/layer-II-ssr/armor-program',
+    '/archive/continuum/layer-III-tsr/rift',
+    '/archive/continuum/layer-III-tsr/erken',
+    '/archive/continuum/layer-III-tsr/argus',
+    '/archive/continuum/layer-III-tsr/wachsamkeitsprinzip',
+    '/archive/continuum/layer-IV-fsr/constitution',
+    '/archive/continuum/layer-IV-fsr/progress-over-perfection',
+    '/archive/continuum/layer-IV-fsr/travolt',
+    '/archive/fragments/frag_001_raw.bin',
+    '/archive/fragments/frag_089_sig.log',
+    '/archive/fragments/frag_104_corrupted.dat',
+    '/archive/corrupted/UNKNOWN_SECTOR_HEADER.RAW',
+    '/archive/corrupted/SYSTEM_FAULT_3005.LOG',
+    '/archive/signatures/silverknight.sig',
+    '/archive/signatures/institutional_seal.sig',
+    '/archive/indexes/master_index.db',
+    '/archive/indexes/layer_crossref.map',
+    '/proc/status',
+    '/proc/version',
+    '/proc/uptime'
+  ];
+  FILE_ENTRIES.forEach(p => { VFS[p] = { type: 'file' }; });
+
+  // Case-insensitive lookup table
+  const VFS_LOWER = {};
+  Object.keys(VFS).forEach(k => { VFS_LOWER[k.toLowerCase()] = k; });
+
+  // file content stubs (used by cat)
+  const FILE_CONTENT = {
+    '/archive/continuum/layer-I-ussr/declaration': `[READING ARCHIVAL RECORD]\n\nID: USSR-DECL-001\nLAYER: I — UNION OF SILVER STATES REPUBLIC\nINTEGRITY: 92%\n\n"We exist."`,
+    '/archive/continuum/layer-I-ussr/silver-doctrine': () => commands['silver-doctrine'] || commands.doctrine,
+    '/archive/continuum/layer-I-ussr/silberstadt': () => commands.silberstadt,
+    '/archive/continuum/layer-III-tsr/argus': () => commands.argus,
+    '/archive/continuum/layer-III-tsr/rift': () => commands.rift,
+    '/archive/continuum/layer-III-tsr/erken': () => commands.tsr,
+    '/archive/continuum/layer-III-tsr/wachsamkeitsprinzip': () => commands.doctrine,
+    '/archive/continuum/layer-IV-fsr/constitution': () => commands.fsr,
+    '/archive/continuum/layer-IV-fsr/progress-over-perfection': () => commands.progress,
+    '/archive/signatures/silverknight.sig': () => commands.silverknight || commands.founder,
+    '/archive/signatures/institutional_seal.sig': `[INSTITUTIONAL SEAL]\nSilver Continuum Recovery Authority\nNode 09 — Year 3005\nIntegrity: VERIFIED`,
+    '/proc/status': () => commands.status,
+    '/proc/version': () => commands.version,
+    '/proc/uptime': () => commands.uptime
+  };
+
+  function resolveCase(path) {
+    // return the canonical (cased) path if we know it
+    const lower = path.toLowerCase();
+    if (VFS_LOWER[lower]) return VFS_LOWER[lower];
+    return path;
+  }
+
+  function normalizePath(path) {
+    if (!path || path === '~' || path === '.') return cwd;
+    if (path === '..') {
+      const parts = cwd.split('/').filter(Boolean);
+      parts.pop();
+      return '/' + parts.join('/') || '/';
+    }
+    let full;
+    if (path.startsWith('/')) {
+      full = path.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+    } else {
+      const base = cwd === '/' ? '' : cwd;
+      full = (base + '/' + path).replace(/\/+/g, '/');
+    }
+    // resolve . and ..
+    const segs = full.split('/').filter(s => s && s !== '.');
+    const resolved = [];
+    for (const s of segs) {
+      if (s === '..') resolved.pop();
+      else resolved.push(s);
+    }
+    const joined = '/' + resolved.join('/') || '/';
+    return resolveCase(joined);
+  }
+
+  function pathExists(p) {
+    const n = normalizePath(p);
+    return !!VFS[n];
+  }
+
+  function isDir(p) {
+    const n = normalizePath(p);
+    return VFS[n] && VFS[n].type === 'dir';
+  }
+
+  function isFile(p) {
+    const n = normalizePath(p);
+    return VFS[n] && VFS[n].type === 'file';
+  }
+
+  function listDir(p) {
+    const n = normalizePath(p);
+    if (!VFS[n] || VFS[n].type !== 'dir') return null;
+    return VFS[n].children || [];
+  }
+
+  // Glitch is applied only to long lore dumps, NOT to short shell listings
+  // (so directory names stay usable)
+  function renderCorruptedText(text, level = currentGlitchLevel, force = false) {
+    if ((!force && level === 0) || !text) return text;
+    // short lines (directory listings) stay clean unless forced
+    if (!force && text.length < 180 && !text.includes('\n\n')) return text;
+
+    const glitchChars = '░▒▓█┼╬║═@#$%&*!?ØÆX░▒▓';
+    const glitchProbability = Math.min(0.28, level * 0.05);
+    return text.split('\n').map(line => {
+      if (level >= 3 && Math.random() < level * 0.02) {
+        return '... [RECORD FRAGMENT UNREADABLE] ...';
+      }
+      return line.split('').map(char => {
+        if (' \n\t[](){}://=-+|_.,;:\'\"'.includes(char)) return char;
+        return Math.random() < glitchProbability
+          ? glitchChars[Math.floor(Math.random() * glitchChars.length)]
+          : char;
+      }).join('');
+    }).join('\n');
+  }
+
+  function printOutput(text, style = '') {
+    if (text === undefined || text === null) return;
+    // Support multi-line properly
+    const lines = String(text).split('\n');
+    lines.forEach((ln, idx) => {
+      const line = document.createElement('div');
+      if (style) line.setAttribute('style', style);
+      line.textContent = ln || (idx < lines.length - 1 ? ' ' : '');
+      output.appendChild(line);
+    });
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function printError(msg) {
+    printOutput(msg, 'color: #ff6666;');
+    lastExitCode = 1;
+  }
+
+  function parseArgs(raw) {
+    // Tokenize respecting quotes
+    const tokens = [];
+    let current = '';
+    let inQuote = null;
+    for (let i = 0; i < raw.length; i++) {
+      const c = raw[i];
+      if (inQuote) {
+        if (c === inQuote) { inQuote = null; }
+        else current += c;
+      } else if (c === '"' || c === "'") {
+        inQuote = c;
+      } else if (/\s/.test(c)) {
+        if (current) { tokens.push(current); current = ''; }
+      } else {
+        current += c;
+      }
+    }
+    if (current) tokens.push(current);
+    return tokens;
+  }
+
+  function expandAliases(tokens) {
+    if (tokens.length === 0) return tokens;
+    const first = tokens[0].toLowerCase();
+    if (aliases[first]) {
+      const expanded = parseArgs(aliases[first]);
+      return expanded.concat(tokens.slice(1));
+    }
+    return tokens;
+  }
+
+  function processCommand(rawInput) {
+    const original = rawInput;
+    let trimmed = rawInput.trim();
+    if (!trimmed) {
+      lastExitCode = 0;
+      return;
+    }
+
+    // Support simple ; chaining (no && / || for complexity)
+    const statements = trimmed.split(';').map(s => s.trim()).filter(Boolean);
+    for (const stmt of statements) {
+      executeOne(stmt);
+    }
+  }
+
+  function executeOne(trimmed) {
+    let tokens = parseArgs(trimmed);
+    tokens = expandAliases(tokens);
+    if (tokens.length === 0) return;
+
+    const cmd = tokens[0].toLowerCase();
+    const args = tokens.slice(1);
+    const flags = new Set();
+    const positional = [];
+
+    for (const a of args) {
+      if (a.startsWith('--')) flags.add(a.slice(2).toLowerCase());
+      else if (a.startsWith('-') && a.length > 1 && !/^-?\d/.test(a)) {
+        for (const ch of a.slice(1)) flags.add(ch);
+      } else {
+        positional.push(a);
+      }
+    }
+
+    lastExitCode = 0;
+    let resultOutput = '';
+
+    // ---------- CORE SHELL ----------
+    if (cmd === 'clear' || cmd === 'cls') {
       output.innerHTML = '';
       return;
     }
 
-    if (cmd === 'exit') {
-      printOutput('CLOSING TERMINAL SESSION...', 'color: #fff;');
-      setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    if (cmd === 'pwd') {
+      printOutput(cwd);
       return;
     }
 
-    if (cmd === 'audio') {
-      audioEnabled = !audioEnabled;
-      document.getElementById('audio-status').textContent = audioEnabled ? 'ON' : 'OFF';
-      printOutput(`Audio effects toggled: ${audioEnabled ? 'ENABLED' : 'DISABLED'}`);
-      return;
-    }
-
-    if (cmd === 'matrix') {
-      matrixCanvas.classList.toggle('active');
-      printOutput(`Matrix code stream ${matrixCanvas.classList.contains('active') ? 'ENABLED' : 'DISABLED'}`);
-      return;
-    }
-
-    if (cmd === 'theme') {
-      if (['green', 'amber', 'cyan', 'red'].includes(arg)) {
-        document.body.className = arg === 'green' ? '' : `theme-${arg}`;
-        printOutput(`Color theme set to: ${arg.toUpperCase()}`);
-      } else {
-        printOutput(`Usage: theme [green | amber | cyan | red]`);
+    if (cmd === 'cd') {
+      const target = positional[0] || '/archive/continuum';
+      const resolved = normalizePath(target);
+      if (!pathExists(resolved) || !isDir(resolved)) {
+        printError(`cd: ${target}: No such file or directory`);
+        return;
+      }
+      cwd = resolved;
+      // update prompt slightly
+      const promptEl = document.querySelector('.prompt');
+      if (promptEl) {
+        const short = cwd === '/archive/continuum' ? '~' : cwd;
+        promptEl.textContent = `GUEST@SILVER_NODE:${short}$`;
       }
       return;
     }
 
+    if (cmd === 'echo') {
+      // basic variable expansion for $?
+      const out = positional.join(' ').replace(/\$\?/g, String(lastExitCode));
+      printOutput(out);
+      return;
+    }
+
+    if (cmd === 'true') { lastExitCode = 0; return; }
+    if (cmd === 'false') { lastExitCode = 1; return; }
+
+    if (cmd === 'whoami') {
+      printOutput(renderCorruptedText(commands.whoami || 'guest'));
+      return;
+    }
+
+    if (cmd === 'hostname') {
+      printOutput(renderCorruptedText(commands.hostname || 'recovery-node-09'));
+      return;
+    }
+
+    if (cmd === 'uname') {
+      if (flags.has('a') || flags.has('all')) {
+        printOutput('SilverContinuum SCRE-3005 recovery-node-09 3005.09-r #1 SMP Year 3005 x86_64 GNU/Linux');
+      } else {
+        printOutput('SilverContinuum');
+      }
+      return;
+    }
+
+    if (cmd === 'history') {
+      if (flags.has('c') || flags.has('clear')) {
+        commandHistory.length = 0;
+        printOutput('History cleared.');
+        return;
+      }
+      const lines = commandHistory.map((h, i) => `  ${i + 1}  ${h}`);
+      printOutput(lines.join('\n') || '  (empty)');
+      return;
+    }
+
+    if (cmd === 'export' || cmd === 'env' || cmd === 'printenv') {
+      if (cmd === 'env' || cmd === 'printenv') {
+        printOutput(renderCorruptedText(commands.env || 'NODE_ID=09\nYEAR=3005'));
+      } else {
+        printOutput('export: read-only environment in recovery mode');
+      }
+      return;
+    }
+
+    if (cmd === 'ls' || cmd === 'dir') {
+      const target = positional[0] || cwd;
+      const resolved = normalizePath(target);
+      const long = flags.has('l') || flags.has('la') || flags.has('al');
+      const all = flags.has('a') || flags.has('la') || flags.has('al');
+
+      if (!pathExists(resolved)) {
+        printError(`ls: cannot access '${target}': No such file or directory`);
+        return;
+      }
+
+      if (!isDir(resolved)) {
+        // treat as file
+        printOutput(long ? `-rw-r--r-- 1 recovery recovery 4096 Sep  4 3005 ${resolved.split('/').pop()}` : resolved.split('/').pop());
+        return;
+      }
+
+      let children = listDir(resolved) || [];
+      if (all) children = ['.', '..', ...children];
+
+      if (children.length === 0) {
+        printOutput(''); // empty dir
+        return;
+      }
+
+      if (long) {
+        const lines = children.map(name => {
+          const childPath = resolved === '/' ? '/' + name : resolved + '/' + name;
+          const isd = isDir(childPath) || name === '.' || name === '..';
+          const mode = isd ? 'drwxr-xr-x' : '-rw-r--r--';
+          const size = isd ? 4096 : 2048;
+          return `${mode} 1 recovery recovery ${String(size).padStart(5)} Sep  4 3005 ${name}${isd && name !== '.' && name !== '..' ? '/' : ''}`;
+        });
+        printOutput(lines.join('\n'));
+      } else {
+        printOutput(children.map(n => {
+          const childPath = resolved === '/' ? '/' + n : resolved + '/' + n;
+          return (isDir(childPath) && n !== '.' && n !== '..') ? n + '/' : n;
+        }).join('  '));
+      }
+      return;
+    }
+
+    if (cmd === 'cat' || cmd === 'less' || cmd === 'more' || cmd === 'head' || cmd === 'tail') {
+      if (positional.length === 0) {
+        printError(`${cmd}: missing file operand`);
+        printOutput(`Try '${cmd} --help' for more information.`);
+        return;
+      }
+      const target = positional[0];
+      const resolved = normalizePath(target);
+
+      if (!pathExists(resolved)) {
+        printError(`${cmd}: ${target}: No such file or directory`);
+        return;
+      }
+      if (isDir(resolved)) {
+        printError(`${cmd}: ${target}: Is a directory`);
+        return;
+      }
+
+      // resolve content
+      if (FILE_CONTENT[resolved] !== undefined) {
+        const c = FILE_CONTENT[resolved];
+        resultOutput = typeof c === 'function' ? c() : c;
+      } else {
+        // try basename against lore commands
+        const base = resolved.split('/').pop().toLowerCase();
+        if (commands[base]) {
+          resultOutput = commands[base];
+        } else if (resolved.includes('layer-I-ussr') || base.includes('ussr')) {
+          resultOutput = commands.ussr;
+        } else if (resolved.includes('layer-II-ssr') || base.includes('ssr')) {
+          resultOutput = commands.ssr;
+        } else if (resolved.includes('layer-III-tsr') || base.includes('tsr')) {
+          resultOutput = commands.tsr;
+        } else if (resolved.includes('layer-IV-fsr') || base.includes('fsr')) {
+          resultOutput = commands.fsr;
+        } else {
+          resultOutput = `[RECOVERED FRAGMENT]\nPath: ${resolved}\nStatus: PARTIAL / LOW INTEGRITY\n\n(No reconstructable plaintext survived for this record.)`;
+        }
+      }
+
+      if (!resultOutput) resultOutput = `[EMPTY OR CORRUPTED]\n${resolved}`;
+
+      if (cmd === 'head') {
+        const n = parseInt(positional[1] || '10', 10) || 10;
+        resultOutput = String(resultOutput).split('\n').slice(0, n).join('\n');
+      } else if (cmd === 'tail') {
+        const n = parseInt(positional[1] || '10', 10) || 10;
+        const lines = String(resultOutput).split('\n');
+        resultOutput = lines.slice(-n).join('\n');
+      }
+
+      printOutput(renderCorruptedText(resultOutput));
+      return;
+    }
+
+    if (cmd === 'tree') {
+      const target = positional[0] || cwd;
+      const resolved = normalizePath(target);
+      if (!isDir(resolved)) {
+        printError(`tree: ${target}: No such directory`);
+        return;
+      }
+      // simple 1-level tree
+      const kids = listDir(resolved) || [];
+      let out = resolved + '\n';
+      kids.forEach((k, i) => {
+        const last = i === kids.length - 1;
+        const child = resolved === '/' ? '/' + k : resolved + '/' + k;
+        const isd = isDir(child);
+        out += (last ? '└── ' : '├── ') + k + (isd ? '/' : '') + '\n';
+      });
+      printOutput(out);
+      return;
+    }
+
+    if (cmd === 'find') {
+      const start = positional[0] || cwd;
+      const resolved = normalizePath(start);
+      if (!pathExists(resolved)) {
+        printError(`find: ‘${start}’: No such file or directory`);
+        return;
+      }
+      // simple recursive listing of known VFS
+      const results = [];
+      function walk(p, depth = 0) {
+        if (depth > 4) return;
+        results.push(p);
+        if (isDir(p)) {
+          (listDir(p) || []).forEach(c => {
+            const child = p === '/' ? '/' + c : p + '/' + c;
+            walk(child, depth + 1);
+          });
+        }
+      }
+      walk(resolved);
+      printOutput(results.join('\n'));
+      return;
+    }
+
+    if (cmd === 'grep') {
+      if (positional.length < 1) {
+        printError('grep: missing pattern');
+        return;
+      }
+      const pattern = positional[0].toLowerCase();
+      const searchPath = positional[1] || '/archive';
+      // search inside known command texts
+      const hits = [];
+      for (const [key, val] of Object.entries(commands)) {
+        if (typeof val === 'string' && val.toLowerCase().includes(pattern)) {
+          hits.push(`${key}: matched`);
+        }
+      }
+      if (hits.length === 0) {
+        printOutput(`grep: no matches for "${positional[0]}"`);
+      } else {
+        printOutput(hits.slice(0, 30).join('\n') + (hits.length > 30 ? `\n... (${hits.length - 30} more)` : ''));
+      }
+      return;
+    }
+
+    // ---------- SPECIAL / THEME ----------
+    if (cmd === 'glitch') {
+      if (positional[0] === 'level' && positional[1] !== undefined) {
+        currentGlitchLevel = Math.max(0, Math.min(5, parseInt(positional[1], 10) || 0));
+        printOutput(`Glitch level set to ${currentGlitchLevel}. Source data remains pristine.`);
+      } else if (positional[0] && !isNaN(positional[0])) {
+        currentGlitchLevel = Math.max(0, Math.min(5, parseInt(positional[0], 10)));
+        printOutput(`Glitch level set to ${currentGlitchLevel}. Source data remains pristine.`);
+      } else {
+        printOutput(`GLITCH CONTROL\nUsage: glitch [level] <0-5>\nCurrent Level: ${currentGlitchLevel}`);
+      }
+      return;
+    }
+
+    if (cmd === 'theme') {
+      const t = (positional[0] || '').toLowerCase();
+      if (['green', 'amber', 'cyan', 'red'].includes(t)) {
+        document.body.className = t === 'green' ? '' : `theme-${t}`;
+        printOutput(`Color theme set to: ${t.toUpperCase()}`);
+      } else {
+        printOutput('Usage: theme [green | amber | cyan | red]');
+      }
+      return;
+    }
+
+    if (cmd === 'matrix') {
+      const action = (positional[0] || '').toLowerCase();
+      if (action === 'on') matrixCanvas.classList.add('active');
+      else if (action === 'off') matrixCanvas.classList.remove('active');
+      else matrixCanvas.classList.toggle('active');
+      printOutput(`Matrix code stream ${matrixCanvas.classList.contains('active') ? 'ENABLED' : 'DISABLED'}`);
+      return;
+    }
+
+    if (cmd === 'audio') {
+      const action = (positional[0] || '').toLowerCase();
+      if (action === 'on') audioEnabled = true;
+      else if (action === 'off') audioEnabled = false;
+      else audioEnabled = !audioEnabled;
+      document.getElementById('audio-status').textContent = audioEnabled ? 'ON' : 'OFF';
+      printOutput(`Audio effects: ${audioEnabled ? 'ENABLED' : 'DISABLED'}`);
+      return;
+    }
+
+    if (cmd === 'reboot') {
+      currentGlitchLevel = 0;
+      output.innerHTML = '';
+      printOutput('SYSTEM REBOOTED: MEMORY PURGED // CORRUPTION RESET TO LEVEL 0');
+      cwd = '/archive/continuum';
+      return;
+    }
+
+    if (cmd === 'exit' || cmd === 'logout') {
+      printOutput('CLOSING TERMINAL SESSION... CONTINUUM ARCHIVE REMAINS RESIDENT.', 'color: #fff;');
+      setTimeout(() => { try { window.location.href = 'map.html'; } catch(e){} }, 600);
+      return;
+    }
+
     if (cmd === 'sudo') {
-      printOutput('PERMISSION DENIED: Operator is not in the sudoers file. This incident will be reported.');
+      printError('sudo: permission denied — operator clearance LEVEL 2 insufficient for root');
       return;
     }
 
-    if (cmd === 'corrupt') {
-      playSound('glitch');
-      triggerMassiveGlitch();
-      printOutput("CRITICAL FAILURE: MEMORY LEAK DETECTED", "color: #ff3333; font-weight: bold;");
+    if (cmd === 'rm' || cmd === 'rmdir' || cmd === 'mkdir' || cmd === 'touch' || cmd === 'mv' || cmd === 'cp') {
+      printError(`${cmd}: Read-only filesystem (recovery mode)`);
       return;
     }
 
+    // ---------- FALLBACK TO LORE DATABASE ----------
     if (commands[cmd]) {
-      printOutput(commands[cmd]);
-    } else {
-      printOutput(`Command not recognized: '${cmd}'. Type 'help' for available options.`, 'opacity: 0.7;');
+      let text = commands[cmd];
+      // crude support for --long / -v etc by just printing as-is
+      printOutput(renderCorruptedText(text));
+      return;
     }
+
+    // final unknown
+    printError(`bash: ${cmd}: command not found`);
+    lastExitCode = 127;
   }
 
   function autoComplete() {
     const current = cli.value.trim().toLowerCase();
     if (!current) return;
 
-    const available = Object.keys(commands).concat(['clear', 'corrupt', 'exit', 'theme', 'matrix', 'audio', 'sudo']);
-    const matches = available.filter(c => c.startsWith(current));
+    const available = Object.keys(commands).concat([
+      'clear', 'cls', 'cd', 'pwd', 'ls', 'cat', 'echo', 'true', 'false',
+      'history', 'uname', 'tree', 'find', 'grep', 'head', 'tail',
+      'theme', 'matrix', 'audio', 'glitch', 'reboot', 'exit', 'sudo',
+      'whoami', 'hostname', 'env', 'export'
+    ]);
+    const matches = [...new Set(available.filter(c => c.startsWith(current)))].sort();
 
     if (matches.length === 1) {
-      cli.value = matches[0];
+      cli.value = matches[0] + (cli.value.endsWith(' ') ? '' : ' ');
       playSound('key');
     } else if (matches.length > 1) {
-      printOutput(`GUEST@UNKNOWN_NODE:~$ ${current}`);
+      printOutput(`GUEST@SILVER_NODE:~$ ${current}`);
       printOutput(matches.join('   '), 'color: #fff;');
     }
-  }
-
-  function printOutput(text, style = '') {
-    const line = document.createElement('div');
-    line.style = style;
-    line.textContent = text;
-    output.appendChild(line);
-    output.scrollTop = output.scrollHeight;
   }
 
   // --- MATRIX CANVAS BACKGROUND ---
@@ -433,17 +4057,16 @@
   window.addEventListener('resize', resizeMatrix);
   resizeMatrix();
 
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*';
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*SILBERSTADTARGUS░▒▓';
   const fontSize = 14;
-  const columns = Math.floor(window.innerWidth / fontSize);
-  const drops = Array(columns).fill(1);
+  let columns = Math.floor(window.innerWidth / fontSize);
+  let drops = Array(columns).fill(1);
 
   function drawMatrix() {
     if (!matrixCanvas.classList.contains('active')) {
       requestAnimationFrame(drawMatrix);
       return;
     }
-
     mCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
     mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
@@ -451,10 +4074,13 @@
     mCtx.fillStyle = style.getPropertyValue('--green').trim() || '#00ff66';
     mCtx.font = `${fontSize}px monospace`;
 
+    columns = Math.floor(matrixCanvas.width / fontSize);
+    while (drops.length < columns) drops.push(1);
+    drops.length = columns;
+
     for (let i = 0; i < drops.length; i++) {
       const text = chars[Math.floor(Math.random() * chars.length)];
       mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
-
       if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
         drops[i] = 0;
       }
@@ -464,25 +4090,92 @@
   }
   drawMatrix();
 
-  // --- RANDOM GLITCH EFFECTS ---
+  // --- RANDOM LIGHT GLITCH BARS ---
   setInterval(() => {
-    if (Math.random() > 0.6) {
+    if (Math.random() > 0.55) {
       const topPos = Math.floor(Math.random() * 100);
-      const height = Math.floor(Math.random() * 15) + 2;
+      const height = Math.floor(Math.random() * 12) + 2;
       glitchLine.style.top = `${topPos}%`;
       glitchLine.style.height = `${height}px`;
-      glitchLine.style.opacity = (Math.random() * 0.7).toString();
-
-      setTimeout(() => {
-        glitchLine.style.opacity = '0';
-      }, Math.random() * 200);
+      glitchLine.style.opacity = (Math.random() * 0.65).toString();
+      setTimeout(() => { glitchLine.style.opacity = '0'; }, 40 + Math.random() * 180);
     }
-  }, 1000);
+  }, 900);
 
-  function triggerMassiveGlitch() {
-    document.body.style.filter = "invert(1) hue-rotate(180deg)";
-    setTimeout(() => document.body.style.filter = "none", 300);
+  // --- PERIODIC FULL STATIC / CORRUPTION (15-30s) ---
+  function triggerStaticBurst(heavy = false) {
+    // visual static overlay
+    overlay.classList.remove('active', 'heavy');
+    void overlay.offsetWidth; // reflow
+    overlay.classList.add(heavy ? 'heavy' : 'active');
+
+    // screen shake
+    crt.classList.remove('screen-shake');
+    void crt.offsetWidth;
+    crt.classList.add('screen-shake');
+    setTimeout(() => crt.classList.remove('screen-shake'), 400);
+
+    // occasional color invert flash
+    if (Math.random() > 0.4) {
+      document.body.style.filter = heavy
+        ? 'invert(0.85) hue-rotate(90deg) contrast(1.4)'
+        : 'invert(1) hue-rotate(180deg)';
+      setTimeout(() => { document.body.style.filter = 'none'; }, heavy ? 280 : 160);
+    }
+
+    // Corrupt a few long lore lines only — never short shell listings or prompts
+    // so the user can still read and type real directory/file names.
+    const nodes = Array.from(output.children);
+    if (nodes.length > 6) {
+      const count = heavy ? 2 + Math.floor(Math.random() * 2) : 1;
+      let corrupted = 0;
+      for (let attempt = 0; attempt < 12 && corrupted < count; attempt++) {
+        const idx = Math.floor(Math.random() * Math.min(nodes.length, 50));
+        const el = nodes[nodes.length - 1 - idx];
+        if (!el || el.classList.contains('ascii-header') || el.classList.contains('corrupted-line')) continue;
+        const original = el.textContent || '';
+        // skip short lines, prompts, and directory listings
+        if (original.length < 60) continue;
+        if (original.includes('GUEST@') || original.includes('SILVER_NODE')) continue;
+        if (/^[.\-\w]+\/?\s+[.\-\w\/]+/.test(original) && original.length < 120) continue;
+        el.textContent = renderCorruptedText(original, 3 + Math.floor(Math.random() * 2), true);
+        el.classList.add('corrupted-line');
+        corrupted++;
+      }
+    }
+
+    // brief audio glitch if enabled
+    if (audioEnabled && audioCtx) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(40 + Math.random() * 120, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } catch (e) {}
+    }
   }
+
+  function scheduleNextStatic() {
+    const delay = 15000 + Math.random() * 15000; // 15–30 s
+    setTimeout(() => {
+      const heavy = Math.random() > 0.65;
+      triggerStaticBurst(heavy);
+      scheduleNextStatic();
+    }, delay);
+  }
+  // start after a short initial delay so the page can settle
+  setTimeout(scheduleNextStatic, 8000 + Math.random() * 7000);
+
+  // expose for manual testing
+  window.triggerStaticBurst = triggerStaticBurst;
 </script>
 </body>
 </html>

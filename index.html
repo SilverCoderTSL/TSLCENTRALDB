@@ -117,197 +117,379 @@
 
         /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
         /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
+        /* ========== SCP FOUNDATION BLAST DOORS ========== */
         .gate-door {
             position: absolute;
             top: 0;
             width: 50%;
             height: 100%;
-            background-color: var(--dark-metal);
+            background-color: #0d0e12;
             background-image: 
-                /* 1. RIVETS: 3D metallic dots with highlight & shadow */
-                radial-gradient(circle at 50% 50%, #444 1px, #777 2px, #111 3.5px, transparent 4px),
-                /* 2. INDUSTRIAL GRAIN: Subtle micro-texture pattern */
-                radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                /* 3. METALLIC PANELS & SHADING */
-                linear-gradient(90deg, rgba(0, 0, 0, 0.8), transparent 15%, transparent 85%, rgba(0, 0, 0, 0.9)),
-                linear-gradient(145deg, #220808 0%, #0c0404 40%, #050202 70%, #180505 100%);
+                /* 1. Industrial Steel Plate Grid Lines */
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                /* 2. Heavy Blast Reinforced Beveling & Panels */
+                linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.8) 100%),
+                /* 3. Reinforced SCP Heavy Metal Texture */
+                radial-gradient(circle at 50% 50%, rgba(30, 35, 45, 0.6), rgba(8, 9, 12, 0.98));
             background-size: 
-                40px 40px, /* Rivet spacing */
-                8px 8px,   /* Metal grain grid */
-                100% 100%, 
+                60px 120px,
+                60px 120px,
+                100% 100%,
                 100% 100%;
-            background-position: 
-                20px 20px, /* Offset rivets from border edges */
-                0 0, 
-                0 0, 
-                0 0;
             z-index: 50;
-            transition: transform 2.4s cubic-bezier(0.7, 0, 0.1, 1);
+            transition: transform 2.6s cubic-bezier(0.77, 0, 0.175, 1);
             display: flex;
             align-items: center;
             box-shadow: 
-                inset 0 0 120px #000,
-                inset 0 0 15px rgba(255, 85, 0, 0.15);
-            border-bottom: 2px solid #331111;
+                inset 0 0 150px #000000,
+                inset 0 0 35px rgba(0, 0, 0, 0.9);
+            border-bottom: 4px solid #1a1c23;
         }
 
         .gate-left {
             left: 0;
-            border-right: 2px solid #222;
+            border-right: 3px solid #000;
             justify-content: flex-end;
         }
 
         .gate-right {
             right: 0;
-            border-left: 2px solid #222;
+            border-left: 3px solid #000;
             justify-content: flex-start;
         }
 
-        /* Yellow & Black Hazard Stripes on Edge */
+        /* Tactical SCP Containment Hazard Stripes & Border Inset */
         .gate-left::before,
         .gate-right::before {
             content: '';
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 32px;
+            width: 42px;
             background: repeating-linear-gradient(
-                45deg,
-                #ffaa00,
-                #ffaa00 15px,
-                #000000 15px,
-                #000000 30px
+                -45deg,
+                #d9a700 0px,
+                #d9a700 20px,
+                #111113 20px,
+                #111113 40px
             );
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+            box-shadow: 
+                inset 0 0 12px rgba(0, 0, 0, 0.9),
+                0 0 15px rgba(0, 0, 0, 0.7);
             z-index: 52;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(0, 0, 0, 0.8);
         }
 
         .gate-left::before { right: 0; }
         .gate-right::before { left: 0; }
 
-        /* Warning Beacon Lamps */
+        /* Industrial Hydraulic Track Line */
+        .gate-left::after,
+        .gate-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: linear-gradient(90deg, #050507, #1b1d24, #050507);
+            z-index: 51;
+        }
+        .gate-left::after { right: 42px; }
+        .gate-right::after { left: 42px; }
+
+        /* ========== 3D ROTATING BEACON HOUSING & LIGHT ENGINE ========== */
         .warning-beacon {
             position: absolute;
-            top: 80px;
+            top: 70px;
             width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ff4444, #440000);
-            border: 3px solid #111;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+            height: 64px;
+            background: linear-gradient(180deg, #111216 0%, #222530 40%, #0a0b0d 100%);
+            border: 2px solid #2d313d;
+            border-radius: 6px 6px 4px 4px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.9),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
             z-index: 53;
+            overflow: visible;
+            perspective: 600px;
         }
 
+        .gate-left .warning-beacon { right: 120px; }
+        .gate-right .warning-beacon { left: 120px; }
+
+        /* Outer Glass Dome Shell */
+        .warning-beacon::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.4) 0%, rgba(100, 0, 0, 0.2) 60%, rgba(255, 255, 255, 0.15) 100%);
+            border-radius: 20px 20px 4px 4px;
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.5);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Metallic Base Ring & Guard Ribs */
         .warning-beacon::after {
             content: '';
             position: absolute;
-            inset: -4px;
+            bottom: 0;
+            left: -2px;
+            right: -2px;
+            height: 18px;
+            background: linear-gradient(180deg, #3a3f4d 0%, #15171c 100%);
+            border: 1px solid #0e0f12;
+            border-radius: 2px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.8);
+            z-index: 4;
+        }
+
+        /* Inner 3D Rotating Reflector Core */
+        .beacon-reflector {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            width: 28px;
+            height: 30px;
+            margin-left: -14px;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ff2a2a 40%, #4a0000 100%);
             border-radius: 50%;
-            border: 1px solid rgba(255, 17, 0, 0.5);
-            animation: beaconPulse 2s infinite alternate;
+            z-index: 2;
+            transform-style: preserve-3d;
+            opacity: 0.4;
+            filter: blur(1px);
         }
 
-        .gate-left .warning-beacon { right: 50px; }
-        .gate-right .warning-beacon { left: 50px; }
-
-        .beacon-active .warning-beacon {
-            animation: strobeFlash 0.25s infinite alternate !important;
+        /* 3D Sweeping Light Beams (Volumetric Flare Projection) */
+        /* Circular Volumetric Light Projection */
+        .beacon-beam {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            margin-top: -100px;
+            margin-left: -100px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                rgba(255, 0, 0, 0.95) 0deg,
+                #ffffff 15deg,
+                rgba(255, 0, 0, 0.95) 30deg,
+                transparent 90deg,
+                transparent 270deg,
+                rgba(255, 0, 0, 0.2) 340deg,
+                rgba(255, 0, 0, 0.95) 360deg
+            );
+            filter: drop-shadow(0 0 20px #ff0000) blur(2px);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: 50% 50%;
         }
 
-        @keyframes beaconPulse {
-            0% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
-            100% { box-shadow: 0 0 30px rgba(255, 17, 0, 0.9); }
+        /* Active Rotation State - Synchronized Emergency Beacon Spin */
+        .beacon-active .beacon-reflector {
+            opacity: 1;
+            filter: blur(0px);
+            animation: mirrorSpin 0.75s linear infinite;
         }
 
-        @keyframes strobeFlash {
-            0% { background: #ff0000; box-shadow: 0 0 60px #ff0000; }
-            100% { background: #330000; box-shadow: 0 0 5px #110000; }
+        .beacon-active .beacon-beam {
+            opacity: 1;
+            animation: beamSweep 0.75s linear infinite;
         }
 
-        /* Gate Recoil & Open Mechanics */
-        body.gate-recoil .gate-left { transform: scale(0.98) translateZ(-40px); }
-        body.gate-recoil .gate-right { transform: scale(0.98) translateZ(-40px); }
+        /* Opposite rotation offset for dual-light realism */
+        .gate-right.beacon-active .beacon-reflector,
+        .gate-right.beacon-active .beacon-beam {
+            animation-delay: -0.375s;
+        }
 
-        body.gate-open .gate-left { transform: translateX(-105%); }
-        body.gate-open .gate-right { transform: translateX(105%); }
+        @keyframes mirrorSpin {
+            0% {
+                transform: rotateY(0deg) scaleX(1);
+                box-shadow: 0 0 10px #ff0000;
+            }
+            25% {
+                transform: rotateY(90deg) scaleX(0.3);
+                box-shadow: -10px 0 20px rgba(255, 0, 0, 0.2);
+            }
+            50% {
+                transform: rotateY(180deg) scaleX(1);
+                box-shadow: 0 0 5px rgba(255, 0, 0, 0.1);
+            }
+            75% {
+                transform: rotateY(270deg) scaleX(0.3);
+                box-shadow: 10px 0 20px rgba(255, 0, 0, 0.8);
+            }
+            100% {
+                transform: rotateY(360deg) scaleX(1);
+                box-shadow: 0 0 10px #ff0000;
+            }
+        }
 
-        /* ========== ANALOG CONTROLLER & BUTTON ========== */
+        @keyframes beamSweep {
+            0% {
+                transform: rotate(0deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+            25% {
+                transform: rotate(90deg) scale(1.1);
+                opacity: 1;
+                filter: drop-shadow(0 0 35px #ff0000) brightness(1.8);
+            }
+            50% {
+                transform: rotate(180deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+            75% {
+                transform: rotate(270deg) scale(1.1);
+                opacity: 1;
+                filter: drop-shadow(0 0 35px #ff0000) brightness(1.8);
+            }
+            100% {
+                transform: rotate(360deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+        }
+
+        /* Gate Pneumatic Recoil & Open Mechanics */
+        body.gate-recoil .gate-left { transform: translateX(-12px) scale(0.99); }
+        body.gate-recoil .gate-right { transform: translateX(12px) scale(0.99); }
+
+        body.gate-open .gate-left { transform: translateX(-108%); }
+        body.gate-open .gate-right { transform: translateX(108%); }
+
+        /* ========== SCI-FI CONTAINMENT OVERRIDE CONSOLE ========== */
         #analog-console {
             position: absolute;
             z-index: 55;
-            background: linear-gradient(180deg, #1a0808 0%, #0a0303 100%);
-            border: 2px solid var(--hell-red);
-            padding: 30px 45px;
+            background: linear-gradient(180deg, #12141a 0%, #08090c 100%);
+            border: 1px solid rgba(255, 30, 30, 0.4);
+            border-top: 3px solid var(--hell-red);
+            padding: 32px 50px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 18px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 17, 0, 0.3);
-            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 20px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.95), 
+                0 0 40px rgba(255, 0, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .console-title {
-            color: var(--hell-red);
-            font-size: 13px;
-            letter-spacing: 4px;
-            font-weight: bold;
-            text-shadow: 0 0 10px var(--glow-red);
+            color: #e0e6ed;
+            font-size: 11px;
+            letter-spacing: 5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(255, 30, 30, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Analog Button Assembly */
+        .console-title::before, .console-title::after {
+            content: '//';
+            color: var(--hell-red);
+        }
+
+        /* Industrial Override Keypad Button Assembly */
         .analog-button-housing {
             position: relative;
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #2a2a2a, #111111);
-            border: 4px solid #333;
+            background: linear-gradient(145deg, #1c1f26, #0a0b0e);
+            border: 3px solid #2a2e38;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: inset 0 0 15px #000, 0 8px 20px rgba(0,0,0,0.8);
+            box-shadow: 
+                inset 0 4px 12px #000, 
+                0 12px 25px rgba(0, 0, 0, 0.85),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
         }
 
         #analog-btn {
-            width: 76px;
-            height: 76px;
+            position: relative;
+            width: 84px;
+            height: 84px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ff3300, #990000);
-            border: 2px solid #ff6644;
-            color: #fff;
+            background: radial-gradient(circle at 35% 35%, #ff2a2a 0%, #a60000 70%, #5e0000 100%);
+            border: 1px solid #ff6666;
+            color: #ffffff;
             font-family: inherit;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2px;
             cursor: pointer;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
             box-shadow: 
-                0 6px 0 #550000,
-                0 10px 15px rgba(0, 0, 0, 0.6),
-                inset 0 0 12px rgba(255, 255, 255, 0.35);
-            transition: all 0.1s ease;
+                0 8px 0 #4a0000,
+                0 12px 20px rgba(0, 0, 0, 0.7),
+                inset 0 2px 5px rgba(255, 255, 255, 0.4),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.6);
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
+            overflow: hidden;
+        }
+
+        #analog-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
         }
 
         #analog-btn:hover {
-            background: radial-gradient(circle at 35% 35%, #ff5522, #cc0000);
+            background: radial-gradient(circle at 35% 35%, #ff4444 0%, #bd0000 70%, #750000 100%);
             box-shadow: 
-                0 6px 0 #660000,
-                0 0 25px rgba(255, 51, 0, 0.8),
-                inset 0 0 15px rgba(255, 255, 255, 0.5);
+                0 8px 0 #5e0000,
+                0 0 30px rgba(255, 30, 30, 0.8),
+                inset 0 2px 8px rgba(255, 255, 255, 0.6),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        #analog-btn:hover::before {
+            left: 100%;
         }
 
         #analog-btn:active, #analog-btn.pressed {
-            transform: translateY(4px);
+            transform: translateY(6px);
             box-shadow: 
                 0 2px 0 #330000,
-                0 4px 8px rgba(0, 0, 0, 0.8),
-                inset 0 0 20px rgba(0, 0, 0, 0.6);
+                0 4px 10px rgba(0, 0, 0, 0.9),
+                inset 0 0 15px rgba(0, 0, 0, 0.8);
         }
 
         .console-status {
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: var(--fire-yellow);
+            font-size: 10px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            color: #a0aab5;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
         }
 
         /* ========== BACKGROUND CANVAS ========== */
@@ -347,8 +529,9 @@
             width: 92%;
             max-width: 1480px;
             display: grid;
-            grid-template-columns: 300px 1fr 270px;
+            grid-template-columns: 300px 1fr 300px; /* Equal column widths on left and right */
             align-items: center;
+            justify-items: center; /* Ensures center column elements stay dead center */
             gap: 36px;
             transform-style: preserve-3d;
             opacity: 0;
@@ -365,6 +548,7 @@
 
         /* ========== LEFT PANEL ========== */
         .left-panel {
+            width: 100%;
             transform: translateZ(70px);
             display: flex;
             flex-direction: column;
@@ -478,6 +662,8 @@
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 12;
+            margin: 0;
+            padding: 0;
         }
 
         .earth {
@@ -594,15 +780,34 @@
         .morse-ticker {
             margin-top: 22px;
             width: 100%;
-            max-width: 420px;
-            background: rgba(8, 0, 0, 0.85);
-            border: 1px solid rgba(255, 17, 0, 0.6);
+            max-width: 600px;
+            background: rgba(5, 5, 5, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 3px solid var(--hell-red);
+            border-right: 3px solid var(--hell-red);
             padding: 9px 0;
             overflow: hidden;
             white-space: nowrap;
-            box-shadow: 0 0 20px rgba(255, 17, 0, 0.18);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.9);
             transform: translateZ(45px);
             position: relative;
+        }
+
+        .morse-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollMorse 80s linear infinite;
+            color: #ffffff;
+            font-size: 11px;
+            letter-spacing: 1.8px;
+            font-weight: 500;
+        }
+
+        .morse-text .intel-tag {
+            color: #ff2222;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.6);
         }
 
         .morse-ticker::before,
@@ -618,26 +823,27 @@
 
         .morse-ticker::before {
             left: 0;
-            background: linear-gradient(90deg, rgba(8,0,0,0.95), transparent);
+            background: linear-gradient(90deg, rgba(8, 2, 2, 0.95), transparent);
         }
 
         .morse-ticker::after {
             right: 0;
-            background: linear-gradient(-90deg, rgba(8,0,0,0.95), transparent);
+            background: linear-gradient(-90deg, rgba(8, 2, 2, 0.95), transparent);
         }
 
         .morse-text {
             display: inline-block;
             padding-left: 100%;
-            animation: scrollMorse 22s linear infinite;
-            color: var(--hell-red);
+            animation: scrollMorse 80s linear infinite;
+            color: var(--fire-yellow);
             font-size: 11px;
-            letter-spacing: 3.5px;
-            text-shadow: 0 0 8px var(--glow-red);
+            letter-spacing: 2px;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.4);
         }
 
         /* ========== RIGHT PANEL ========== */
         .right-panel {
+            width: 100%;
             transform: translateZ(90px);
             display: flex;
             flex-direction: column;
@@ -734,21 +940,58 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 1100px) {
-            .stage-grid {
-                grid-template-columns: 240px 1fr 220px;
-                gap: 24px;
-            }
-            .planet-stage {
-                width: 340px;
-                height: 340px;
-            }
-            #planet-vis-canvas {
-                width: 540px;
-                height: 540px;
-            }
-            .lore-title { font-size: 22px; }
+        /* ========== CENTER ALIGNMENT FIX ========== */
+        .stage-grid {
+            position: relative;
+            width: 100%;
+            max-width: 1480px;
+            margin: 0 auto;
+            display: grid;
+            /* 1FR on sides ensures the middle column (1FR) sits dead-center on screen */
+            grid-template-columns: minmax(260px, 320px) 1fr minmax(260px, 320px);
+            align-items: center;
+            justify-items: center;
+            gap: 28px;
+            transform-style: preserve-3d;
+            opacity: 0;
+            transform: scale(0.15) translateZ(-200px);
+            transition: 
+                transform 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 2.2s ease;
+        }
+
+        .center-panel {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+        .planet-stage {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        #planet-vis-canvas {
+            position: absolute;
+            width: 660px;
+            height: 660px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 12;
+            margin: 0;
+            padding: 0;
         }
 
         @media (max-width: 800px) {
@@ -823,10 +1066,16 @@
 
     <!-- Metallic Gates & Beacon Lights -->
     <div class="gate-door gate-left" id="gate-left">
-        <div class="warning-beacon"></div>
+        <div class="warning-beacon">
+            <div class="beacon-reflector"></div>
+            <div class="beacon-beam"></div>
+        </div>
     </div>
     <div class="gate-door gate-right" id="gate-right">
-        <div class="warning-beacon"></div>
+        <div class="warning-beacon">
+            <div class="beacon-reflector"></div>
+            <div class="beacon-beam"></div>
+        </div>
     </div>
 
     <!-- Center Analog Entry Console -->
@@ -885,8 +1134,8 @@
                 </div>
 
                 <div class="morse-ticker">
-                    <div class="morse-text">
-                        ... --- ... / . .- .-. - .... ... / ...- .. - .- .-.. ... / ..-. .- .. -. --. / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ... / --- -. .-.. -.-- / - .... . / ... --- ..- - .... / .-. . -- .- .. -. ...
+                    <div class="morse-text" id="news-ticker-text">
+                        FETCHING REGIONAL INTEL...
                     </div>
                 </div>
             </div>
@@ -934,13 +1183,13 @@
 
         // ========== 3. DISASTER FEED ==========
         const disasterFeed = [
-            { location: "LOC: NEW YORK, US", image: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=700&q=80" },
-            { location: "LOC: PARIS, FRANCE", image: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=700&q=80" },
-            { location: "LOC: LONDON, UK", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80" },
-            { location: "LOC: SYDNEY, AUSTRALIA", image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=700&q=80" },
-            { location: "LOC: TOKYO, JAPAN", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=700&q=80" },
-            { location: "LOC: JAKARTA, INDONESIA", image: "https://images.unsplash.com/photo-1604275689235-fdc521556c16?auto=format&fit=crop&w=700&q=80" }
-        ];
+            { location: "LOC: NEW YORK, US", image: "images/new-york.jpg" },
+            { location: "LOC: PARIS, FRANCE", image: "images/paris.jpg" },
+            { location: "LOC: LONDON, UK", image: "images/london.jpg" },
+            { location: "LOC: SYDNEY, AUSTRALIA", image: "images/sydney.jpg" },
+            { location: "LOC: TOKYO, JAPAN", image: "images/tokyo.jpg" },
+            { location: "LOC: JAKARTA, INDONESIA", image: "images/jakarta.jpg" }
+        ];  
 
         let feedIndex = 0;
         const tvScreen = document.getElementById('tv-screen');
@@ -1429,6 +1678,55 @@
                 }, 1500);
             });
         })();
+    </script>
+    <script>
+    // ========== NATIONSTATES BREAKING NEWS TICKER ==========
+    async function fetchRegionNews() {
+        const tickerText = document.getElementById('news-ticker-text');
+        const region = 'the_southern_lands';
+        const apiUrl = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=happenings;limit=10`;
+
+        try {
+            // Fetch XML feed via CORS proxy or standard CORS-enabled endpoint
+            const response = await fetch(apiUrl, {
+                headers: { 'User-Agent': 'The Southern Lands Command Dashboard' }
+            });
+            
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+            
+            const xmlText = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            const events = xmlDoc.getElementsByTagName('EVENT');
+
+            if (events.length === 0) {
+                tickerText.textContent = "NO RECENT REGIONAL EVENTS REPORTED.";
+                return;
+            }
+
+            const newsItems = [];
+                for (let i = 0; i < events.length; i++) {
+                    const textNode = events[i].getElementsByTagName('TEXT')[0];
+                    if (textNode) {
+                        let cleanText = textNode.textContent
+                            .replace(/@@(.*?)@@/g, '$1')
+                            .replace(/%%(.*?)%%/g, '$1')
+                            .replace(/%%.*?%%/g, '')
+                            .toUpperCase();
+                        newsItems.push(`<span class="intel-tag">[INTEL]</span> ${cleanText}`);
+                    }
+                }
+
+                // Use innerHTML instead of textContent so HTML tags render properly
+                tickerText.innerHTML = newsItems.join(' &nbsp;&nbsp;—&nbsp;&nbsp; ');
+        } catch (err) {
+            console.warn('Failed to fetch NationStates regional events:', err);
+            tickerText.textContent = "SIGNAL LOST: UNABLE TO RETRIEVE REGIONAL NEWS FEED.";
+        }
+    }
+
+    fetchRegionNews();
+    setInterval(fetchRegionNews, 120000); // Refresh feed every 2 minutes
     </script>
 </body>
 </html>

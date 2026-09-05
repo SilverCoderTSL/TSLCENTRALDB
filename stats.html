@@ -101,9 +101,42 @@
             display: none; box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
         }
         #comparison-dock.active { display: block; }
-        .comp-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .comp-table th, .comp-table td { border: 1px solid #333; padding: 8px 10px; text-align: left; font-size: 13px; }
-        .comp-table th { background: #1a1a1a; color: var(--cyber-cyan); }
+        
+        /* Updated Table Styling with Pure Black Background */
+        .comp-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            background-color: #000000; 
+            box-shadow: 0 0 20px rgba(0, 0, 0, 1);
+        }
+        .comp-table th, .comp-table td { 
+            border: 1px solid #222; 
+            padding: 10px 12px; 
+            text-align: left; 
+            font-size: 13px; 
+        }
+        .comp-table th { 
+            background: #0a0a0a; 
+            color: var(--cyber-cyan); 
+            border-bottom: 2px solid var(--cyber-cyan);
+        }
+        
+        /* Clickable Row Headers */
+        .clickable-metric {
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            user-select: none;
+        }
+        .clickable-metric:hover {
+            background-color: #1a1a1a;
+            color: var(--fire-yellow);
+        }
+        .clickable-metric.active-sort {
+            background-color: #222200;
+            color: var(--fire-yellow);
+            border-left: 3px solid var(--fire-yellow);
+        }
 
         /* Roster Grid */
         .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
@@ -172,6 +205,57 @@
         .detail-item.full-width { grid-column: span 2; }
         .detail-item .lbl { display: block; font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
         .detail-item .val { font-size: 14px; font-weight: bold; color: var(--terminal-green); word-wrap: break-word; }
+        
+        header, #nav-header {
+            height: 45px;
+            background: #0c0c0c;
+            border-bottom: 2px solid var(--border-color, #ffaa00);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 170, 0, 0.2);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-links-left, .header-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--highlight-text, #ffffff);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--border-color, #ffaa00);
+            padding: 5px 15px;
+            background: #1a0f00;
+            font-size: 13px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link:hover {
+            background: var(--accent-color, #ffaa00);
+            color: #000000;
+            box-shadow: 0 0 10px var(--accent-color, #ffaa00);
+        }
+
+        .nav-link.active {
+            background: var(--border-color, #ffaa00);
+            color: #000000;
+        }
+
+        .title, .title-bar {
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: var(--highlight-text, #ffffff);
+            text-shadow: 0 0 8px var(--accent-color, #ffaa00);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -179,11 +263,15 @@
     <!-- CRT Screen Ambient Overlay -->
     <div class="scanlines"></div>
 
-    <div id="nav-header">
-        <a href="index.html" class="nav-link">&lt; RETURN HOME</a>
-        <a href="map.html" class="nav-link"> MAP</a>
-        <div class="title">// TSL_REGIONAL_INTELLIGENCE_&amp;_ANALYSIS</div>
-    </div>
+    <header id="nav-header">
+        <div class="nav-links-left">
+            <a href="creator.html" class="nav-link">CREATE NATION</a>
+            <a href="stats.html" class="nav-link active">STATS VIEWER</a>
+            <a href="battle.html" class="nav-link">BATTLE</a>
+            <a href="map.html" class="nav-link">MAP</a>
+        </div>
+        <div class="title">// TSL_REGIONAL_ANALYSIS_&_COMPARISON</div>
+    </header>
 
     <div id="workspace">
         
@@ -193,7 +281,7 @@
                 <h2 style="color: var(--cyber-cyan);">⚔️ Tactical Comparison Matrix</h2>
                 <button class="nav-link" style="border-color: #ff0055; color: #ff0055;" onclick="clearComparison()">Clear Matrix</button>
             </div>
-            <div id="comparison-content">Select two nations from the roster below to compare intelligence parameters...</div>
+            <div id="comparison-content">Select up to three nations from the roster below to compare intelligence parameters...</div>
         </div>
 
         <!-- ROSTER CONTROLS -->
@@ -234,6 +322,35 @@
     <script>
         let nationsData = [];
         let selectedForCompare = [];
+        let currentSortMetricKey = null;
+
+        // Helper: Map grades and stances to numerical weights for ascending sort (least to greatest)
+        const metricGradeWeights = {
+            'F': 1, 'DEMILITARIZED': 1, 'RETRO': 1, 'D': 2,
+            'C': 3, 'MODERN': 3, 'PEACEKEEPING': 3,
+            'B': 4, 'ACTIVE PATROL': 4, 'NEAR-FUTURE': 4,
+            'A': 5, 'FORTIFIED': 5, 'HIGH-TECH': 5, 'S': 6
+        };
+
+        // Helper: Map grades and stances to color values
+        function getGradeColor(val) {
+            if (!val || val === 'N/A') return '#888';
+            const clean = String(val).trim().toUpperCase();
+            if (clean === 'S' || clean === 'HIGH-TECH' || clean === 'FORTIFIED') return '#00ffcc';
+            if (clean === 'A' || clean === 'NEAR-FUTURE' || clean === 'ACTIVE PATROL') return '#00ff66';
+            if (clean === 'B' || clean === 'MODERN' || clean === 'PEACEKEEPING') return '#ffaa00';
+            if (clean === 'C' || clean === 'RETRO' || clean === 'DEMILITARIZED') return '#ffff55';
+            if (clean === 'D') return '#ff6644';
+            if (clean === 'F') return '#ff2255';
+            return 'var(--terminal-green)';
+        }
+
+        // Helper: Wraps grade values in styled spans with drop-shadow glow
+        function formatGrade(val) {
+            if (!val || val === 'N/A') return 'N/A';
+            const color = getGradeColor(val);
+            return `<span style="color: ${color}; font-weight: bold; text-shadow: 0 0 8px ${color};">${val}</span>`;
+        }
 
         async function loadStatsData() {
             try {
@@ -274,7 +391,7 @@
                             <div class="stat-row"><span class="stat-key">Capital:</span><span class="stat-val">${s.capital || 'N/A'}</span></div>
                             <div class="stat-row"><span class="stat-key">Gov Type:</span><span class="stat-val">${s.government || 'N/A'}</span></div>
                             <div class="stat-row"><span class="stat-key">Population:</span><span class="stat-val">${s.population || 'N/A'}</span></div>
-                            <div class="stat-row"><span class="stat-key">Econ Grade:</span><span class="stat-val">${s.economy_grade || 'N/A'}</span></div>
+                            <div class="stat-row"><span class="stat-key">Econ Grade:</span><span class="stat-val">${formatGrade(s.economy_grade)}</span></div>
                         </div>
                         <div class="btn-group">
                             <button class="btn-action" onclick="viewProfile('${nationId}')">📄 View Profile</button>
@@ -317,7 +434,6 @@
 
             document.getElementById('modal-title').textContent = (s.nation || nationId).toUpperCase();
 
-            // Build Audit Box
             const auditBox = document.getElementById('modal-audit');
             if (audit.isValid) {
                 auditBox.className = 'audit-box clean';
@@ -327,20 +443,22 @@
                 auditBox.innerHTML = `<strong style="color:#ff0000;">[VIOLATION DETECTED]</strong> Power Budget: ${audit.powerScore}/7 Points.<br>Errors: ${audit.violations ? audit.violations.join(' | ') : 'Rules threshold broken.'}`;
             }
 
-            // Build Details Grid dynamically
             const detailsGrid = document.getElementById('modal-details');
             let html = '';
             
+            const gradeKeys = ['economy_grade', 'resource_wealth', 'tech_tier', 'infrastructure', 'defense_stance'];
+
             for (const [key, value] of Object.entries(s)) {
                 if (key === 'nation') continue;
 
                 const cleanKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 const isFullWidth = value.length > 40; 
-                
+                const formattedVal = gradeKeys.includes(key) ? formatGrade(value) : value;
+
                 html += `
                     <div class="detail-item ${isFullWidth ? 'full-width' : ''}">
                         <span class="lbl">${cleanKey}</span>
-                        <span class="val">${value}</span>
+                        <span class="val">${formattedVal}</span>
                     </div>
                 `;
             }
@@ -363,7 +481,7 @@
             if (idx > -1) {
                 selectedForCompare.splice(idx, 1);
             } else {
-                if (selectedForCompare.length >= 2) selectedForCompare.shift();
+                if (selectedForCompare.length >= 3) selectedForCompare.shift();
                 selectedForCompare.push(nationId);
             }
             updateComparisonView();
@@ -372,8 +490,38 @@
 
         function clearComparison() {
             selectedForCompare = [];
+            currentSortMetricKey = null;
             updateComparisonView();
             filterRoster();
+        }
+
+        // Sort selected comparison nations in ascending order (least to greatest) based on metric
+        function sortComparisonByMetric(metricKey, isAudit, isGrade) {
+            currentSortMetricKey = metricKey;
+
+            selectedForCompare.sort((idA, idB) => {
+                const nationA = nationsData.find(e => e.nation_id === idA);
+                const nationB = nationsData.find(e => e.nation_id === idB);
+
+                if (isAudit) {
+                    const valA = nationA?.audit?.powerScore || 0;
+                    const valB = nationB?.audit?.powerScore || 0;
+                    return valA - valB;
+                }
+
+                const rawA = String(nationA?.stats?.[metricKey] || '').trim().toUpperCase();
+                const rawB = String(nationB?.stats?.[metricKey] || '').trim().toUpperCase();
+
+                if (isGrade) {
+                    const weightA = metricGradeWeights[rawA] || 0;
+                    const weightB = metricGradeWeights[rawB] || 0;
+                    return weightA - weightB;
+                }
+
+                return rawA.localeCompare(rawB, undefined, { numeric: true });
+            });
+
+            updateComparisonView();
         }
 
         function updateComparisonView() {
@@ -387,36 +535,61 @@
 
             dock.classList.add('active');
 
-            if (selectedForCompare.length === 1) {
-                const n1 = nationsData.find(e => e.nation_id === selectedForCompare[0]);
-                content.innerHTML = `<div style="color: var(--cyber-cyan);">Selected <strong>${n1.stats.nation || n1.nation_id}</strong>. Select a second nation to complete matrix.</div>`;
-                return;
-            }
+            const selectedNations = selectedForCompare.map(id => nationsData.find(e => e.nation_id === id)).filter(Boolean);
+            const headerCols = selectedNations.map(n => `<th>${n.stats?.nation || n.nation_id}</th>`).join('');
 
-            const n1 = nationsData.find(e => e.nation_id === selectedForCompare[0]);
-            const n2 = nationsData.find(e => e.nation_id === selectedForCompare[1]);
-            const s1 = n1.stats || {};
-            const s2 = n2.stats || {};
+            const metrics = [
+                { label: 'Power Budget Score', key: 'powerScore', isAudit: true },
+                { label: 'Capital City', key: 'capital' },
+                { label: 'Government Type', key: 'government' },
+                { label: 'Population', key: 'population' },
+                { label: 'Economy Grade', key: 'economy_grade', isGrade: true },
+                { label: 'Resource Wealth', key: 'resource_wealth', isGrade: true },
+                { label: 'Tech Tier', key: 'tech_tier', isGrade: true },
+                { label: 'Infrastructure', key: 'infrastructure', isGrade: true },
+                { label: 'Defense Posture', key: 'defense_stance', isGrade: true }
+            ];
+
+            const tableRows = metrics.map(m => {
+                const isSelectedSort = currentSortMetricKey === m.key;
+                const sortIndicator = isSelectedSort ? ' ▲' : '';
+
+                const valCols = selectedNations.map(n => {
+                    const s = n.stats || {};
+                    if (m.isAudit) {
+                        const score = n.audit?.powerScore || 0;
+                        const isValid = n.audit?.isValid !== false;
+                        const color = isValid ? 'var(--terminal-green)' : '#ff2255';
+                        return `<td style="color: ${color}; font-weight: bold; text-shadow: 0 0 6px ${color};">${score} / 7 Pts</td>`;
+                    }
+                    
+                    const rawVal = s[m.key] || 'N/A';
+                    const displayVal = m.isGrade ? formatGrade(rawVal) : rawVal;
+                    return `<td>${displayVal}</td>`;
+                }).join('');
+
+                return `
+                    <tr>
+                        <td class="clickable-metric ${isSelectedSort ? 'active-sort' : ''}" 
+                            onclick="sortComparisonByMetric('${m.key}', ${!!m.isAudit}, ${!!m.isGrade})"
+                            title="Click to sort nations least-to-greatest by ${m.label}">
+                            ${m.label}${sortIndicator}
+                        </td>
+                        ${valCols}
+                    </tr>
+                `;
+            }).join('');
 
             content.innerHTML = `
                 <table class="comp-table">
                     <thead>
                         <tr>
-                            <th>Metric Parameter</th>
-                            <th>${s1.nation || n1.nation_id}</th>
-                            <th>${s2.nation || n2.nation_id}</th>
+                            <th style="width: 250px;">Metric Parameter (Click row label to sort ▲)</th>
+                            ${headerCols}
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Power Budget Score</td><td>${n1.audit?.powerScore || 0} / 7 Pts</td><td>${n2.audit?.powerScore || 0} / 7 Pts</td></tr>
-                        <tr><td>Capital City</td><td>${s1.capital || 'N/A'}</td><td>${s2.capital || 'N/A'}</td></tr>
-                        <tr><td>Government Type</td><td>${s1.government || 'N/A'}</td><td>${s2.government || 'N/A'}</td></tr>
-                        <tr><td>Population</td><td>${s1.population || 'N/A'}</td><td>${s2.population || 'N/A'}</td></tr>
-                        <tr><td>Economy Grade</td><td>${s1.economy_grade || 'N/A'}</td><td>${s2.economy_grade || 'N/A'}</td></tr>
-                        <tr><td>Resource Wealth</td><td>${s1.resource_wealth || 'N/A'}</td><td>${s2.resource_wealth || 'N/A'}</td></tr>
-                        <tr><td>Tech Tier</td><td>${s1.tech_tier || 'N/A'}</td><td>${s2.tech_tier || 'N/A'}</td></tr>
-                        <tr><td>Infrastructure</td><td>${s1.infrastructure || 'N/A'}</td><td>${s2.infrastructure || 'N/A'}</td></tr>
-                        <tr><td>Defense Posture</td><td>${s1.defense_stance || 'N/A'}</td><td>${s2.defense_stance || 'N/A'}</td></tr>
+                        ${tableRows}
                     </tbody>
                 </table>
             `;

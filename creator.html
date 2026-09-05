@@ -633,16 +633,71 @@
                 min-width: 100px;
             }
         }
+        
+        header, #nav-header {
+            height: 45px;
+            background: #0c0c0c;
+            border-bottom: 2px solid var(--border-color, #ffaa00);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 170, 0, 0.2);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-links-left, .header-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--highlight-text, #ffffff);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--border-color, #ffaa00);
+            padding: 5px 15px;
+            background: #1a0f00;
+            font-size: 13px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link:hover {
+            background: var(--accent-color, #ffaa00);
+            color: #000000;
+            box-shadow: 0 0 10px var(--accent-color, #ffaa00);
+        }
+
+        .nav-link.active {
+            background: var(--border-color, #ffaa00);
+            color: #000000;
+        }
+
+        .title, .title-bar {
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: var(--highlight-text, #ffffff);
+            text-shadow: 0 0 8px var(--accent-color, #ffaa00);
+            text-transform: uppercase;
+        }
 
     </style>
 </head>
 <body>
 
-    <div id="nav-header">
-        <a href="index.html" class="nav-link">&lt; RETURN TO HOME</a>
-        <a href="map.html" class="nav-link">GO TO MAP</a>
+    <header id="nav-header">
+        <div class="nav-links-left">
+            <a href="creator.html" class="nav-link active">CREATE NATION</a>
+            <a href="stats.html" class="nav-link">STATS VIEWER</a>
+            <a href="battle.html" class="nav-link">BATTLE</a>
+            <a href="map.html" class="nav-link">MAP</a>
+        </div>
         <div class="title">// TSL_NATION_PROFILE_QUESTIONNAIRE_v3.1</div>
-    </div>
+    </header>
 
     <div id="workspace">
         <div class="terminal-card">

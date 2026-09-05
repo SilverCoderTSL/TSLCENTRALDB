@@ -44,7 +44,7 @@ jobs:
           
           # Only attempt to commit and push if either JSON file actually changed
           if ! git diff-index --quiet HEAD; then
-            git commit -m "chore: auto-update regional map & stats data [skip ci]"
+            git commit -m "chore: auto-update regional map & stats data"
             
             # Fetch the absolute latest remote state right before pushing
             git fetch origin main
