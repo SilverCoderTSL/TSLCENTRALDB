@@ -199,7 +199,7 @@
     "nation": "The Ypres Front",
     "government": "Social Democracy",
     "population": "12 Million",
-    "color": "#00e5ff"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -373,7 +373,7 @@
     "nation": "Holy Karenland",
     "government": "Absolute Monarchy",
     "population": "56.2 Million",
-    "color": "#ffaa00"
+    "color": "#00ff99"
   },
   {
     "capital": {
@@ -415,7 +415,7 @@
     "nation": "Kyrek",
     "government": "Empire",
     "population": "7.3 Million",
-    "color": "#ff3300"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -1487,7 +1487,7 @@
     "nation": "The Dragon Empire of United States (D.E.U.S.)",
     "government": "Trade Federation",
     "population": "50 Million",
-    "color": "#b500ff"
+    "color": "#ff3300"
   },
   {
     "capital": {
@@ -1983,7 +1983,7 @@
     "nation": "Stransistria",
     "government": "Fascist Dictatorship",
     "population": "85 Million",
-    "color": "#00e5ff"
+    "color": "#ffea00"
   },
   {
     "capital": {
@@ -2333,7 +2333,7 @@
     "nation": "Jwlismon II",
     "government": "Democracy",
     "population": "11 Million",
-    "color": "#00ff99"
+    "color": "#ff3300"
   },
   {
     "capital": {
@@ -2505,7 +2505,7 @@
     "nation": "The Renewed Internationale of Avstraliys",
     "government": "Proto-Internationalist Free Territory",
     "population": "63.5 Million",
-    "color": "#b500ff"
+    "color": "#ffea00"
   },
   {
     "capital": {
@@ -2547,7 +2547,7 @@
     "nation": "Styrlightia",
     "government": "(Still Forming)",
     "population": "20 Million",
-    "color": "#00ff00"
+    "color": "#ff3300"
   },
   {
     "capital": {
