@@ -3,7 +3,7 @@
     "nation_id": "union_of_silver_states_union",
     "nation_canonical_name": "union_of_silver_states_union",
     "dispatch_id": "2808233",
-    "last_updated": "2026-09-07T03:03:08.604Z",
+    "last_updated": "2026-09-14T08:13:46.713Z",
     "stats": {
       "nation": "Test Nation",
       "capital": "Bleh",
@@ -34,7 +34,7 @@
     "nation_id": "the_ypres_front",
     "nation_canonical_name": "the_ypres_front",
     "dispatch_id": "2810109",
-    "last_updated": "2026-09-07T03:03:10.021Z",
+    "last_updated": "2026-09-14T08:13:48.229Z",
     "stats": {
       "nation": "The Ypres Front",
       "capital": "Ypres",
@@ -62,10 +62,41 @@
     }
   },
   {
+    "nation_id": "kyrek",
+    "nation_canonical_name": "kyrek",
+    "dispatch_id": "2815056",
+    "last_updated": "2026-09-14T08:13:51.367Z",
+    "stats": {
+      "nation": "Empire of Kyrek",
+      "capital": "Odeka",
+      "government": "Empire",
+      "population": "7.3 Million",
+      "economy_grade": "B",
+      "resource_wealth": "S",
+      "top_exports": "Minerals, fuel, lumber, rare minerals",
+      "top_imports": "Food",
+      "tech_tier": "Near-Future",
+      "infrastructure": "B",
+      "defense_stance": "Peacekeeping",
+      "internal_stability": "High",
+      "culture_influence": "C",
+      "education_r_d": "B",
+      "regional_alignment": "Independent",
+      "national_focus": "Getting more powerful",
+      "current_regional_stance": "Open to trade agreements, non-aggression pacts and alliances. Not looking for war."
+    },
+    "audit": {
+      "powerScore": 7,
+      "sTierCount": 1,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
     "nation_id": "the_dragon_empire_of_united_states",
     "nation_canonical_name": "the_dragon_empire_of_united_states",
     "dispatch_id": "2811042",
-    "last_updated": "2026-09-07T03:03:14.330Z",
+    "last_updated": "2026-09-14T08:13:53.644Z",
     "stats": {
       "nation": "The Dragon Empire of United States",
       "capital": "Deyp Hayven",
@@ -96,7 +127,7 @@
     "nation_id": "stransistria",
     "nation_canonical_name": "stransistria",
     "dispatch_id": "2812030",
-    "last_updated": "2026-09-07T03:03:17.259Z",
+    "last_updated": "2026-09-14T08:13:56.750Z",
     "stats": {
       "nation": "Stransistria",
       "capital": "Stransinople",
@@ -124,10 +155,41 @@
     }
   },
   {
+    "nation_id": "jwlismon_ii",
+    "nation_canonical_name": "jwlismon_ii",
+    "dispatch_id": "2813949",
+    "last_updated": "2026-09-14T08:14:00.657Z",
+    "stats": {
+      "nation": "Jwlismon II",
+      "capital": "Maes",
+      "government": "Democracy",
+      "population": "25.6 Million",
+      "economy_grade": "A",
+      "resource_wealth": "B",
+      "top_exports": "Electronics, Grain, Paper, Coconut Water, Chlorine",
+      "top_imports": "Crude Oil, Heavy Machinery, Bandages, Rubber, Styrofoam",
+      "tech_tier": "Modern",
+      "infrastructure": "B",
+      "defense_stance": "Peacekeeping",
+      "internal_stability": "High",
+      "culture_influence": "B",
+      "education_r_d": "B",
+      "regional_alignment": "Independent",
+      "national_focus": "Oil Exports",
+      "current_regional_stance": "Neutral in wars, Open to trade agreements"
+    },
+    "audit": {
+      "powerScore": 6,
+      "sTierCount": 0,
+      "isValid": true,
+      "violations": []
+    }
+  },
+  {
     "nation_id": "avstraliys",
     "nation_canonical_name": "avstraliys",
     "dispatch_id": "2811732",
-    "last_updated": "2026-09-07T03:03:22.268Z",
+    "last_updated": "2026-09-14T08:14:02.949Z",
     "stats": {
       "nation": "Avstraliys",
       "capital": "Basdrien",
@@ -158,7 +220,7 @@
     "nation_id": "silver_republicz",
     "nation_canonical_name": "silver_republicz",
     "dispatch_id": "2812072",
-    "last_updated": "2026-09-07T03:03:24.384Z",
+    "last_updated": "2026-09-14T08:14:05.221Z",
     "stats": {
       "nation": "Federation of Silver Republics",
       "capital": "Silberstadt",
