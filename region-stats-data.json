@@ -3,7 +3,7 @@
     "nation_id": "union_of_silver_states_union",
     "nation_canonical_name": "union_of_silver_states_union",
     "dispatch_id": "2808233",
-    "last_updated": "2026-09-14T08:13:46.713Z",
+    "last_updated": "2026-09-21T08:19:27.688Z",
     "stats": {
       "nation": "Test Nation",
       "capital": "Bleh",
@@ -34,7 +34,7 @@
     "nation_id": "the_ypres_front",
     "nation_canonical_name": "the_ypres_front",
     "dispatch_id": "2810109",
-    "last_updated": "2026-09-14T08:13:48.229Z",
+    "last_updated": "2026-09-21T08:19:29.185Z",
     "stats": {
       "nation": "The Ypres Front",
       "capital": "Ypres",
@@ -65,7 +65,7 @@
     "nation_id": "kyrek",
     "nation_canonical_name": "kyrek",
     "dispatch_id": "2815056",
-    "last_updated": "2026-09-14T08:13:51.367Z",
+    "last_updated": "2026-09-21T08:19:32.180Z",
     "stats": {
       "nation": "Empire of Kyrek",
       "capital": "Odeka",
@@ -96,7 +96,7 @@
     "nation_id": "the_dragon_empire_of_united_states",
     "nation_canonical_name": "the_dragon_empire_of_united_states",
     "dispatch_id": "2811042",
-    "last_updated": "2026-09-14T08:13:53.644Z",
+    "last_updated": "2026-09-21T08:19:34.430Z",
     "stats": {
       "nation": "The Dragon Empire of United States",
       "capital": "Deyp Hayven",
@@ -127,7 +127,7 @@
     "nation_id": "stransistria",
     "nation_canonical_name": "stransistria",
     "dispatch_id": "2812030",
-    "last_updated": "2026-09-14T08:13:56.750Z",
+    "last_updated": "2026-09-21T08:19:38.166Z",
     "stats": {
       "nation": "Stransistria",
       "capital": "Stransinople",
@@ -158,7 +158,7 @@
     "nation_id": "jwlismon_ii",
     "nation_canonical_name": "jwlismon_ii",
     "dispatch_id": "2813949",
-    "last_updated": "2026-09-14T08:14:00.657Z",
+    "last_updated": "2026-09-21T08:19:41.908Z",
     "stats": {
       "nation": "Jwlismon II",
       "capital": "Maes",
@@ -189,7 +189,7 @@
     "nation_id": "avstraliys",
     "nation_canonical_name": "avstraliys",
     "dispatch_id": "2811732",
-    "last_updated": "2026-09-14T08:14:02.949Z",
+    "last_updated": "2026-09-21T08:19:44.214Z",
     "stats": {
       "nation": "Avstraliys",
       "capital": "Basdrien",
@@ -220,7 +220,7 @@
     "nation_id": "silver_republicz",
     "nation_canonical_name": "silver_republicz",
     "dispatch_id": "2812072",
-    "last_updated": "2026-09-14T08:14:05.221Z",
+    "last_updated": "2026-09-21T08:19:46.551Z",
     "stats": {
       "nation": "Federation of Silver Republics",
       "capital": "Silberstadt",

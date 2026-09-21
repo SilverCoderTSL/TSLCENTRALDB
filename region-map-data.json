@@ -199,7 +199,7 @@
     "nation": "The Ypres Front",
     "government": "Social Democracy",
     "population": "12 Million",
-    "color": "#ff0055"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -373,7 +373,7 @@
     "nation": "Holy Karenland",
     "government": "Absolute Monarchy",
     "population": "56.2 Million",
-    "color": "#ffaa00"
+    "color": "#00ff99"
   },
   {
     "capital": {
@@ -415,7 +415,7 @@
     "nation": "Kyrek",
     "government": "Empire",
     "population": "7.3 Million",
-    "color": "#ff3300"
+    "color": "#ffaa00"
   },
   {
     "capital": {
@@ -1487,7 +1487,7 @@
     "nation": "The Dragon Empire of United States (D.E.U.S.)",
     "government": "Trade Federation",
     "population": "50 Million",
-    "color": "#b500ff"
+    "color": "#ff0055"
   },
   {
     "capital": {
@@ -1983,7 +1983,7 @@
     "nation": "Stransistria",
     "government": "Fascist Dictatorship",
     "population": "85 Million",
-    "color": "#ff0055"
+    "color": "#ffaa00"
   },
   {
     "capital": {
@@ -2237,7 +2237,7 @@
     "nation": "Vangor",
     "government": "Constitutional Monarchy",
     "population": "148 Million",
-    "color": "#00e5ff"
+    "color": "#ffea00"
   },
   {
     "capital": {
@@ -2333,7 +2333,7 @@
     "nation": "Jwlismon II",
     "government": "Democracy",
     "population": "11 Million",
-    "color": "#b500ff"
+    "color": "#ff0055"
   },
   {
     "capital": {
@@ -2547,7 +2547,7 @@
     "nation": "Styrlightia",
     "government": "(Still Forming)",
     "population": "20 Million",
-    "color": "#ff0055"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -2913,6 +2913,6 @@
     "nation": "Federation of Silver Republics",
     "government": "Federal Republic",
     "population": "45.2 Million",
-    "color": "#00ff99"
+    "color": "#b500ff"
   }
 ]
