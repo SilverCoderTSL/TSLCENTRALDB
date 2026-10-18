@@ -1,625 +1,871 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSL Tactical Battle Matrix & Multi-Phase Simulator v5.0</title>
+    <title>TSL Tactical Battle Matrix v6.0</title>
     <style>
         :root {
-            --bg-color: #050505;
-            --panel-bg: #0c0c0c;
-            --border-color: #aa0000;
-            --accent-color: #ff3333;
-            --text-color: #dddddd;
-            --highlight-text: #ffffff;
-            --success-color: #00ff66;
-            --warning-color: #ffcc00;
-            --info-color: #00ccff;
-            --terminal-glow: rgba(255, 51, 51, 0.15);
+            --bg: #060608;
+            --panel: #0e0e12;
+            --panel-2: #14141a;
+            --border: #3a1520;
+            --border-hot: #c42a2a;
+            --accent: #ff3a3a;
+            --amber: #ffb347;
+            --cyan: #4ecdc4;
+            --green: #3dd68c;
+            --blue: #4a9eff;
+            --text: #e4e4ea;
+            --muted: #8a8a9a;
+            --dim: #5a5a6a;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            user-select: none;
-            background-image: radial-gradient(circle at 50% 50%, #150505 0%, #050505 100%);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 50% 0%, #180808 0%, var(--bg) 55%);
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--panel-bg);
-            border: 2px solid var(--border-color);
-            padding: 15px 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(170, 0, 0, 0.4), inset 0 0 10px rgba(170, 0, 0, 0.2);
-            border-radius: 4px;
-            position: relative;
+        /* ========== VHS OVERLAY ========== */
+        .vhs-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            pointer-events: none;
             overflow: hidden;
         }
 
-        header::after {
-            content: '';
+        /* Scanlines */
+        .vhs-scanlines {
             position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,51,51,0.1), transparent);
-            animation: scanline 6s linear infinite;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 1px,
+                rgba(0, 0, 0, 0.12) 1px,
+                rgba(0, 0, 0, 0.12) 2px
+            );
+            opacity: 0.55;
         }
 
-        @keyframes scanline {
-            0% { left: -100%; }
-            100% { left: 200%; }
-        }
-
-        h1, h2, h3 {
-            color: var(--highlight-text);
-            margin-top: 0;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        h2 {
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 8px;
-            font-size: 15px;
-        }
-
-        .title-bar {
-            font-size: 18px;
-            letter-spacing: 2px;
-            color: var(--highlight-text);
-            font-weight: bold;
-            text-shadow: 0 0 8px var(--accent-color);
-        }
-
-        .nav-link {
-            color: var(--highlight-text);
-            text-decoration: none;
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            background: #200000;
-            font-size: 13px;
-            box-shadow: 0 0 5px rgba(255,51,51,0.2);
-            transition: all 0.2s ease-in-out;
-        }
-
-        .nav-link:hover {
-            background: var(--accent-color);
-            color: #000000;
-            box-shadow: 0 0 15px var(--accent-color);
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 1450px;
-            margin: 0 auto;
-        }
-
-        .panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.7), inset 0 0 15px rgba(255,51,51,0.05);
-            border-radius: 4px;
-        }
-
-        .panel-full {
-            grid-column: span 2;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #ffffff;
-            font-size: 12px;
-            letter-spacing: 0.5px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            background: #000000;
-            border: 1px solid #441111;
-            color: #ffffff;
-            font-family: inherit;
-            box-sizing: border-box;
-            margin-top: 4px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 8px var(--terminal-glow);
-            background: #080000;
-        }
-
-        button {
-            background: #2a0000;
-            border: 1px solid var(--border-color);
-            color: var(--accent-color);
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 10px 16px;
-            font-size: 12px;
-            margin-top: 10px;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
-
-        button:hover {
-            background: var(--accent-color);
-            color: #000000;
-            box-shadow: 0 0 15px var(--accent-color);
-        }
-
-        .danger-btn {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            background: #250000;
-        }
-        .danger-btn:hover {
-            background: #ff3333;
-            color: #000000;
-        }
-
-        .success-btn {
-            border-color: var(--success-color);
-            color: var(--success-color);
-            background: #002205;
-        }
-        .success-btn:hover {
-            background: var(--success-color);
-            color: #000000;
-            box-shadow: 0 0 15px var(--success-color);
-        }
-
-        .brigade-stack {
-            border: 1px dashed #551111;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #040404;
-            position: relative;
-        }
-
-        .remove-brigade-btn {
+        /* Soft film grain via animated noise-ish gradient */
+        .vhs-grain {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            padding: 2px 6px;
-            margin: 0;
-            font-size: 10px;
+            inset: -20%;
+            width: 140%;
+            height: 140%;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 2%),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.025) 0%, transparent 2%),
+                radial-gradient(circle at 50% 50%, rgba(0,0,0,0.04) 0%, transparent 3%);
+            background-size: 120px 120px, 180px 180px, 90px 90px;
+            opacity: 0.35;
+            animation: vhsGrain 0.35s steps(3) infinite;
+            mix-blend-mode: overlay;
         }
 
-        .export-area {
-            width: 100%;
-            height: 70px;
-            background: #000000;
-            border: 1px solid #440000;
-            color: #00ff33;
-            padding: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            resize: vertical;
-            box-sizing: border-box;
-            margin-top: 5px;
-            line-height: 1.3;
+        @keyframes vhsGrain {
+            0%   { transform: translate(0, 0); }
+            25%  { transform: translate(-1.5%, 1%); }
+            50%  { transform: translate(1%, -1.5%); }
+            75%  { transform: translate(-0.5%, -1%); }
+            100% { transform: translate(1.5%, 0.5%); }
         }
 
-        .history-log {
-            height: 180px;
-            overflow-y: auto;
-            background: #020202;
-            border: 1px solid #330000;
-            padding: 8px;
-            font-size: 11px;
-            font-family: monospace;
-            color: #aaaaaa;
+        /* Horizontal tracking bar */
+        .vhs-track {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 18%;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.03) 40%,
+                rgba(0, 0, 0, 0.08) 50%,
+                rgba(255, 255, 255, 0.02) 60%,
+                transparent 100%
+            );
+            opacity: 0;
+            animation: vhsTrack 9s linear infinite;
         }
 
-        .log-entry {
-            border-left: 3px solid var(--border-color);
-            background: #0e0404;
-            padding: 6px 10px;
-            margin-bottom: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        @keyframes vhsTrack {
+            0%, 85%, 100% { opacity: 0; top: -20%; }
+            88% { opacity: 0.7; top: 10%; }
+            92% { opacity: 0.5; top: 45%; }
+            96% { opacity: 0.3; top: 80%; }
         }
 
-        .log-entry:hover {
-            background: #250808;
-            border-left-color: var(--accent-color);
-            color: #ffffff;
+        /* Subtle chromatic edge / vignette */
+        .vhs-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.35) 100%),
+                linear-gradient(90deg, rgba(255, 40, 40, 0.03) 0%, transparent 8%, transparent 92%, rgba(40, 120, 255, 0.03) 100%);
+            opacity: 0.85;
         }
 
-        .log-entry span.timestamp {
-            color: #666666;
-            font-size: 10px;
+        /* Occasional flicker */
+        .vhs-flicker {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.015);
+            opacity: 0;
+            animation: vhsFlicker 7s steps(1) infinite;
         }
 
-        .grid-half {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+        @keyframes vhsFlicker {
+            0%, 92%, 100% { opacity: 0; }
+            93% { opacity: 1; }
+            94% { opacity: 0; }
+            96% { opacity: 0.6; }
+            97% { opacity: 0; }
         }
 
-        .grid-quad {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 8px;
-        }
-
-        .crypto-hash-display {
-            font-family: monospace;
-            background: #000000;
-            color: #00ff33;
-            padding: 8px;
-            border: 1px solid #004411;
-            word-break: break-all;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            font-size: 11px;
-        }
-
-        .field-group {
-            background: rgba(255,51,51,0.02);
-            border-left: 2px solid var(--border-color);
-            padding: 12px;
-            margin-bottom: 15px;
-        }
-
-        .action-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 15px;
-        }
-
-        .side-header {
-            font-weight: bold;
-            font-size: 14px;
-            color: var(--accent-color);
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        /* --- VISUAL AFTER-ACTION REPORT (AAR) STYLING --- */
-        .tab-container {
-            display: flex;
-            gap: 5px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 15px;
-        }
-
-        .tab-btn {
-            background: #110303;
-            border: 1px solid var(--border-color);
-            border-bottom: none;
-            color: #888888;
-            padding: 8px 16px;
-            margin: 0;
-            cursor: pointer;
-            border-radius: 4px 4px 0 0;
-        }
-
-        .tab-btn.active {
-            background: #250505;
-            color: var(--highlight-text);
-            border-color: var(--accent-color);
-        }
-
-        .aar-display {
-            background: #030304;
-            border: 1px solid #331111;
-            padding: 20px;
-            border-radius: 4px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        .outcome-banner {
-            border: 2px solid #555555;
-            padding: 15px;
-            text-align: center;
-            background: #0a0a0d;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .outcome-banner.decisive-att {
-            border-color: var(--accent-color);
-            background: rgba(255, 51, 51, 0.1);
-            color: #ff6666;
-        }
-
-        .outcome-banner.victory-att {
-            border-color: var(--warning-color);
-            background: rgba(255, 204, 0, 0.1);
-            color: #ffe066;
-        }
-
-        .outcome-banner.repelled-def {
-            border-color: var(--info-color);
-            background: rgba(0, 204, 255, 0.1);
-            color: #66e0ff;
-        }
-
-        .outcome-title {
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .outcome-subtext {
-            font-size: 13px;
-            color: #dddddd;
-        }
-
-        .phase-box {
-            background: #0c0808;
-            border: 1px solid #441111;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        .phase-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--accent-color);
-            margin-bottom: 6px;
-            border-bottom: 1px solid #331111;
-            padding-bottom: 4px;
-        }
-
-        .power-bar-wrapper {
-            background: #111115;
-            border: 1px solid #333344;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .bar-container {
-            display: flex;
-            height: 24px;
-            background: #220000;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-            border: 1px solid #000;
-        }
-
-        .bar-att {
-            background: linear-gradient(90deg, #aa0000, #ff3333);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .bar-def {
-            background: linear-gradient(90deg, #0055ff, #00aaff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .aar-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-bottom: 20px;
-        }
-
-        .aar-table th {
-            background: #180808;
-            color: #ffaaaa;
-            border: 1px solid #441111;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .aar-table td {
-            border: 1px solid #220808;
-            padding: 8px;
-            background: #080404;
-        }
-
-        .loss-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .loss-badge.high { background: #440000; color: #ff6666; border: 1px solid #880000; }
-        .loss-badge.med { background: #443300; color: #ffcc00; border: 1px solid #886600; }
-        .loss-badge.low { background: #003311; color: #66ff99; border: 1px solid #008833; }
-
-        .raw-text-view {
-            width: 100%;
-            height: 320px;
-            background: #000000;
-            border: 1px solid var(--border-color);
-            color: #00ff33;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            resize: vertical;
-            box-sizing: border-box;
-            display: none;
-        }
-        
-        header, #nav-header {
-            height: 45px;
-            background: #0c0c0c;
-            border-bottom: 2px solid var(--border-color, #ffaa00);
+        /* NAV */
+        #nav-header {
+            height: 48px;
+            background: #0a0a0e;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
+            position: sticky;
+            top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 170, 0, 0.2);
-            flex-shrink: 0;
-            box-sizing: border-box;
         }
 
-        .nav-links-left, .header-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
 
         .nav-link {
-            color: var(--highlight-text, #ffffff);
+            color: var(--text);
             text-decoration: none;
             font-weight: bold;
-            border: 1px solid var(--border-color, #ffaa00);
-            padding: 5px 15px;
-            background: #1a0f00;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            background: #120808;
+            transition: all 0.15s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .title {
             font-size: 13px;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .nav-link:hover {
-            background: var(--accent-color, #ffaa00);
-            color: #000000;
-            box-shadow: 0 0 10px var(--accent-color, #ffaa00);
-        }
-
-        .nav-link.active {
-            background: var(--border-color, #ffaa00);
-            color: #000000;
-        }
-
-        .title, .title-bar {
             font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            color: var(--highlight-text, #ffffff);
-            text-shadow: 0 0 8px var(--accent-color, #ffaa00);
+            letter-spacing: 1.5px;
+            color: var(--amber);
             text-transform: uppercase;
         }
+
+        /* LAYOUT */
+        .wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        /* STEPS */
+        .steps {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .step-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 14px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .step-tab:hover { border-color: #662222; color: var(--text); }
+        .step-tab.active {
+            border-color: var(--accent);
+            color: #fff;
+            background: #1a0808;
+            box-shadow: inset 0 -2px 0 var(--accent);
+        }
+        .step-tab .num {
+            color: var(--accent);
+            margin-right: 6px;
+        }
+
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
+
+        /* CARDS */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .card h2 {
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .card h3 {
+            font-size: 12px;
+            color: var(--amber);
+            letter-spacing: 1px;
+            margin: 14px 0 10px;
+            text-transform: uppercase;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            line-height: 1.45;
+        }
+
+        /* GRID */
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .row-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .row-2, .row-3, .row-4 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 560px) {
+            .row-2, .row-3, .row-4 { grid-template-columns: 1fr; }
+        }
+
+        /* FORMS */
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            margin-top: 8px;
+        }
+
+        label:first-child { margin-top: 0; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            background: #08080c;
+            border: 1px solid #2a1520;
+            color: #fff;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(255,58,58,0.25);
+        }
+
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
+
+        /* BUTTONS */
+        button, .btn {
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            background: #1a0a0a;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        button:hover, .btn:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .btn-green {
+            border-color: #1a4a30;
+            color: var(--green);
+            background: #0a1a12;
+        }
+        .btn-green:hover {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+        }
+
+        .btn-blue {
+            border-color: #1a3a5a;
+            color: var(--blue);
+            background: #0a121a;
+        }
+        .btn-blue:hover {
+            background: var(--blue);
+            color: #000;
+            border-color: var(--blue);
+        }
+
+        .btn-block { width: 100%; margin-top: 12px; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        /* SIDE HEADERS */
+        .side-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            padding: 4px 10px;
+            margin-bottom: 12px;
+        }
+
+        .side-tag.att {
+            background: rgba(255,58,58,0.15);
+            color: #ff6a6a;
+            border: 1px solid #662222;
+        }
+
+        .side-tag.def {
+            background: rgba(74,158,255,0.12);
+            color: #7ab8ff;
+            border: 1px solid #2a4060;
+        }
+
+        /* BRIGADE */
+        .brigade {
+            background: #0a0a0e;
+            border: 1px dashed #3a2028;
+            padding: 12px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .brigade .rm {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 2px 8px;
+            font-size: 10px;
+            margin: 0;
+        }
+
+        .power-pill {
+            display: inline-flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .power-pill span {
+            background: #121218;
+            border: 1px solid #2a2a35;
+            padding: 4px 8px;
+            color: var(--muted);
+        }
+
+        .power-pill strong { color: var(--amber); }
+
+        /* HASH BOX */
+        .hash-box {
+            width: 100%;
+            height: 56px;
+            background: #050508;
+            border: 1px solid #1a3020;
+            color: var(--green);
+            padding: 8px;
+            font-size: 10px;
+            font-family: monospace;
+            resize: vertical;
+            margin-top: 6px;
+        }
+
+        .verify-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #080808;
+            border: 1px solid #1a3a20;
+            font-size: 11px;
+            color: var(--green);
+            word-break: break-all;
+        }
+
+        .verify-box.err {
+            border-color: #5a1515;
+            color: #ff6a6a;
+        }
+
+        /* AAR + animations */
+        .outcome {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #444;
+            background: #0a0a0e;
+            margin-bottom: 16px;
+            animation: aarIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .outcome.decisive { border-color: var(--accent); background: rgba(255,58,58,0.08); box-shadow: 0 0 24px rgba(255,58,58,0.15); }
+        .outcome.victory { border-color: var(--amber); background: rgba(255,180,70,0.08); box-shadow: 0 0 20px rgba(255,180,70,0.12); }
+        .outcome.stalemate { border-color: var(--dim); background: rgba(100,100,120,0.08); }
+        .outcome.repulse { border-color: var(--blue); background: rgba(74,158,255,0.08); box-shadow: 0 0 20px rgba(74,158,255,0.12); }
+
+        .outcome .otitle {
+            font-size: 17px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            animation: aarIn 0.5s 0.1s both;
+        }
+
+        .outcome .osub {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+            animation: aarIn 0.5s 0.18s both;
+        }
+
+        .phase {
+            background: #0a0a0e;
+            border: 1px solid #2a1820;
+            padding: 14px;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: phaseIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .phase:nth-child(2) { animation-delay: 0.15s; }
+        .phase:nth-child(3) { animation-delay: 0.28s; }
+        .phase:nth-child(4) { animation-delay: 0.40s; }
+        .phase:nth-child(5) { animation-delay: 0.52s; }
+        .phase:nth-child(6) { animation-delay: 0.64s; }
+        .phase:nth-child(7) { animation-delay: 0.76s; }
+
+        .phase .ptitle {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #2a1520;
+            letter-spacing: 1px;
+        }
+
+        .phase .pbody {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .math-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+            margin: 6px 0;
+            font-size: 11px;
+        }
+
+        .math-row .side-a { text-align: left; color: #ff8a8a; }
+        .math-row .side-d { text-align: right; color: #8ab8ff; }
+        .math-row .op {
+            text-align: center;
+            color: var(--dim);
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .math-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .math-cell {
+            background: #08080c;
+            border: 1px solid #1e1520;
+            padding: 8px 10px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .math-cell .lbl { color: var(--dim); font-size: 10px; letter-spacing: 0.5px; }
+        .math-cell .val { color: var(--amber); font-weight: bold; font-size: 13px; }
+        .math-cell .sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+        .bar-wrap { margin: 12px 0 6px; }
+
+        .bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .bar {
+            display: flex;
+            height: 26px;
+            background: #120808;
+            border: 1px solid #000;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar .a {
+            background: linear-gradient(90deg, #8a1010, #ff3a3a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            width: 0;
+            min-width: 0;
+            transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .bar .d {
+            background: linear-gradient(90deg, #1040aa, #4a9eff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            width: 0;
+            min-width: 0;
+            transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .mini-bar {
+            height: 8px;
+            background: #1a1218;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .mini-bar > i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: var(--amber);
+            transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .mini-bar.att > i { background: linear-gradient(90deg, #aa2020, #ff4a4a); }
+        .mini-bar.def > i { background: linear-gradient(90deg, #2060aa, #4a9eff); }
+
+        @keyframes aarIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes phaseIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .factors {
+            list-style: none;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .factors li {
+            padding: 4px 0 4px 12px;
+            border-left: 2px solid var(--border);
+            margin-bottom: 4px;
+            color: #ccc;
+        }
+
+        .factors li strong { color: var(--amber); }
+
+        table.aar {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        table.aar th {
+            background: #180808;
+            color: #ffaaaa;
+            border: 1px solid #3a1520;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table.aar td {
+            border: 1px solid #221018;
+            padding: 8px;
+            background: #0a0608;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+        .badge.high { background: #3a0000; color: #ff6a6a; border: 1px solid #6a1010; }
+        .badge.med  { background: #3a2a00; color: #ffcc44; border: 1px solid #6a5010; }
+        .badge.low  { background: #003a1a; color: #66ee99; border: 1px solid #106a30; }
+
+        .raw-log {
+            width: 100%;
+            height: 300px;
+            background: #050508;
+            border: 1px solid var(--border);
+            color: var(--green);
+            padding: 10px;
+            font-size: 11px;
+            font-family: monospace;
+            resize: vertical;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .tab {
+            padding: 8px 14px;
+            background: #110808;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .tab.active {
+            background: #1a0a0a;
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #08080c;
+            border: 1px solid #221018;
+            padding: 6px;
+        }
+
+        .hist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            background: #0e0808;
+            border-left: 3px solid var(--border);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+
+        .hist-item:hover {
+            background: #1a0c0c;
+            border-left-color: var(--accent);
+        }
+
+        .hist-item .ts { color: var(--dim); font-size: 10px; }
+
+        .empty {
+            text-align: center;
+            color: var(--dim);
+            padding: 36px 12px;
+            font-size: 12px;
+        }
+
+        .seed-row {
+            display: flex;
+            gap: 8px;
+            align-items: end;
+        }
+
+        .seed-row > div { flex: 1; }
+
+        .force-summary {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 8px;
+            padding: 8px;
+            background: #0a0a0e;
+            border: 1px solid #1a1a22;
+        }
+
+        .force-summary strong { color: var(--amber); }
     </style>
 </head>
 <body>
 
-    <header id="nav-header">
-        <div class="nav-links-left">
-            <a href="creator.html" class="nav-link">CREATE NATION</a>
-            <a href="stats.html" class="nav-link">STATS VIEWER</a>
-            <a href="battle.html" class="nav-link active">BATTLE</a>
-            <a href="map.html" class="nav-link">MAP</a>
-        </div>
-        <div class="title">// TSL_TACTICAL_BATTLE_SIM_MATRIX_v5.0</div>
-    </header>
+<!-- VHS overlay (non-interactive) -->
+<div class="vhs-overlay" aria-hidden="true">
+    <div class="vhs-scanlines"></div>
+    <div class="vhs-grain"></div>
+    <div class="vhs-track"></div>
+    <div class="vhs-vignette"></div>
+    <div class="vhs-flicker"></div>
+</div>
 
-    <div class="container">
-        
-        <!-- SIDE BY SIDE BUILDERS: ATTACKER (LEFT) -->
-        <div class="panel">
-            <div class="side-header">⚔️ ATTACKER FORCE BUILDER</div>
-            <h2>STEP 1A: ATTACKER ROSTER & POSTURE</h2>
+<header id="nav-header">
+    <div class="nav-links">
+        <a href="creator.html" class="nav-link">CREATE NATION</a>
+        <a href="stats.html" class="nav-link">STATS VIEWER</a>
+        <a href="battle.html" class="nav-link active">BATTLE</a>
+        <a href="map.html" class="nav-link">MAP</a>
+    </div>
+    <div class="title">// TSL_BATTLE_MATRIX_v6.0</div>
+</header>
 
-            <div class="field-group">
-                <label>Acting Nation Identifier:</label>
-                <input type="text" id="att-nation" placeholder="Attacker NationStates name...">
+<div class="wrap">
 
-                <div class="grid-half">
+    <!-- STEP TABS -->
+    <div class="steps">
+        <button class="step-tab active" data-step="1" onclick="goStep(1)"><span class="num">01</span> BUILD FORCES</button>
+        <button class="step-tab" data-step="2" onclick="goStep(2)"><span class="num">02</span> ENVIRONMENT</button>
+        <button class="step-tab" data-step="3" onclick="goStep(3)"><span class="num">03</span> RESOLVE</button>
+        <button class="step-tab" data-step="4" onclick="goStep(4)"><span class="num">04</span> AFTER-ACTION</button>
+    </div>
+
+    <!-- ========== STEP 1: BUILD ========== -->
+    <div class="step-panel active" id="step-1">
+        <p class="hint">Build both forces, then generate order hashes. Hashes auto-fill into Resolve. Super Soldiers = elite infantry (high soft power + morale resistance).</p>
+
+        <div class="row-2">
+            <!-- ATTACKER -->
+            <div class="card">
+                <span class="side-tag att">ATTACKER</span>
+                <label>Nation</label>
+                <input type="text" id="att-nation" placeholder="NationStates name">
+
+                <div class="row-2">
                     <div>
-                        <label>Doctrine:</label>
+                        <label>Doctrine</label>
                         <select id="att-doctrine">
-                            <option value="assault">Assault / Blitzkrieg</option>
+                            <option value="assault">Assault / Blitz</option>
                             <option value="combined">Combined Arms</option>
                             <option value="fanatical">Fanatical Surge</option>
                             <option value="guerrilla">Guerrilla / Asymmetric</option>
                         </select>
                     </div>
                     <div>
-                        <label>Tactical Stance:</label>
+                        <label>Stance</label>
                         <select id="att-stance">
                             <option value="assault">Deliberate Assault</option>
-                            <option value="hasty">Hasty Probe / Recon</option>
+                            <option value="hasty">Hasty Probe</option>
                             <option value="defense">Deliberate Defense</option>
                             <option value="mobile">Mobile Defense</option>
                         </select>
                     </div>
                 </div>
 
-                <label>Objective Goal:</label>
-                <select id="att-goal" onchange="toggleGoalTargetInput('att')">
-                    <option value="breakthrough">Breakthrough & Encirclement</option>
-                    <option value="capture">Asset Capture / Seizure</option>
-                    <option value="annihilation">Attritional Annihilation</option>
+                <label>Objective</label>
+                <select id="att-goal" onchange="toggleTarget('att')">
+                    <option value="breakthrough">Breakthrough</option>
+                    <option value="capture">Asset Capture</option>
+                    <option value="annihilation">Annihilation</option>
                     <option value="conquest">Territorial Conquest</option>
                 </select>
-
-                <div id="att-target-wrapper" style="display: none;">
-                    <label>Target Coordinate/Node:</label>
-                    <input type="text" id="att-target-detail" placeholder="e.g., Sector 4 Oil Refinery">
+                <div id="att-target-wrap" style="display:none">
+                    <label>Target Node</label>
+                    <input type="text" id="att-target" placeholder="e.g. Sector 4 Refinery">
                 </div>
+
+                <h3>Order of Battle</h3>
+                <div id="att-brigades"></div>
+                <button type="button" class="btn-sm" onclick="addBrigade('att')">+ Add Brigade</button>
+                <div class="force-summary" id="att-summary">Soft — · Hard — · Fires — · Air —</div>
+
+                <button type="button" class="btn-green btn-block" onclick="generateHash('att')">Generate Attacker Hash</button>
+                <label>Order Hash</label>
+                <textarea class="hash-box" id="att-hash" readonly placeholder="Generated hash appears here..."></textarea>
             </div>
 
-            <div class="field-group">
-                <h3>Order of Battle (OOB)</h3>
-                <div id="att-brigades-container"></div>
-                <button type="button" onclick="addRosterStack('att')">[ + Add Attacker Brigade ]</button>
-            </div>
+            <!-- DEFENDER -->
+            <div class="card">
+                <span class="side-tag def">DEFENDER</span>
+                <label>Nation</label>
+                <input type="text" id="def-nation" placeholder="NationStates name">
 
-            <button type="button" class="success-btn" onclick="generateEncryptedOrders('att')" style="width: 100%;">GENERATE & AUTO-PASS ATTACKER HASH</button>
-            
-            <label>Attacker Encrypted Payload String:</label>
-            <textarea class="export-area" id="att-export-output" readonly placeholder="Attacker order hash auto-populates here..."></textarea>
-        </div>
-
-        <!-- SIDE BY SIDE BUILDERS: DEFENDER (RIGHT) -->
-        <div class="panel">
-            <div class="side-header">🛡️ DEFENDER FORCE BUILDER</div>
-            <h2>STEP 1B: DEFENDER ROSTER & POSTURE</h2>
-
-            <div class="field-group">
-                <label>Acting Nation Identifier:</label>
-                <input type="text" id="def-nation" placeholder="Defender NationStates name...">
-
-                <div class="grid-half">
+                <div class="row-2">
                     <div>
-                        <label>Doctrine:</label>
+                        <label>Doctrine</label>
                         <select id="def-doctrine">
                             <option value="combined">Combined Arms</option>
                             <option value="fanatical">Fanatical Surge</option>
-                            <option value="assault">Assault / Blitzkrieg</option>
+                            <option value="assault">Assault / Blitz</option>
                             <option value="guerrilla">Guerrilla / Asymmetric</option>
                         </select>
                     </div>
                     <div>
-                        <label>Tactical Stance:</label>
+                        <label>Stance</label>
                         <select id="def-stance">
                             <option value="defense">Deliberate Defense</option>
                             <option value="mobile">Mobile Defense</option>
@@ -629,604 +875,898 @@
                     </div>
                 </div>
 
-                <label>Objective Goal:</label>
-                <select id="def-goal" onchange="toggleGoalTargetInput('def')">
-                    <option value="annihilation">Attritional Defense</option>
+                <label>Objective</label>
+                <select id="def-goal" onchange="toggleTarget('def')">
+                    <option value="annihilation">Attritional Hold</option>
                     <option value="capture">Recapture Node</option>
-                    <option value="conquest">Hold Frontline Boundaries</option>
+                    <option value="conquest">Hold Frontline</option>
                 </select>
-
-                <div id="def-target-wrapper" style="display: none;">
-                    <label>Target Coordinate/Node:</label>
-                    <input type="text" id="def-target-detail" placeholder="e.g., Sector 4 Defense Grid">
+                <div id="def-target-wrap" style="display:none">
+                    <label>Target Node</label>
+                    <input type="text" id="def-target" placeholder="e.g. Sector 4 Grid">
                 </div>
-            </div>
 
-            <div class="field-group">
-                <h3>Order of Battle (OOB)</h3>
-                <div id="def-brigades-container"></div>
-                <button type="button" onclick="addRosterStack('def')">[ + Add Defender Brigade ]</button>
-            </div>
+                <h3>Order of Battle</h3>
+                <div id="def-brigades"></div>
+                <button type="button" class="btn-sm" onclick="addBrigade('def')">+ Add Brigade</button>
+                <div class="force-summary" id="def-summary">Soft — · Hard — · Fires — · Air —</div>
 
-            <button type="button" class="success-btn" onclick="generateEncryptedOrders('def')" style="width: 100%;">GENERATE & AUTO-PASS DEFENDER HASH</button>
-            
-            <label>Defender Encrypted Payload String:</label>
-            <textarea class="export-area" id="def-export-output" readonly placeholder="Defender order hash auto-populates here..."></textarea>
+                <button type="button" class="btn-green btn-block" onclick="generateHash('def')">Generate Defender Hash</button>
+                <label>Order Hash</label>
+                <textarea class="hash-box" id="def-hash" readonly placeholder="Generated hash appears here..."></textarea>
+            </div>
         </div>
 
-        <!-- STEP 2: GM VALIDATION & SIMULATION ENGINE -->
-        <div class="panel panel-full">
-            <h2>STEP 2: GM VALIDATION & SIMULATION ENGINE</h2>
-            <p style="font-size: 11px; color: #888888;">Auto-populated from steps above. Verify tamper-check signatures and execute the multi-phase resolution vector.</p>
-
-            <div class="grid-half">
-                <div>
-                    <label for="inbound-att-orders">Inbound Attacker Hash (Auto-Synced or Paste Manual):</label>
-                    <textarea id="inbound-att-orders" style="height:60px;" placeholder="Attacker string will auto-pass here..."></textarea>
-                </div>
-                <div>
-                    <label for="inbound-def-orders">Inbound Defender Hash (Auto-Synced or Paste Manual):</label>
-                    <textarea id="inbound-def-orders" style="height:60px;" placeholder="Defender string will auto-pass here..."></textarea>
-                </div>
-            </div>
-
-            <button type="button" onclick="validateAndDecodeSubmissions()">VERIFY STRINGS & INTEGRITY</button>
-            <div id="verification-feedback" class="crypto-hash-display" style="display:none;"></div>
-
-            <div class="field-group" style="margin-top: 15px;">
-                <h3>Battlefield Environmental Modifiers</h3>
-                <div class="grid-quad">
-                    <div>
-                        <label for="terrain-type">Topography:</label>
-                        <select id="terrain-type">
-                            <option value="plains">Open Plains / Flatlands</option>
-                            <option value="urban">Urban Conurbation</option>
-                            <option value="mountains">Mountainous Pass</option>
-                            <option value="forest">Dense Forest Grid</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="weather-cond">Weather Factor:</label>
-                        <select id="weather-cond">
-                            <option value="clear">Optimal / Clear</option>
-                            <option value="storm">Inclement Storm / Fog</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="mod-att-readiness">Attacker Readiness Mod (%):</label>
-                        <input type="number" id="mod-att-readiness" value="0">
-                    </div>
-                    <div>
-                        <label for="mod-def-readiness">Defender Readiness Mod (%):</label>
-                        <input type="number" id="mod-def-readiness" value="0">
-                    </div>
-                </div>
-
-                <label for="theatre-location">Geographic Theater / Sector Name:</label>
-                <input type="text" id="theatre-location" placeholder="e.g., Eastern Front - Sector 7">
-            </div>
-
-            <button type="button" class="danger-btn" onclick="executeTacticalProjection()" style="width: 100%; padding: 12px; font-size: 14px;">EXECUTE MULTI-PHASE PROJECTION & RECORD TO CACHE</button>
+        <div class="btn-row">
+            <button type="button" class="btn-blue" onclick="goStep(2)">Next: Environment →</button>
         </div>
-
-        <!-- RESULTS & CACHED BATTLE HISTORY -->
-        <div class="panel panel-full">
-            <h2>TACTICAL RESOLUTION & AFTER-ACTION REPORT (AAR)</h2>
-
-            <div class="tab-container">
-                <button class="tab-btn active" id="tab-btn-visual" onclick="switchReportTab('visual')">📊 VISUAL DASHBOARD</button>
-                <button class="tab-btn" id="tab-btn-raw" onclick="switchReportTab('raw')">📄 RAW TELETYPE TXT</button>
-            </div>
-
-            <!-- VISUAL DASHBOARD DISPLAY -->
-            <div id="visual-aar-view" class="aar-display">
-                <div style="text-align:center; color:#666; padding: 40px 0;">No active engagement calculated. Run a tactical projection above to generate AAR.</div>
-            </div>
-
-            <!-- RAW TELETYPE TEXT DISPLAY -->
-            <textarea class="raw-text-view" id="automated-sitrep-log" readonly placeholder="Raw operational teletype will stream here..."></textarea>
-            
-            <div class="action-container">
-                <button type="button" class="success-btn" onclick="exportActiveLogFile()">[📥 EXPORT SITREP TXT]</button>
-                <button type="button" class="danger-btn" onclick="clearSavedHistory()" style="font-size:11px;">Clear All Cached History</button>
-            </div>
-
-            <h3 style="margin-top: 25px;">Persistent Session Cache Archive (Click entry to load)</h3>
-            <div class="history-log" id="history-scroll-ledger"></div>
-        </div>
-
     </div>
 
+    <!-- ========== STEP 2: ENVIRONMENT ========== -->
+    <div class="step-panel" id="step-2">
+        <div class="card">
+            <h2>Battlefield Conditions</h2>
+            <p class="hint">Terrain and weather change soft vs hard effectiveness and air power. Readiness is a clean effectiveness multiplier (−30 to +30 recommended).</p>
+
+            <div class="row-2">
+                <div>
+                    <label>Theater / Sector</label>
+                    <input type="text" id="theatre" placeholder="e.g. Eastern Front — Sector 7">
+                </div>
+                <div>
+                    <label>Topography</label>
+                    <select id="terrain">
+                        <option value="plains">Open Plains</option>
+                        <option value="urban">Urban</option>
+                        <option value="mountains">Mountains</option>
+                        <option value="forest">Dense Forest</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row-3">
+                <div>
+                    <label>Weather</label>
+                    <select id="weather">
+                        <option value="clear">Clear</option>
+                        <option value="storm">Storm / Fog</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Attacker Readiness %</label>
+                    <input type="number" id="att-ready" value="0" min="-50" max="50">
+                </div>
+                <div>
+                    <label>Defender Readiness %</label>
+                    <input type="number" id="def-ready" value="0" min="-50" max="50">
+                </div>
+            </div>
+
+            <h3>Simulation Seed</h3>
+            <p class="hint">Same inputs + same seed = same result. Leave blank to auto-generate from order hashes.</p>
+            <div class="seed-row">
+                <div>
+                    <label>Seed (optional)</label>
+                    <input type="text" id="sim-seed" placeholder="Auto from hashes if empty">
+                </div>
+                <button type="button" class="btn-sm" onclick="document.getElementById('sim-seed').value = Math.floor(Math.random()*1e9)">Randomize</button>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button type="button" onclick="goStep(1)">← Forces</button>
+            <button type="button" class="btn-blue" onclick="goStep(3)">Next: Resolve →</button>
+        </div>
+    </div>
+
+    <!-- ========== STEP 3: RESOLVE ========== -->
+    <div class="step-panel" id="step-3">
+        <div class="card">
+            <h2>Validation &amp; Execution</h2>
+            <p class="hint">Hashes auto-fill from Build. You can paste external hashes. Verify integrity, then run the multi-phase projection.</p>
+
+            <div class="row-2">
+                <div>
+                    <label>Attacker Hash</label>
+                    <textarea id="in-att" class="hash-box" style="height:72px" placeholder="Attacker payload..."></textarea>
+                </div>
+                <div>
+                    <label>Defender Hash</label>
+                    <textarea id="in-def" class="hash-box" style="height:72px" placeholder="Defender payload..."></textarea>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button type="button" class="btn-blue" onclick="verifyHashes()">Verify Integrity</button>
+            </div>
+            <div id="verify-out" class="verify-box"></div>
+
+            <button type="button" class="btn-block" style="margin-top:16px;padding:14px;font-size:13px;border-color:var(--accent)" onclick="runBattle()">
+                Execute Multi-Phase Projection
+            </button>
+        </div>
+
+        <div class="btn-row">
+            <button type="button" onclick="goStep(2)">← Environment</button>
+        </div>
+    </div>
+
+    <!-- ========== STEP 4: AAR ========== -->
+    <div class="step-panel" id="step-4">
+        <div class="card">
+            <h2>After-Action Report</h2>
+
+            <div class="tabs">
+                <button class="tab active" id="tab-vis" onclick="showAAR('vis')">Visual</button>
+                <button class="tab" id="tab-raw" onclick="showAAR('raw')">Teletype</button>
+            </div>
+
+            <div id="aar-visual">
+                <div class="empty" id="aar-empty">No engagement yet. Build forces and run a projection.</div>
+                <div id="aar-body" style="display:none"></div>
+            </div>
+            <textarea class="raw-log" id="aar-raw" readonly></textarea>
+
+            <div class="btn-row">
+                <button type="button" class="btn-green" onclick="exportSitrep()">Export Sitrep TXT</button>
+                <button type="button" onclick="clearHistory()">Clear Cache</button>
+            </div>
+
+            <h3>Session Cache</h3>
+            <div class="history" id="history"></div>
+        </div>
+
+        <div class="btn-row">
+            <button type="button" onclick="goStep(1)">← New Battle</button>
+        </div>
+    </div>
+
+</div>
+
 <script>
-    let activeRosterBrackets = { att: [], def: [] };
-    let savedBattleHistoryLogs = [];
+/* ========== STATE ========== */
+const rosters = { att: [], def: [] };
+let history = [];
+let lastResult = null;
 
-    window.onload = function() {
-        addRosterStack('att');
-        addRosterStack('def');
-        loadSavedHistoryFromStorage();
+/* ========== SEEDED RNG (mulberry32) ========== */
+function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
+}
 
-    function toggleGoalTargetInput(side) {
-        const goal = document.getElementById(`${side}-goal`).value;
-        const wrapper = document.getElementById(`${side}-target-wrapper`);
-        wrapper.style.display = (goal === "capture") ? "block" : "none";
+function hashStringToSeed(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
     }
+    return h >>> 0;
+}
 
-    function switchReportTab(tabType) {
-        const visualView = document.getElementById("visual-aar-view");
-        const rawView = document.getElementById("automated-sitrep-log");
-        const visualBtn = document.getElementById("tab-btn-visual");
-        const rawBtn = document.getElementById("tab-btn-raw");
+/* ========== UI STEPS ========== */
+function goStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+    document.querySelector(`.step-tab[data-step="${n}"]`).classList.add('active');
+    if (n === 3) syncHashesToResolve();
+    if (n === 4) renderHistory();
+}
 
-        if (tabType === 'visual') {
-            visualView.style.display = "block";
-            rawView.style.display = "none";
-            visualBtn.classList.add("active");
-            rawBtn.classList.remove("active");
-        } else {
-            visualView.style.display = "none";
-            rawView.style.display = "block";
-            visualBtn.classList.remove("active");
-            rawBtn.classList.add("active");
-        }
-    }
+function toggleTarget(side) {
+    const goal = document.getElementById(side + '-goal').value;
+    document.getElementById(side + '-target-wrap').style.display = goal === 'capture' ? 'block' : 'none';
+}
 
-    function addRosterStack(side) {
-        const container = document.getElementById(`${side}-brigades-container`);
-        const stackIndex = Date.now() + Math.floor(Math.random() * 100);
+function showAAR(mode) {
+    document.getElementById('tab-vis').classList.toggle('active', mode === 'vis');
+    document.getElementById('tab-raw').classList.toggle('active', mode === 'raw');
+    document.getElementById('aar-visual').style.display = mode === 'vis' ? 'block' : 'none';
+    document.getElementById('aar-raw').style.display = mode === 'raw' ? 'block' : 'none';
+}
 
-        const stackWrapper = document.createElement("div");
-        stackWrapper.className = "brigade-stack";
-        stackWrapper.id = `stack-${side}-${stackIndex}`;
-        
-        stackWrapper.innerHTML = `
-            <button type="button" class="remove-brigade-btn danger-btn" onclick="removeRosterStack('${side}', ${stackIndex})">X</button>
-            <label>Brigade Designation / Commander:</label>
-            <input type="text" id="stack-name-${side}-${stackIndex}" placeholder="e.g., 1st Vanguard / Gen. Vance">
-            
-            <div class="grid-quad">
-                <div>
-                    <label>Infantry:</label>
-                    <input type="number" id="stack-inf-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>Engineers:</label>
-                    <input type="number" id="stack-eng-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>SpecOps:</label>
-                    <input type="number" id="stack-spec-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>Super Soldiers:</label>
-                    <input type="number" id="stack-super-${side}-${stackIndex}" value="0" min="0">
-                </div>
-            </div>
-            <div class="grid-quad">
-                <div>
-                    <label>Artillery/MLRS:</label>
-                    <input type="number" id="stack-arty-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>MBTs:</label>
-                    <input type="number" id="stack-mbt-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>Recon Veh:</label>
-                    <input type="number" id="stack-rec-${side}-${stackIndex}" value="0" min="0">
-                </div>
-                <div>
-                    <label>Airframes:</label>
-                    <input type="number" id="stack-air-${side}-${stackIndex}" value="0" min="0">
-                </div>
-            </div>
-        `;
+/* ========== BRIGADES ========== */
+function addBrigade(side) {
+    const id = Date.now() + Math.floor(Math.random() * 999);
+    rosters[side].push(id);
+    const box = document.getElementById(side + '-brigades');
+    const el = document.createElement('div');
+    el.className = 'brigade';
+    el.id = 'bg-' + side + '-' + id;
+    el.innerHTML = `
+        <button type="button" class="rm" onclick="removeBrigade('${side}',${id})">✕</button>
+        <label>Brigade / Commander</label>
+        <input type="text" id="nm-${side}-${id}" placeholder="1st Vanguard / Gen. Name" oninput="refreshSummary('${side}')">
+        <div class="row-4">
+            <div><label>Infantry</label><input type="number" id="inf-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>Engineers</label><input type="number" id="eng-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>SpecOps</label><input type="number" id="spec-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>Super Soldiers</label><input type="number" id="sup-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+        </div>
+        <div class="row-4">
+            <div><label>Artillery</label><input type="number" id="arty-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>MBTs</label><input type="number" id="mbt-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>Recon Veh</label><input type="number" id="rec-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+            <div><label>Airframes</label><input type="number" id="air-${side}-${id}" value="0" min="0" oninput="refreshSummary('${side}')"></div>
+        </div>`;
+    box.appendChild(el);
+    refreshSummary(side);
+}
 
-        container.appendChild(stackWrapper);
-        activeRosterBrackets[side].push(stackIndex);
-    }
+function removeBrigade(side, id) {
+    const el = document.getElementById('bg-' + side + '-' + id);
+    if (el) el.remove();
+    rosters[side] = rosters[side].filter(x => x !== id);
+    refreshSummary(side);
+}
 
-    function removeRosterStack(side, index) {
-        const targetElement = document.getElementById(`stack-${side}-${index}`);
-        if (targetElement) targetElement.remove();
-        activeRosterBrackets[side] = activeRosterBrackets[side].filter(id => id !== index);
-    }
-
-    async function digestMessageSimpleSalted(messageToSign) {
-        const secretSystemSalt = "TSL_PROJECT_SECRET_SALT_KEY";
-        const msgUint8 = new TextEncoder().encode(messageToSign + secretSystemSalt);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex.substring(0, 16);
-    }
-
-    async function generateEncryptedOrders(side) {
-        const nation = document.getElementById(`${side}-nation`).value;
-        const doctrine = document.getElementById(`${side}-doctrine`).value;
-        const stance = document.getElementById(`${side}-stance`).value;
-        const goal = document.getElementById(`${side}-goal`).value;
-        const targetDetail = document.getElementById(`${side}-target-detail`).value;
-
-        if (!nation) {
-            alert(`CRITICAL: Enter a nation name for the ${side.toUpperCase()} team.`);
-            return;
-        }
-
-        let gatheredRosterBlocks = [];
-        activeRosterBrackets[side].forEach(i => {
-            if (document.getElementById(`stack-name-${side}-${i}`)) {
-                gatheredRosterBlocks.push({
-                    id: i,
-                    label: document.getElementById(`stack-name-${side}-${i}`).value,
-                    inf: document.getElementById(`stack-inf-${side}-${i}`).value,
-                    eng: document.getElementById(`stack-eng-${side}-${i}`).value,
-                    spec: document.getElementById(`stack-spec-${side}-${i}`).value,
-                    sup: document.getElementById(`stack-super-${side}-${i}`).value,
-                    arty: document.getElementById(`stack-arty-${side}-${i}`).value,
-                    mbt: document.getElementById(`stack-mbt-${side}-${i}`).value,
-                    rec: document.getElementById(`stack-rec-${side}-${i}`).value,
-                    air: document.getElementById(`stack-air-${side}-${i}`).value
-                });
-            }
-        });
-
-        const payloadContext = {
-            nation: nation,
-            doctrine: doctrine,
-            stance: stance,
-            goal: goal,
-            targetDetail: targetDetail,
-            oob: gatheredRosterBlocks
+function collectOOB(side) {
+    return rosters[side].map(id => {
+        if (!document.getElementById('nm-' + side + '-' + id)) return null;
+        return {
+            label: document.getElementById('nm-' + side + '-' + id).value || 'Unnamed',
+            inf: +document.getElementById('inf-' + side + '-' + id).value || 0,
+            eng: +document.getElementById('eng-' + side + '-' + id).value || 0,
+            spec: +document.getElementById('spec-' + side + '-' + id).value || 0,
+            sup: +document.getElementById('sup-' + side + '-' + id).value || 0,
+            arty: +document.getElementById('arty-' + side + '-' + id).value || 0,
+            mbt: +document.getElementById('mbt-' + side + '-' + id).value || 0,
+            rec: +document.getElementById('rec-' + side + '-' + id).value || 0,
+            air: +document.getElementById('air-' + side + '-' + id).value || 0
         };
+    }).filter(Boolean);
+}
 
-        const stringifiedJSONPay = JSON.stringify(payloadContext);
-        const generatedHashStr = await digestMessageSimpleSalted(stringifiedJSONPay);
+function sumOOB(oob) {
+    return oob.reduce((a, u) => {
+        a.inf += u.inf; a.eng += u.eng; a.spec += u.spec; a.sup += u.sup;
+        a.arty += u.arty; a.mbt += u.mbt; a.rec += u.rec; a.air += u.air;
+        return a;
+    }, { inf:0, eng:0, spec:0, sup:0, arty:0, mbt:0, rec:0, air:0 });
+}
 
-        const absoluteOutboundString = `PAYLOAD_RAW:${btoa(stringifiedJSONPay)}|HASH_SUM:${generatedHashStr}`;
-        document.getElementById(`${side}-export-output`).value = absoluteOutboundString;
-        document.getElementById(`inbound-${side}-orders`).value = absoluteOutboundString;
+/* Power model — Super Soldiers = elite infantry */
+function basePowers(sums) {
+    const soft = sums.inf * 1.0 + sums.eng * 1.15 + sums.spec * 2.3 + sums.sup * 3.6;
+    const hard = sums.mbt * 11 + sums.rec * 3.5 + sums.eng * 0.4;
+    const fires = sums.arty * 5.5 + sums.air * 3.5;
+    const air = sums.air * 10;
+    return { soft, hard, fires, air };
+}
+
+function refreshSummary(side) {
+    const s = sumOOB(collectOOB(side));
+    const p = basePowers(s);
+    document.getElementById(side + '-summary').innerHTML =
+        `Soft <strong>${Math.round(p.soft).toLocaleString()}</strong> · Hard <strong>${Math.round(p.hard).toLocaleString()}</strong> · Fires <strong>${Math.round(p.fires).toLocaleString()}</strong> · Air <strong>${Math.round(p.air).toLocaleString()}</strong>`;
+}
+
+/* ========== HASH ========== */
+async function saltedHash(msg) {
+    const salt = 'TSL_PROJECT_SECRET_SALT_KEY';
+    const data = new TextEncoder().encode(msg + salt);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+
+async function generateHash(side) {
+    const nation = document.getElementById(side + '-nation').value.trim();
+    if (!nation) { alert('Enter a nation name for ' + side.toUpperCase()); return; }
+
+    const payload = {
+        nation,
+        doctrine: document.getElementById(side + '-doctrine').value,
+        stance: document.getElementById(side + '-stance').value,
+        goal: document.getElementById(side + '-goal').value,
+        target: document.getElementById(side + '-target')?.value || '',
+        oob: collectOOB(side)
+    };
+    const json = JSON.stringify(payload);
+    const hash = await saltedHash(json);
+    const out = `PAYLOAD_RAW:${btoa(json)}|HASH_SUM:${hash}`;
+    document.getElementById(side + '-hash').value = out;
+    document.getElementById('in-' + side).value = out;
+}
+
+function syncHashesToResolve() {
+    const a = document.getElementById('att-hash').value;
+    const d = document.getElementById('def-hash').value;
+    if (a) document.getElementById('in-att').value = a;
+    if (d) document.getElementById('in-def').value = d;
+}
+
+async function parsePayload(str) {
+    try {
+        const parts = str.split('|HASH_SUM:');
+        const b64 = parts[0].replace('PAYLOAD_RAW:', '');
+        const json = atob(b64);
+        const expected = await saltedHash(json);
+        if (expected !== parts[1]) return { ok: false, msg: 'Hash mismatch — possible tamper' };
+        return { ok: true, data: JSON.parse(json) };
+    } catch {
+        return { ok: false, msg: 'Malformed payload string' };
+    }
+}
+
+async function verifyHashes() {
+    const att = document.getElementById('in-att').value.trim();
+    const def = document.getElementById('in-def').value.trim();
+    const box = document.getElementById('verify-out');
+    if (!att || !def) {
+        box.style.display = 'block';
+        box.className = 'verify-box err';
+        box.textContent = 'Both attacker and defender hashes required.';
+        return;
+    }
+    const a = await parsePayload(att);
+    const d = await parsePayload(def);
+    box.style.display = 'block';
+    if (a.ok && d.ok) {
+        box.className = 'verify-box';
+        box.innerHTML = `✔ Both payloads authentic.<br>Attacker: <strong>${a.data.nation}</strong> · Defender: <strong>${d.data.nation}</strong>`;
+    } else {
+        box.className = 'verify-box err';
+        box.innerHTML = `✖ Verification failed.<br>ATT: ${a.msg || 'OK'} · DEF: ${d.msg || 'OK'}`;
+    }
+}
+
+/* ========== COMBAT ENGINE ========== */
+const TERRAIN = {
+    plains:    { softAtk: 1.05, softDef: 0.95, hardAtk: 1.15, hardDef: 0.90, fires: 1.10, label: 'Open Plains' },
+    urban:     { softAtk: 0.85, softDef: 1.35, hardAtk: 0.70, hardDef: 1.25, fires: 0.85, label: 'Urban' },
+    mountains: { softAtk: 0.80, softDef: 1.40, hardAtk: 0.65, hardDef: 1.30, fires: 0.75, label: 'Mountains' },
+    forest:    { softAtk: 0.90, softDef: 1.25, hardAtk: 0.75, hardDef: 1.15, fires: 0.80, label: 'Dense Forest' }
+};
+
+const STANCE = {
+    assault:    { atk: 1.25, def: 0.85, label: 'Deliberate Assault' },
+    hasty:      { atk: 1.10, def: 0.90, label: 'Hasty Probe' },
+    defense:    { atk: 0.80, def: 1.45, label: 'Deliberate Defense' },
+    mobile:     { atk: 0.95, def: 1.20, label: 'Mobile Defense' },
+    withdrawal: { atk: 0.70, def: 1.10, label: 'Tactical Withdrawal' }
+};
+
+const DOCTRINE = {
+    assault:   { soft: 1.05, hard: 1.15, fires: 1.00, morale: 1.00, label: 'Assault / Blitz' },
+    combined:  { soft: 1.05, hard: 1.05, fires: 1.10, morale: 1.05, label: 'Combined Arms' },
+    fanatical: { soft: 1.15, hard: 0.95, fires: 0.95, morale: 1.25, label: 'Fanatical Surge' },
+    guerrilla: { soft: 1.10, hard: 0.75, fires: 0.85, morale: 1.10, label: 'Guerrilla' }
+};
+
+function runBattle() {
+    const attStr = document.getElementById('in-att').value.trim();
+    const defStr = document.getElementById('in-def').value.trim();
+    if (!attStr || !defStr) {
+        alert('Both order hashes required.');
+        return;
     }
 
-    async function validateAndDecodeSubmissions() {
-        const attStr = document.getElementById("inbound-att-orders").value;
-        const defStr = document.getElementById("inbound-def-orders").value;
-        const feedBackPanel = document.getElementById("verification-feedback");
+    let att, def;
+    try {
+        att = JSON.parse(atob(attStr.split('|HASH_SUM:')[0].replace('PAYLOAD_RAW:', '')));
+        def = JSON.parse(atob(defStr.split('|HASH_SUM:')[0].replace('PAYLOAD_RAW:', '')));
+    } catch {
+        alert('Could not decode payloads. Verify hashes first.');
+        return;
+    }
 
-        if (!attStr || !defStr) {
-            alert("CRITICAL: Both attacker and defender payload slots require data strings.");
-            return;
-        }
+    const theatre = document.getElementById('theatre').value.trim() || 'Uncharted Sector';
+    const terrainKey = document.getElementById('terrain').value;
+    const weather = document.getElementById('weather').value;
+    const attReady = (+document.getElementById('att-ready').value || 0) / 100;
+    const defReady = (+document.getElementById('def-ready').value || 0) / 100;
+    const terrain = TERRAIN[terrainKey];
 
-        const evaluateValidityString = async (targetString) => {
-            try {
-                const arrPieces = targetString.split("|HASH_SUM:");
-                const rawB64 = arrPieces[0].replace("PAYLOAD_RAW:", "");
-                const payloadContentJsonStr = atob(rawB64);
-                
-                const expectedHash = await digestMessageSimpleSalted(payloadContentJsonStr);
-                const actualPassedInHash = arrPieces[1];
+    // Seed
+    let seedInput = document.getElementById('sim-seed').value.trim();
+    if (!seedInput) seedInput = attStr.slice(-24) + defStr.slice(-24) + terrainKey + weather;
+    const seed = hashStringToSeed(seedInput);
+    const rng = mulberry32(seed);
+    // small variance ±6%
+    const jitter = (base) => base * (1 + (rng() - 0.5) * 0.12);
 
-                if (expectedHash !== actualPassedInHash) {
-                    return { ok: false, msg: `TAMPER ENCOUNTERED: Hash verification check failed.` };
-                }
-                return { ok: true, data: JSON.parse(payloadContentJsonStr) };
-            } catch (err) {
-                return { ok: false, msg: `PARSING EXCEPTION: Malformed order string.` };
-            }
-        };
+    const attSum = sumOOB(att.oob || []);
+    const defSum = sumOOB(def.oob || []);
+    const attPow = basePowers(attSum);
+    const defPow = basePowers(defSum);
 
-        const attRes = await evaluateValidityString(attStr);
-        const defRes = await evaluateValidityString(defStr);
+    const attSt = STANCE[att.stance] || STANCE.assault;
+    const defSt = STANCE[def.stance] || STANCE.defense;
+    const attDoc = DOCTRINE[att.doctrine] || DOCTRINE.combined;
+    const defDoc = DOCTRINE[def.doctrine] || DOCTRINE.combined;
 
-        feedBackPanel.style.display = "block";
-        if (attRes.ok && defRes.ok) {
-            feedBackPanel.style.color = "#00ff33";
-            feedBackPanel.innerHTML = `✔ INTEGRITY VERIFICATION PASSED: BOTH ARRAYS AUTHENTICATED.<br>Attacker: ${attRes.data.nation} | Defender: ${defRes.data.nation}`;
+    const factors = [];
+
+    /* ---- PHASE 0: FIRES ---- */
+    let attFires = attPow.fires * attDoc.fires * terrain.fires * (1 + attReady);
+    let defFires = defPow.fires * defDoc.fires * terrain.fires * (1 + defReady);
+    if (weather === 'storm') {
+        attFires *= 0.7; defFires *= 0.7;
+        factors.push('Storm reduced fires effectiveness (−30%).');
+    }
+
+    // Suppression: ratio-based, capped
+    let defSupp = 0, attSupp = 0;
+    if (defFires > 0) defSupp = Math.min(0.55, (attFires / defFires) * 0.18);
+    else if (attFires > 0) defSupp = 0.50;
+    if (attFires > 0) attSupp = Math.min(0.55, (defFires / attFires) * 0.18);
+    else if (defFires > 0) attSupp = 0.50;
+
+    defSupp = jitter(defSupp); attSupp = jitter(attSupp);
+    defSupp = Math.max(0, Math.min(0.55, defSupp));
+    attSupp = Math.max(0, Math.min(0.55, attSupp));
+
+    factors.push(`Fires: ATT suppression on DEF ${Math.round(defSupp*100)}% · DEF suppression on ATT ${Math.round(attSupp*100)}%.`);
+
+    /* ---- PHASE 1: AIR CONTEST ---- */
+    let airMultAtt = 1, airMultDef = 1;
+    let airWinner = 'none';
+    const attAir = attPow.air * (weather === 'storm' ? 0.55 : 1) * (1 + attReady);
+    const defAir = defPow.air * (weather === 'storm' ? 0.55 : 1) * (1 + defReady);
+
+    if (attAir + defAir > 0) {
+        const airRatio = (attAir + 0.01) / (defAir + 0.01);
+        if (airRatio > 1.35) {
+            airWinner = 'att';
+            airMultAtt = 1.12;
+            airMultDef = 0.90;
+            factors.push(`${att.nation} won air superiority — CAS bonus to attacker.`);
+        } else if (airRatio < 0.74) {
+            airWinner = 'def';
+            airMultDef = 1.12;
+            airMultAtt = 0.90;
+            factors.push(`${def.nation} won air superiority — CAS bonus to defender.`);
         } else {
-            feedBackPanel.style.color = "#ff3333";
-            feedBackPanel.innerHTML = `❌ SECURITY ERROR: INVALID ENCRYPTED STRING(S).<br>Attacker: ${attRes.msg || "Valid"} | Defender: ${defRes.msg || "Valid"}`;
+            airWinner = 'contested';
+            factors.push('Air contest unresolved — no decisive CAS edge.');
         }
     }
 
-    function executeTacticalProjection() {
-        const attStr = document.getElementById("inbound-att-orders").value;
-        const defStr = document.getElementById("inbound-def-orders").value;
-        const locationTheater = document.getElementById("theatre-location").value || "Uncharted Sector";
+    /* ---- PHASE 2: GROUND ---- */
+    // Soft / hard after terrain, stance, doctrine, suppression, air, readiness
+    let attSoft = attPow.soft * attDoc.soft * terrain.softAtk * attSt.atk * (1 - attSupp) * airMultAtt * (1 + attReady);
+    let attHard = attPow.hard * attDoc.hard * terrain.hardAtk * attSt.atk * (1 - attSupp * 0.7) * airMultAtt * (1 + attReady);
+    let defSoft = defPow.soft * defDoc.soft * terrain.softDef * defSt.def * (1 - defSupp) * airMultDef * (1 + defReady);
+    let defHard = defPow.hard * defDoc.hard * terrain.hardDef * defSt.def * (1 - defSupp * 0.7) * airMultDef * (1 + defReady);
 
-        if (!attStr || !defStr) {
-            alert("EXECUTION HALT: Populate or generate strings before resolution.");
-            return;
-        }
+    // Combined arms: armor without infantry support bleeds in bad terrain
+    const attInfantry = attSum.inf + attSum.spec + attSum.sup;
+    const defInfantry = defSum.inf + defSum.spec + defSum.sup;
+    if (attSum.mbt > 0 && attInfantry < attSum.mbt * 80 && (terrainKey === 'urban' || terrainKey === 'forest')) {
+        attHard *= 0.82;
+        factors.push('Attacker armor under-supported by infantry in restrictive terrain (−18% hard).');
+    }
+    if (defSum.mbt > 0 && defInfantry < defSum.mbt * 80 && (terrainKey === 'urban' || terrainKey === 'forest')) {
+        defHard *= 0.88;
+        factors.push('Defender armor under-supported by infantry (−12% hard).');
+    }
 
-        const extractPay = (str) => JSON.parse(atob(str.split("|HASH_SUM:")[0].replace("PAYLOAD_RAW:", "")));
-        const attObj = extractPay(attStr);
-        const defObj = extractPay(defStr);
+    // Engineers: breach bonus for attacker vs prepared defense
+    if (attSum.eng > 0 && (def.stance === 'defense' || terrainKey === 'urban' || terrainKey === 'mountains')) {
+        const breach = Math.min(0.18, attSum.eng / 500 * 0.08);
+        attSoft *= (1 + breach);
+        attHard *= (1 + breach);
+        factors.push(`Engineer breach support (+${Math.round(breach*100)}% assault vs prepared positions).`);
+    }
 
-        const sumUnits = (oobArr) => {
-            return oobArr.reduce((acc, cur) => {
-                acc.inf += parseInt(cur.inf) || 0;
-                acc.eng += parseInt(cur.eng) || 0;
-                acc.spec += parseInt(cur.spec) || 0;
-                acc.sup += parseInt(cur.sup) || 0;
-                acc.arty += parseInt(cur.arty) || 0;
-                acc.mbt += parseInt(cur.mbt) || 0;
-                acc.rec += parseInt(cur.rec) || 0;
-                acc.air += parseInt(cur.air) || 0;
-                return acc;
-            }, { inf: 0, eng: 0, spec: 0, sup: 0, arty: 0, mbt: 0, rec: 0, air: 0 });
-        };
+    attSoft = jitter(attSoft); attHard = jitter(attHard);
+    defSoft = jitter(defSoft); defHard = jitter(defHard);
 
-        const attSums = sumUnits(attObj.oob);
-        const defSums = sumUnits(defObj.oob);
+    const attGround = attSoft + attHard;
+    const defGround = defSoft + defHard;
+    const totalG = attGround + defGround || 1;
+    const attPct = Math.round((attGround / totalG) * 100);
+    const defPct = 100 - attPct;
+    const ratio = attGround / (defGround || 1);
 
-        // --- PHASE 0: DYNAMIC PRELIMINARY BOMBARDMENT ---
-        const attArtilleryPower = (attSums.arty * 5) + (attSums.air * 3);
-        const defArtilleryPower = (defSums.arty * 5) + (defSums.air * 3);
+    factors.push(`Terrain: ${terrain.label}. Stance ATT ${attSt.label} / DEF ${defSt.label}.`);
+    if (Math.abs(attReady) > 0.01 || Math.abs(defReady) > 0.01) {
+        factors.push(`Readiness: ATT ${attReady >= 0 ? '+' : ''}${Math.round(attReady*100)}% · DEF ${defReady >= 0 ? '+' : ''}${Math.round(defReady*100)}%.`);
+    }
 
-        let defSuppressionPct = 0;
-        let attSuppressionPct = 0;
+    /* ---- OUTCOME ---- */
+    let band, bannerClass, bannerTitle, outcomeText;
 
-        if (defArtilleryPower > 0) {
-            const attRatio = attArtilleryPower / defArtilleryPower;
-            defSuppressionPct = Math.min(90, Math.round(attRatio * 15));
-        } else if (attArtilleryPower > 0) {
-            defSuppressionPct = 85; // Massive uncountered bombardment
-        }
+    if (ratio >= 2.2) {
+        band = 'decisive';
+        bannerClass = 'decisive';
+        bannerTitle = 'CRITICAL ATTACKER OVERRUN';
+        outcomeText = `${att.nation} shattered defensive depth in ${theatre}. Defender cohesion collapsed under overwhelming pressure.`;
+    } else if (ratio >= 1.25) {
+        band = 'victory';
+        bannerClass = 'victory';
+        bannerTitle = 'ATTACKER ADVANCE SECURED';
+        outcomeText = `${att.nation} forced a breakthrough in ${theatre} after sustained fighting. Objectives partially to fully secured.`;
+    } else if (ratio >= 0.85) {
+        band = 'stalemate';
+        bannerClass = 'stalemate';
+        bannerTitle = 'INCONCLUSIVE ENGAGEMENT';
+        outcomeText = `Neither side achieved operational decision in ${theatre}. Lines largely held; both forces bloodied.`;
+    } else if (ratio >= 0.45) {
+        band = 'repulse';
+        bannerClass = 'repulse';
+        bannerTitle = 'DEFENSIVE LINE HELD';
+        outcomeText = `${def.nation} absorbed the assault and held in ${theatre}. Attacker failed to secure decisive penetration.`;
+    } else {
+        band = 'decisive_def';
+        bannerClass = 'repulse';
+        bannerTitle = 'ATTACK SHATTERED';
+        outcomeText = `${def.nation} crushed the offensive in ${theatre}. Attacker suffered severe reverse and was forced back.`;
+    }
 
-        if (attArtilleryPower > 0) {
-            const defRatio = defArtilleryPower / attArtilleryPower;
-            attSuppressionPct = Math.min(90, Math.round(defRatio * 15));
-        } else if (defArtilleryPower > 0) {
-            attSuppressionPct = 85;
-        }
+    /* ---- ATTRITION (ratio + band, with morale) ---- */
+    const attPers = attSum.inf + attSum.eng + attSum.spec + attSum.sup;
+    const defPers = defSum.inf + defSum.eng + defSum.spec + defSum.sup;
+    const attVeh = attSum.mbt + attSum.rec;
+    const defVeh = defSum.mbt + defSum.rec;
 
-        // --- PHASE 1: GROUND & ARMORED ASSAULT ---
-        let attFactor = 1.0;
-        if (attObj.stance === "assault") attFactor = 1.3;
-        if (attObj.stance === "hasty") attFactor = 1.1;
+    // Base loss fractions by band (attacker, defender)
+    const lossTable = {
+        decisive:     { ap: 0.06, dp: 0.55, av: 0.05, dv: 0.65 },
+        victory:      { ap: 0.12, dp: 0.32, av: 0.10, dv: 0.28 },
+        stalemate:    { ap: 0.18, dp: 0.16, av: 0.14, dv: 0.12 },
+        repulse:      { ap: 0.28, dp: 0.09, av: 0.22, dv: 0.06 },
+        decisive_def: { ap: 0.42, dp: 0.05, av: 0.35, dv: 0.04 }
+    };
+    const L = lossTable[band];
 
-        let defFactor = 1.0;
-        if (defObj.stance === "defense") defFactor = 2.0;
+    // Morale: fanatical / super soldiers resist collapse
+    const attMorale = attDoc.morale * (1 + Math.min(0.15, attSum.sup / Math.max(1, attPers) * 0.5));
+    const defMorale = defDoc.morale * (1 + Math.min(0.15, defSum.sup / Math.max(1, defPers) * 0.5));
 
-        const terrain = document.getElementById("terrain-type").value;
-        if (terrain === "mountains" && defObj.stance === "defense") defFactor *= 1.5;
-        if (terrain === "urban" && defObj.stance === "defense") defFactor *= 1.8;
+    let attPersLoss = Math.round(attPers * L.ap / attMorale);
+    let defPersLoss = Math.round(defPers * L.dp / defMorale);
+    let attVehLoss = Math.round(attVeh * L.av);
+    let defVehLoss = Math.round(defVeh * L.dv);
 
-        const attReadyMod = parseInt(document.getElementById("mod-att-readiness").value) || 0;
-        const defReadyMod = parseInt(document.getElementById("mod-def-readiness").value) || 0;
+    // Cap: cannot lose more than present; tiny force cannot delete huge force alone
+    attPersLoss = Math.min(attPers, attPersLoss);
+    defPersLoss = Math.min(defPers, defPersLoss);
+    attVehLoss = Math.min(attVeh, attVehLoss);
+    defVehLoss = Math.min(defVeh, defVehLoss);
 
-        const attEffectivePower = (attSums.inf * 1 + attSums.eng * 1.5 + attSums.spec * 2.5 + attSums.sup * 4 + attSums.mbt * 10 + attSums.rec * 3) * attFactor * (1 - attSuppressionPct/100) * (1 + attReadyMod/100);
-        const defEffectivePower = (defSums.inf * 1 + defSums.eng * 1.5 + defSums.spec * 2.5 + defSums.sup * 4 + defSums.mbt * 10 + defSums.rec * 3) * defFactor * (1 - defSuppressionPct/100) * (1 + defReadyMod/100);
+    // Slight RNG on final counts (±4%)
+    attPersLoss = Math.round(jitter(attPersLoss));
+    defPersLoss = Math.round(jitter(defPersLoss));
+    attPersLoss = Math.max(0, Math.min(attPers, attPersLoss));
+    defPersLoss = Math.max(0, Math.min(defPers, defPersLoss));
 
-        const totalAttPersonnel = attSums.inf + attSums.eng + attSums.spec + attSums.sup;
-        const totalDefPersonnel = defSums.inf + defSums.eng + defSums.spec + defSums.sup;
-        const totalAttVehicles = attSums.mbt + attSums.rec;
-        const totalDefVehicles = defSums.mbt + defSums.rec;
+    if (attMorale > 1.1) factors.push('Attacker morale resilience reduced personnel collapse.');
+    if (defMorale > 1.1) factors.push('Defender morale resilience reduced personnel collapse.');
 
-        // --- REALISTIC ATTRITION CALCULATIONS ---
-        let bannerClass = "";
-        let bannerTitle = "";
-        let outcomeDescription = "";
+    const attLossPct = attPers > 0 ? Math.round(attPersLoss / attPers * 100) : 0;
+    const defLossPct = defPers > 0 ? Math.round(defPersLoss / defPers * 100) : 0;
 
-        let attPersonnelLoss = 0;
-        let defPersonnelLoss = 0;
-        let attArmorLoss = 0;
-        let defArmorLoss = 0;
+    const ts = new Date().toLocaleString();
 
-        const combinedPower = attEffectivePower + defEffectivePower || 1;
-        const attPowerPct = Math.round((attEffectivePower / combinedPower) * 100);
-        const defPowerPct = 100 - attPowerPct;
+    /* ---- RENDER AAR ---- */
+    const lossBadge = (p) => p > 25 ? 'high' : p > 12 ? 'med' : 'low';
 
-        if (attEffectivePower > defEffectivePower * 2.0) {
-            bannerClass = "decisive-att";
-            bannerTitle = "🔥 CRITICAL ATTACKER OVERRUN";
-            outcomeDescription = `Overwhelming stand-off fire completely neutralized defenders, allowing <strong>${attObj.nation}</strong> armor to breach defensive depth in ${locationTheater} with minimal casualties.`;
-            
-            // Attacker losses strictly bounded by defender's actual combat capacity
-            const maxAttackerDamageCap = Math.round(defEffectivePower * 0.15);
-            attPersonnelLoss = Math.min(totalAttPersonnel, maxAttackerDamageCap);
-            defPersonnelLoss = Math.round(totalDefPersonnel * 0.85); // Defender routed / captured
-
-            attArmorLoss = Math.min(totalAttVehicles, Math.round(defEffectivePower * 0.02));
-            defArmorLoss = Math.round(totalDefVehicles * 0.90);
-
-        } else if (attEffectivePower > defEffectivePower) {
-            bannerClass = "victory-att";
-            bannerTitle = "⚔️ ATTACKER ADVANCE SECURED";
-            outcomeDescription = `Attacking forces under <strong>${attObj.nation}</strong> secured forward objectives in ${locationTheater} following sustained ground combat.`;
-            
-            attPersonnelLoss = Math.round(totalAttPersonnel * 0.12);
-            defPersonnelLoss = Math.round(totalDefPersonnel * 0.35);
-
-            attArmorLoss = Math.round(totalAttVehicles * 0.10);
-            defArmorLoss = Math.round(totalDefVehicles * 0.30);
-
-        } else {
-            bannerClass = "repelled-def";
-            bannerTitle = "🛡️ DEFENSIVE LINE HELD";
-            outcomeDescription = `Defending fortifications under <strong>${defObj.nation}</strong> absorbed the opening bombardment and successfully repelled the ground assault in ${locationTheater}.`;
-            
-            attPersonnelLoss = Math.round(totalAttPersonnel * 0.30);
-            defPersonnelLoss = Math.round(totalDefPersonnel * 0.08);
-
-            attArmorLoss = Math.round(totalAttVehicles * 0.25);
-            defArmorLoss = Math.round(totalDefVehicles * 0.05);
-        }
-
-        const attLossPct = totalAttPersonnel > 0 ? Math.round((attPersonnelLoss / totalAttPersonnel) * 100) : 0;
-        const defLossPct = totalDefPersonnel > 0 ? Math.round((defPersonnelLoss / totalDefPersonnel) * 100) : 0;
-
-        const timestamp = new Date().toLocaleString();
-
-        const visualAARHTML = `
-            <div class="outcome-banner ${bannerClass}">
-                <div class="outcome-title">${bannerTitle}</div>
-                <div class="outcome-subtext">${outcomeDescription}</div>
+    const html = `
+        <div class="outcome ${bannerClass}">
+            <div class="otitle">${bannerTitle}</div>
+            <div class="osub">${outcomeText}</div>
+            <div class="osub" style="margin-top:10px;font-size:10px;color:#666">
+                Seed <strong style="color:#888">${seed}</strong> · Power ratio <strong style="color:var(--amber)">${ratio.toFixed(2)}</strong>
+                · ${terrain.label} · ${weather === 'storm' ? 'Storm' : 'Clear'}
             </div>
+        </div>
 
-            <div class="phase-box">
-                <div class="phase-title">PHASE 0: PRELIMINARY ARTILLERY & AIR BOMBARDMENT</div>
-                <div style="font-size:12px; line-height:1.5;">
-                    • <strong>Attacker Stand-Off Fire:</strong> ${attSums.arty} Artillery/MLRS & ${attSums.air} Air Sorties → Inflicted <strong>${defSuppressionPct}% Defense Suppression</strong>.<br>
-                    • <strong>Defender Counter-Battery:</strong> ${defSums.arty} Artillery/MLRS & ${defSums.air} Air Sorties → Inflicted <strong>${attSuppressionPct}% Assault Suppression</strong>.
+        <div class="phase">
+            <div class="ptitle">01 — FORCE COMPOSITION (BASE POWER)</div>
+            <div class="pbody">
+                Raw totals before modifiers. Soft = infantry-type. Hard = armor. Fires = arty + air bombardment. Air = air-superiority pool.
+            </div>
+            <div class="math-grid">
+                <div class="math-cell">
+                    <div class="lbl">ATTACKER — ${att.nation}</div>
+                    <div class="val">S ${Math.round(attPow.soft).toLocaleString()} · H ${Math.round(attPow.hard).toLocaleString()}</div>
+                    <div class="sub">Fires ${Math.round(attPow.fires).toLocaleString()} · Air ${Math.round(attPow.air).toLocaleString()}</div>
+                    <div class="sub">Pers ${attPers.toLocaleString()} · Veh ${attVeh.toLocaleString()} · Super ${attSum.sup.toLocaleString()}</div>
+                </div>
+                <div class="math-cell">
+                    <div class="lbl">DEFENDER — ${def.nation}</div>
+                    <div class="val">S ${Math.round(defPow.soft).toLocaleString()} · H ${Math.round(defPow.hard).toLocaleString()}</div>
+                    <div class="sub">Fires ${Math.round(defPow.fires).toLocaleString()} · Air ${Math.round(defPow.air).toLocaleString()}</div>
+                    <div class="sub">Pers ${defPers.toLocaleString()} · Veh ${defVeh.toLocaleString()} · Super ${defSum.sup.toLocaleString()}</div>
                 </div>
             </div>
+        </div>
 
-            <div class="phase-box">
-                <div class="phase-title">PHASE 1: MAIN GROUND & ARMORED COLLISION</div>
-                <div class="power-bar-wrapper" style="margin-bottom:0;">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
-                        <span style="color:#ff6666;">⚔️ ${attObj.nation} (${Math.round(attEffectivePower).toLocaleString()} Net Power)</span>
-                        <span style="color:#66ff99; margin-left:auto;">🛡️ ${defObj.nation} (${Math.round(defEffectivePower).toLocaleString()} Net Power)</span>
-                    </div>
-                    <div class="bar-container">
-                        <div class="bar-att" style="width: ${attPowerPct}%;">${attPowerPct}%</div>
-                        <div class="bar-def" style="width: ${defPowerPct}%;">${defPowerPct}%</div>
-                    </div>
+        <div class="phase">
+            <div class="ptitle">02 — FIRES PHASE (Bombardment → Suppression)</div>
+            <div class="pbody">
+                Fires power = (Artillery×5.5 + Air×3.5) × doctrine × terrain × readiness${weather==='storm' ? ' × 0.7 (storm)' : ''}.
+                Suppression caps at 55% and reduces the enemy’s later ground effectiveness.
+            </div>
+            <div class="math-grid">
+                <div class="math-cell">
+                    <div class="lbl">ATT FIRES OUTPUT</div>
+                    <div class="val">${Math.round(attFires).toLocaleString()}</div>
+                    <div class="sub">→ DEF suppressed <strong style="color:#ff6a6a">${Math.round(defSupp*100)}%</strong></div>
+                    <div class="mini-bar att"><i data-w="${Math.round(defSupp*100)}"></i></div>
+                </div>
+                <div class="math-cell">
+                    <div class="lbl">DEF FIRES OUTPUT</div>
+                    <div class="val">${Math.round(defFires).toLocaleString()}</div>
+                    <div class="sub">→ ATT suppressed <strong style="color:#7ab8ff">${Math.round(attSupp*100)}%</strong></div>
+                    <div class="mini-bar def"><i data-w="${Math.round(attSupp*100)}"></i></div>
                 </div>
             </div>
+        </div>
 
-            <h3>CASUALTY & ATTRITION SUMMARY</h3>
-            <table class="aar-table">
+        <div class="phase">
+            <div class="ptitle">03 — AIR CONTEST</div>
+            <div class="pbody">
+                Air pool = Airframes×10${weather==='storm' ? ' × 0.55 (storm)' : ''}. Winner (>1.35×) gains +12% ground CAS; loser −10%.
+            </div>
+            <div class="math-grid">
+                <div class="math-cell">
+                    <div class="lbl">ATT AIR</div>
+                    <div class="val">${Math.round(attAir).toLocaleString()}</div>
+                </div>
+                <div class="math-cell">
+                    <div class="lbl">DEF AIR</div>
+                    <div class="val">${Math.round(defAir).toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="pbody" style="margin-top:8px">
+                Result: <strong>${
+                    airWinner === 'att' ? att.nation + ' air superiority (+12% ATT ground / −10% DEF)' :
+                    airWinner === 'def' ? def.nation + ' air superiority (+12% DEF ground / −10% ATT)' :
+                    airWinner === 'contested' ? 'Contested — no decisive CAS edge' :
+                    'No significant air presence'
+                }</strong>
+            </div>
+        </div>
+
+        <div class="phase">
+            <div class="ptitle">04 — GROUND COLLISION (Final Effective Power)</div>
+            <div class="pbody">
+                Soft &amp; Hard after terrain, stance, doctrine, suppression, air CAS, readiness, and combined-arms checks.
+                Final ground power = Soft + Hard. Ratio = ATT ÷ DEF.
+            </div>
+            <div class="math-grid">
+                <div class="math-cell">
+                    <div class="lbl">ATT EFFECTIVE</div>
+                    <div class="val">${Math.round(attGround).toLocaleString()}</div>
+                    <div class="sub">Soft ${Math.round(attSoft).toLocaleString()} + Hard ${Math.round(attHard).toLocaleString()}</div>
+                    <div class="sub">Stance ${attSt.label} · ${attDoc.label}</div>
+                </div>
+                <div class="math-cell">
+                    <div class="lbl">DEF EFFECTIVE</div>
+                    <div class="val">${Math.round(defGround).toLocaleString()}</div>
+                    <div class="sub">Soft ${Math.round(defSoft).toLocaleString()} + Hard ${Math.round(defHard).toLocaleString()}</div>
+                    <div class="sub">Stance ${defSt.label} · ${defDoc.label}</div>
+                </div>
+            </div>
+            <div class="bar-wrap">
+                <div class="bar-labels">
+                    <span style="color:#ff6a6a">${att.nation}</span>
+                    <span style="color:#7ab8ff">${def.nation}</span>
+                </div>
+                <div class="bar">
+                    <div class="a" data-w="${attPct}">${attPct}%</div>
+                    <div class="d" data-w="${defPct}">${defPct}%</div>
+                </div>
+            </div>
+            <div class="pbody" style="margin-top:6px;text-align:center">
+                Power ratio <strong style="color:var(--amber)">${ratio.toFixed(2)}</strong>
+                ${ratio >= 2.2 ? '(decisive overrun threshold ≥ 2.2)' :
+                  ratio >= 1.25 ? '(victory threshold ≥ 1.25)' :
+                  ratio >= 0.85 ? '(stalemate band 0.85–1.25)' :
+                  ratio >= 0.45 ? '(repulse band 0.45–0.85)' :
+                  '(shatter threshold < 0.45)'}
+            </div>
+        </div>
+
+        <div class="phase">
+            <div class="ptitle">05 — DECISION FACTORS</div>
+            <ul class="factors">${factors.map(f => `<li>${f}</li>`).join('')}</ul>
+        </div>
+
+        <div class="phase">
+            <div class="ptitle">06 — ATTRITION MODEL</div>
+            <div class="pbody">
+                Loss fractions depend on outcome band, then divided by morale (doctrine + Super Soldier share).
+                Morale ATT <strong>${attMorale.toFixed(2)}×</strong> · DEF <strong>${defMorale.toFixed(2)}×</strong>.
+                Counts jittered ±~6% from seed, then capped to force size.
+            </div>
+            <table class="aar">
                 <thead>
                     <tr>
-                        <th>Metric Category</th>
-                        <th>⚔️ Attacker Losses (${attObj.nation})</th>
-                        <th>🛡️ Defender Losses (${defObj.nation})</th>
+                        <th>Metric</th>
+                        <th>Attacker (${att.nation})</th>
+                        <th>Defender (${def.nation})</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Personnel (Infantry/Ops)</strong></td>
-                        <td>${attPersonnelLoss.toLocaleString()} <span class="loss-badge ${attLossPct > 20 ? 'high' : 'low'}">${attLossPct}%</span></td>
-                        <td>${defPersonnelLoss.toLocaleString()} <span class="loss-badge ${defLossPct > 20 ? 'high' : 'low'}">${defLossPct}%</span></td>
+                        <td>Personnel losses</td>
+                        <td>${attPersLoss.toLocaleString()} <span class="badge ${lossBadge(attLossPct)}">${attLossPct}%</span></td>
+                        <td>${defPersLoss.toLocaleString()} <span class="badge ${lossBadge(defLossPct)}">${defLossPct}%</span></td>
                     </tr>
                     <tr>
-                        <td><strong>Vehicular & Armor Hulls</strong></td>
-                        <td>${attArmorLoss.toLocaleString()} platforms</td>
-                        <td>${defArmorLoss.toLocaleString()} platforms</td>
+                        <td>Vehicle losses (MBT+Recon)</td>
+                        <td>${attVehLoss.toLocaleString()}</td>
+                        <td>${defVehLoss.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Starting personnel</td>
+                        <td>${attPers.toLocaleString()}</td>
+                        <td>${defPers.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Remaining personnel</td>
+                        <td>${(attPers - attPersLoss).toLocaleString()}</td>
+                        <td>${(defPers - defPersLoss).toLocaleString()}</td>
                     </tr>
                 </tbody>
             </table>
-        `;
+        </div>
+    `;
 
-        document.getElementById("visual-aar-view").innerHTML = visualAARHTML;
+    const teletype =
+`================================================================================
+[SITREP] ${bannerTitle}
+================================================================================
+TIMESTAMP : ${ts}
+THEATER   : ${theatre.toUpperCase()}
+TERRAIN   : ${terrain.label.toUpperCase()}
+WEATHER   : ${weather.toUpperCase()}
+SEED      : ${seed}
+RATIO     : ${ratio.toFixed(3)}
 
-        const sitRepMessage = 
-`======================================================================================
-[SITUATION REPORT]: ${bannerTitle}
-======================================================================================
-TIMESTAMP : ${timestamp}
-THEATER   : ${locationTheater.toUpperCase()}
-TERRAIN   : ${terrain.toUpperCase()}
+01 FORCE BASE
+ ATT Soft ${Math.round(attPow.soft)} Hard ${Math.round(attPow.hard)} Fires ${Math.round(attPow.fires)} Air ${Math.round(attPow.air)}
+ DEF Soft ${Math.round(defPow.soft)} Hard ${Math.round(defPow.hard)} Fires ${Math.round(defPow.fires)} Air ${Math.round(defPow.air)}
 
-PHASE 0 - PRELIMINARY BOMBARDMENT:
- - Attacker Artillery Power : ${attArtilleryPower.toLocaleString()} -> Inflicted ${defSuppressionPct}% Suppression
- - Defender Counter-Battery : ${defArtilleryPower.toLocaleString()} -> Inflicted ${attSuppressionPct}% Suppression
+02 FIRES
+ ATT fires ${Math.round(attFires)} → DEF suppression ${Math.round(defSupp*100)}%
+ DEF fires ${Math.round(defFires)} → ATT suppression ${Math.round(attSupp*100)}%
 
-PHASE 1 - MAIN GROUND ENGAGEMENT:
- - Attacker Effective Power : ${Math.round(attEffectivePower).toLocaleString()} (${attPowerPct}%)
- - Defender Effective Power : ${Math.round(defEffectivePower).toLocaleString()} (${defPowerPct}%)
+03 AIR
+ ATT ${Math.round(attAir)} · DEF ${Math.round(defAir)} · ${airWinner}
 
-PROJECTED ATTRITION:
- - Attacker Personnel Losses : ${attPersonnelLoss.toLocaleString()} (${attLossPct}%)
- - Defender Personnel Losses : ${defPersonnelLoss.toLocaleString()} (${defLossPct}%)
+04 GROUND
+ ATT ${Math.round(attGround)} (${attPct}%) Soft ${Math.round(attSoft)} Hard ${Math.round(attHard)}
+ DEF ${Math.round(defGround)} (${defPct}%) Soft ${Math.round(defSoft)} Hard ${Math.round(defHard)}
+ Stance ATT ${attSt.label} / DEF ${defSt.label}
+ Doctrine ATT ${attDoc.label} / DEF ${defDoc.label}
 
-OUTCOME SUMMARY:
- -> ${outcomeDescription.replace(/<\/?[^>]+(>|$)/g, "")}
-======================================================================================`;
+05 FACTORS
+${factors.map(f => ' - ' + f.replace(/<[^>]+>/g, '')).join('\n')}
 
-        document.getElementById("automated-sitrep-log").value = sitRepMessage;
+06 ATTRITION
+ Morale ATT ${attMorale.toFixed(2)} DEF ${defMorale.toFixed(2)}
+ ATT personnel -${attPersLoss} (${attLossPct}%) vehicles -${attVehLoss}
+ DEF personnel -${defPersLoss} (${defLossPct}%) vehicles -${defVehLoss}
 
-        const newHistoryLogEntry = {
-            id: 'battle_' + Date.now(),
-            title: `${attObj.nation} VS ${defObj.nation} [${locationTheater}]`,
-            timestamp: timestamp,
-            visualHTML: visualAARHTML,
-            fullText: sitRepMessage
-        };
+OUTCOME
+ ${outcomeText.replace(/<[^>]+>/g, '')}
+================================================================================`;
 
-        savedBattleHistoryLogs.unshift(newHistoryLogEntry);
-        saveHistoryToStorage();
-        renderHistoryLedgerUI();
-    }
+    document.getElementById('aar-empty').style.display = 'none';
+    document.getElementById('aar-body').style.display = 'block';
+    document.getElementById('aar-body').innerHTML = html;
+    document.getElementById('aar-raw').value = teletype;
 
-    function renderHistoryLedgerUI() {
-        const historyContainer = document.getElementById("history-scroll-ledger");
-        historyContainer.innerHTML = "";
-
-        if (savedBattleHistoryLogs.length === 0) {
-            historyContainer.innerHTML = `<div style="color:#555; text-align:center; padding-top:20px;">No historical engagements logged in local storage cache.</div>`;
-            return;
-        }
-
-        savedBattleHistoryLogs.forEach(entry => {
-            const entryDiv = document.createElement("div");
-            entryDiv.className = "log-entry";
-            entryDiv.onclick = () => loadHistoricalLogText(entry.id);
-            entryDiv.innerHTML = `
-                <strong>[Cached Entry]</strong> ${entry.title}
-                <span class="timestamp">${entry.timestamp}</span>
-            `;
-            historyContainer.appendChild(entryDiv);
+    // Animate bars after paint
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.bar .a, .bar .d').forEach(el => {
+                const w = el.getAttribute('data-w');
+                if (w != null) el.style.width = w + '%';
+            });
+            document.querySelectorAll('.mini-bar > i').forEach(el => {
+                const w = el.getAttribute('data-w');
+                if (w != null) el.style.width = w + '%';
+            });
         });
-    }
+    });
 
-    function loadHistoricalLogText(entryId) {
-        const foundItem = savedBattleHistoryLogs.find(item => item.id === entryId);
-        if (foundItem) {
-            if (foundItem.visualHTML) {
-                document.getElementById("visual-aar-view").innerHTML = foundItem.visualHTML;
-            }
-            document.getElementById("automated-sitrep-log").value = foundItem.fullText;
+    lastResult = { html, teletype, title: `${att.nation} vs ${def.nation} [${theatre}]`, ts, seed };
+
+    history.unshift({
+        id: 'b_' + Date.now(),
+        title: lastResult.title,
+        timestamp: ts,
+        visualHTML: html,
+        fullText: teletype,
+        seed
+    });
+    saveHistory();
+    renderHistory();
+    goStep(4);
+    showAAR('vis');
+}
+
+/* ========== HISTORY ========== */
+function saveHistory() {
+    try { localStorage.setItem('TSL_BATTLE_LOGS_v6', JSON.stringify(history)); } catch {}
+}
+
+function loadHistory() {
+    try {
+        const raw = localStorage.getItem('TSL_BATTLE_LOGS_v6');
+        if (raw) history = JSON.parse(raw);
+    } catch { history = []; }
+    // migrate v5 if present
+    try {
+        const v5 = localStorage.getItem('TSL_BATTLE_LOGS_STORAGE_v5');
+        if (v5 && history.length === 0) {
+            const old = JSON.parse(v5);
+            history = old.map(e => ({
+                id: e.id,
+                title: e.title,
+                timestamp: e.timestamp,
+                visualHTML: e.visualHTML || '',
+                fullText: e.fullText || '',
+                seed: null
+            }));
+            saveHistory();
         }
-    }
+    } catch {}
+}
 
-    function exportActiveLogFile() {
-        const textContent = document.getElementById("automated-sitrep-log").value;
-        if (!textContent || textContent.trim() === "") {
-            alert("No simulation report active to export.");
-            return;
-        }
-        
-        const timestampSlug = new Date().toISOString().slice(0,10);
-        const textBlob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
-        const temporaryAnchor = document.createElement("a");
-        temporaryAnchor.href = URL.createObjectURL(textBlob);
-        temporaryAnchor.download = `tsl_engagement_sitrep_${timestampSlug}.txt`;
-        temporaryAnchor.style.display = "none";
-        document.body.appendChild(temporaryAnchor);
-        temporaryAnchor.click();
-        document.body.removeChild(temporaryAnchor);
+function renderHistory() {
+    const box = document.getElementById('history');
+    if (!history.length) {
+        box.innerHTML = '<div class="empty" style="padding:16px">No cached engagements.</div>';
+        return;
     }
+    box.innerHTML = history.map(e => `
+        <div class="hist-item" onclick="loadHist('${e.id}')">
+            <strong>${e.title}</strong>
+            <span class="ts">${e.timestamp}${e.seed != null ? ' · seed ' + e.seed : ''}</span>
+        </div>
+    `).join('');
+}
 
-    function saveHistoryToStorage() {
-        localStorage.setItem("TSL_BATTLE_LOGS_STORAGE_v5", JSON.stringify(savedBattleHistoryLogs));
-    }
+function loadHist(id) {
+    const e = history.find(x => x.id === id);
+    if (!e) return;
+    document.getElementById('aar-empty').style.display = 'none';
+    document.getElementById('aar-body').style.display = 'block';
+    document.getElementById('aar-body').innerHTML = e.visualHTML || '<div class="empty">No visual AAR stored.</div>';
+    document.getElementById('aar-raw').value = e.fullText || '';
+    showAAR('vis');
+}
 
-    function loadSavedHistoryFromStorage() {
-        const databaseRaw = localStorage.getItem("TSL_BATTLE_LOGS_STORAGE_v5");
-        if (databaseRaw) {
-            try {
-                savedBattleHistoryLogs = JSON.parse(databaseRaw);
-            } catch(e) {
-                savedBattleHistoryLogs = [];
-            }
-        }
-        renderHistoryLedgerUI();
-    }
+function clearHistory() {
+    if (!confirm('Clear all cached battle logs?')) return;
+    history = [];
+    saveHistory();
+    renderHistory();
+    document.getElementById('aar-body').style.display = 'none';
+    document.getElementById('aar-empty').style.display = 'block';
+    document.getElementById('aar-raw').value = '';
+}
 
-    function clearSavedHistory() {
-        if(confirm("Clear all battle logs from local storage cache?")) {
-            savedBattleHistoryLogs = [];
-            saveHistoryToStorage();
-            renderHistoryLedgerUI();
-            document.getElementById("visual-aar-view").innerHTML = `<div style="text-align:center; color:#666; padding: 40px 0;">No active engagement calculated. Run a tactical projection above to generate AAR.</div>`;
-            document.getElementById("automated-sitrep-log").value = "";
-        }
-    }
+function exportSitrep() {
+    const text = document.getElementById('aar-raw').value;
+    if (!text.trim()) { alert('No sitrep to export.'); return; }
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `tsl_sitrep_${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+/* ========== INIT ========== */
+window.onload = function () {
+    addBrigade('att');
+    addBrigade('def');
+    loadHistory();
+    renderHistory();
+};
 </script>
 </body>
 </html>

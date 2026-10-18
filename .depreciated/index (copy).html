@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Southern Lands — Command System</title>
+    <style>
+        :root {
+            --mouse-x: 0;
+            --mouse-y: 0;
+            --hell-red: #ff1100;
+            --hell-orange: #ff5500;
+            --fire-yellow: #ffaa00;
+            --dark-metal: #080202;
+            --deep-black: #030101;
+            --glow-red: rgba(255, 17, 0, 0.6);
+            --glow-orange: rgba(255, 85, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: var(--deep-black);
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--fire-yellow);
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            perspective: 1200px;
+            cursor: crosshair;
+        }
+
+        /* ========== CRT VIGNETTE & SCANLINES ========== */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.035), rgba(0, 0, 0, 0.01), rgba(255, 85, 0, 0.035));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .crt-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+            z-index: 31;
+            pointer-events: none;
+        }
+
+        #warp-flash {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--hell-orange) 0%, var(--hell-red) 40%, transparent 70%);
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.9s ease-out;
+        }
+
+        /* ========== TOP COMMAND BAR ========== */
+        .command-bar {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            width: calc(100% - 36px);
+            max-width: 1480px;
+            background: linear-gradient(180deg, rgba(20, 5, 5, 0.95) 0%, rgba(8, 2, 2, 0.9) 100%);
+            border: 1px solid rgba(255, 17, 0, 0.6);
+            padding: 8px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 17, 0, 0.15);
+            backdrop-filter: blur(6px);
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+        }
+
+        .sector-tag {
+            color: var(--fire-yellow);
+            font-weight: bold;
+        }
+
+        #hud-clock {
+            color: var(--fire-yellow);
+        }
+
+        #status-bar {
+            color: var(--hell-red);
+            font-weight: bold;
+        }
+
+        /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
+        /* ========== METALLIC BLAST GATES & WARNING LIGHTS ========== */
+        /* ========== SCP FOUNDATION BLAST DOORS ========== */
+        .gate-door {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background-color: #0d0e12;
+            background-image: 
+                /* 1. Industrial Steel Plate Grid Lines */
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                /* 2. Heavy Blast Reinforced Beveling & Panels */
+                linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 40%, rgba(0, 0, 0, 0.8) 100%),
+                /* 3. Reinforced SCP Heavy Metal Texture */
+                radial-gradient(circle at 50% 50%, rgba(30, 35, 45, 0.6), rgba(8, 9, 12, 0.98));
+            background-size: 
+                60px 120px,
+                60px 120px,
+                100% 100%,
+                100% 100%;
+            z-index: 50;
+            transition: transform 2.6s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex;
+            align-items: center;
+            box-shadow: 
+                inset 0 0 150px #000000,
+                inset 0 0 35px rgba(0, 0, 0, 0.9);
+            border-bottom: 4px solid #1a1c23;
+        }
+
+        .gate-left {
+            left: 0;
+            border-right: 3px solid #000;
+            justify-content: flex-end;
+        }
+
+        .gate-right {
+            right: 0;
+            border-left: 3px solid #000;
+            justify-content: flex-start;
+        }
+
+        /* Tactical SCP Containment Hazard Stripes & Border Inset */
+        .gate-left::before,
+        .gate-right::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 42px;
+            background: repeating-linear-gradient(
+                -45deg,
+                #d9a700 0px,
+                #d9a700 20px,
+                #111113 20px,
+                #111113 40px
+            );
+            box-shadow: 
+                inset 0 0 12px rgba(0, 0, 0, 0.9),
+                0 0 15px rgba(0, 0, 0, 0.7);
+            z-index: 52;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(0, 0, 0, 0.8);
+        }
+
+        .gate-left::before { right: 0; }
+        .gate-right::before { left: 0; }
+
+        /* Industrial Hydraulic Track Line */
+        .gate-left::after,
+        .gate-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: linear-gradient(90deg, #050507, #1b1d24, #050507);
+            z-index: 51;
+        }
+        .gate-left::after { right: 42px; }
+        .gate-right::after { left: 42px; }
+
+        /* ========== 3D ROTATING BEACON HOUSING & LIGHT ENGINE ========== */
+        .warning-beacon {
+            position: absolute;
+            top: 70px;
+            width: 48px;
+            height: 64px;
+            background: linear-gradient(180deg, #111216 0%, #222530 40%, #0a0b0d 100%);
+            border: 2px solid #2d313d;
+            border-radius: 6px 6px 4px 4px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.9),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            z-index: 53;
+            overflow: visible;
+            perspective: 600px;
+        }
+
+        .gate-left .warning-beacon { right: 120px; }
+        .gate-right .warning-beacon { left: 120px; }
+
+        /* Outer Glass Dome Shell */
+        .warning-beacon::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            height: 38px;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.4) 0%, rgba(100, 0, 0, 0.2) 60%, rgba(255, 255, 255, 0.15) 100%);
+            border-radius: 20px 20px 4px 4px;
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.5);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Metallic Base Ring & Guard Ribs */
+        .warning-beacon::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -2px;
+            right: -2px;
+            height: 18px;
+            background: linear-gradient(180deg, #3a3f4d 0%, #15171c 100%);
+            border: 1px solid #0e0f12;
+            border-radius: 2px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.8);
+            z-index: 4;
+        }
+
+        /* Inner 3D Rotating Reflector Core */
+        .beacon-reflector {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            width: 28px;
+            height: 30px;
+            margin-left: -14px;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #ff2a2a 40%, #4a0000 100%);
+            border-radius: 50%;
+            z-index: 2;
+            transform-style: preserve-3d;
+            opacity: 0.4;
+            filter: blur(1px);
+        }
+
+        /* 3D Sweeping Light Beams (Volumetric Flare Projection) */
+        /* Circular Volumetric Light Projection */
+        .beacon-beam {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            margin-top: -100px;
+            margin-left: -100px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                rgba(255, 0, 0, 0.95) 0deg,
+                #ffffff 15deg,
+                rgba(255, 0, 0, 0.95) 30deg,
+                transparent 90deg,
+                transparent 270deg,
+                rgba(255, 0, 0, 0.2) 340deg,
+                rgba(255, 0, 0, 0.95) 360deg
+            );
+            filter: drop-shadow(0 0 20px #ff0000) blur(2px);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: 50% 50%;
+        }
+
+        /* Active Rotation State - Synchronized Emergency Beacon Spin */
+        .beacon-active .beacon-reflector {
+            opacity: 1;
+            filter: blur(0px);
+            animation: mirrorSpin 0.75s linear infinite;
+        }
+
+        .beacon-active .beacon-beam {
+            opacity: 1;
+            animation: beamSweep 0.75s linear infinite;
+        }
+
+        /* Opposite rotation offset for dual-light realism */
+        .gate-right.beacon-active .beacon-reflector,
+        .gate-right.beacon-active .beacon-beam {
+            animation-delay: -0.375s;
+        }
+
+        @keyframes mirrorSpin {
+            0% {
+                transform: rotateY(0deg) scaleX(1);
+                box-shadow: 0 0 10px #ff0000;
+            }
+            25% {
+                transform: rotateY(90deg) scaleX(0.3);
+                box-shadow: -10px 0 20px rgba(255, 0, 0, 0.2);
+            }
+            50% {
+                transform: rotateY(180deg) scaleX(1);
+                box-shadow: 0 0 5px rgba(255, 0, 0, 0.1);
+            }
+            75% {
+                transform: rotateY(270deg) scaleX(0.3);
+                box-shadow: 10px 0 20px rgba(255, 0, 0, 0.8);
+            }
+            100% {
+                transform: rotateY(360deg) scaleX(1);
+                box-shadow: 0 0 10px #ff0000;
+            }
+        }
+
+        @keyframes beamSweep {
+            0% {
+                transform: rotate(0deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+            25% {
+                transform: rotate(90deg) scale(1.1);
+                opacity: 1;
+                filter: drop-shadow(0 0 35px #ff0000) brightness(1.8);
+            }
+            50% {
+                transform: rotate(180deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+            75% {
+                transform: rotate(270deg) scale(1.1);
+                opacity: 1;
+                filter: drop-shadow(0 0 35px #ff0000) brightness(1.8);
+            }
+            100% {
+                transform: rotate(360deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 0 5px #ff0000) brightness(0.8);
+            }
+        }
+
+        /* Gate Pneumatic Recoil & Open Mechanics */
+        body.gate-recoil .gate-left { transform: translateX(-12px) scale(0.99); }
+        body.gate-recoil .gate-right { transform: translateX(12px) scale(0.99); }
+
+        body.gate-open .gate-left { transform: translateX(-108%); }
+        body.gate-open .gate-right { transform: translateX(108%); }
+
+        /* ========== SCI-FI CONTAINMENT OVERRIDE CONSOLE ========== */
+        #analog-console {
+            position: absolute;
+            z-index: 55;
+            background: linear-gradient(180deg, #12141a 0%, #08090c 100%);
+            border: 1px solid rgba(255, 30, 30, 0.4);
+            border-top: 3px solid var(--hell-red);
+            padding: 32px 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.95), 
+                0 0 40px rgba(255, 0, 0, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .console-title {
+            color: #e0e6ed;
+            font-size: 11px;
+            letter-spacing: 5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(255, 30, 30, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .console-title::before, .console-title::after {
+            content: '//';
+            color: var(--hell-red);
+        }
+
+        /* Industrial Override Keypad Button Assembly */
+        .analog-button-housing {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1c1f26, #0a0b0e);
+            border: 3px solid #2a2e38;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 
+                inset 0 4px 12px #000, 
+                0 12px 25px rgba(0, 0, 0, 0.85),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        #analog-btn {
+            position: relative;
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ff2a2a 0%, #a60000 70%, #5e0000 100%);
+            border: 1px solid #ff6666;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            box-shadow: 
+                0 8px 0 #4a0000,
+                0 12px 20px rgba(0, 0, 0, 0.7),
+                inset 0 2px 5px rgba(255, 255, 255, 0.4),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.6);
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            overflow: hidden;
+        }
+
+        #analog-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
+        }
+
+        #analog-btn:hover {
+            background: radial-gradient(circle at 35% 35%, #ff4444 0%, #bd0000 70%, #750000 100%);
+            box-shadow: 
+                0 8px 0 #5e0000,
+                0 0 30px rgba(255, 30, 30, 0.8),
+                inset 0 2px 8px rgba(255, 255, 255, 0.6),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        #analog-btn:hover::before {
+            left: 100%;
+        }
+
+        #analog-btn:active, #analog-btn.pressed {
+            transform: translateY(6px);
+            box-shadow: 
+                0 2px 0 #330000,
+                0 4px 10px rgba(0, 0, 0, 0.9),
+                inset 0 0 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .console-status {
+            font-size: 10px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            color: #a0aab5;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        /* ========== BACKGROUND CANVAS ========== */
+        #space-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        #visualizer-canvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 32vh;
+            z-index: 21;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        /* ========== 3D SCENE ========== */
+        .scene-3d {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            transform-style: preserve-3d;
+            transform: rotateY(calc(var(--mouse-x) * 8deg)) rotateX(calc(var(--mouse-y) * -6deg));
+            transition: transform 0.12s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .stage-grid {
+            position: relative;
+            width: 92%;
+            max-width: 1480px;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px; /* Equal column widths on left and right */
+            align-items: center;
+            justify-items: center; /* Ensures center column elements stay dead center */
+            gap: 36px;
+            transform-style: preserve-3d;
+            opacity: 0;
+            transform: scale(0.15) translateZ(-200px);
+            transition: 
+                transform 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 2.2s ease;
+        }
+
+        body.settled .stage-grid {
+            opacity: 1;
+            transform: scale(1) translateZ(0);
+        }
+
+        /* ========== LEFT PANEL ========== */
+        .left-panel {
+            width: 100%;
+            transform: translateZ(70px);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .lore-title {
+            font-size: 28px;
+            color: var(--hell-red);
+            letter-spacing: 6px;
+            text-shadow: 0 0 18px var(--glow-red);
+            font-weight: bold;
+        }
+
+        .lore-sub {
+            font-size: 11px;
+            color: var(--fire-yellow);
+            line-height: 1.5;
+            letter-spacing: 1.2px;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .tv-frame {
+            position: relative;
+            width: 100%;
+            height: 210px;
+            background: #000;
+            border: 1px solid var(--hell-red);
+            box-shadow: 
+                0 0 30px rgba(255, 17, 0, 0.25),
+                inset 0 0 30px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .tv-screen {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 0.15s ease;
+            filter: contrast(1.15) saturate(0.85) brightness(0.9);
+        }
+
+        #static-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3;
+            mix-blend-mode: screen;
+        }
+
+        .tv-location-bar {
+            position: relative;
+            z-index: 4;
+            background: rgba(8, 0, 0, 0.9);
+            border-top: 1px solid rgba(255, 17, 0, 0.7);
+            padding: 9px 12px;
+            font-size: 10px;
+            color: #fff;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tv-live {
+            color: var(--hell-red);
+            font-weight: bold;
+            animation: blink 1.2s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+
+        /* ========== CENTER PANEL & PLANET ========== */
+        .center-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+        .planet-stage {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #planet-vis-canvas {
+            position: absolute;
+            width: 660px;
+            height: 660px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 12;
+            margin: 0;
+            padding: 0;
+        }
+
+        .earth {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at 62% 38%, #1e4a7a 0%, #0a1a30 45%, #030810 75%, #000 100%);
+            box-shadow: 
+                inset -50px -40px 90px rgba(0, 0, 0, 0.95),
+                inset 20px 15px 40px rgba(30, 80, 140, 0.15),
+                0 0 60px rgba(255, 69, 0, 0.22);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .continents {
+            position: absolute;
+            inset: 0;
+            opacity: 0.88;
+        }
+
+        .continents::before {
+            content: '';
+            position: absolute;
+            top: 38%; left: 28%;
+            width: 95px; height: 125px;
+            background: linear-gradient(160deg, #2a5a28, #1a3a1a);
+            clip-path: polygon(12% 0%, 88% 8%, 98% 38%, 65% 78%, 42% 100%, 5% 55%, 0% 25%);
+            border-radius: 25% 45% 55% 35%;
+            filter: blur(1.5px);
+            box-shadow: 0 0 12px rgba(40, 90, 40, 0.4);
+        }
+
+        .continents::after {
+            content: '';
+            position: absolute;
+            top: 18%; left: 42%;
+            width: 190px; height: 145px;
+            background: linear-gradient(140deg, #264d22, #183818);
+            clip-path: polygon(0% 28%, 38% 0%, 100% 18%, 92% 55%, 80% 88%, 48% 72%, 18% 82%, 5% 50%);
+            border-radius: 30%;
+            filter: blur(1.5px);
+            box-shadow: 0 0 12px rgba(40, 90, 40, 0.35);
+        }
+
+        .atmosphere {
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            box-shadow: 
+                inset 18px -18px 45px rgba(255, 85, 0, 0.28),
+                inset -10px 10px 30px rgba(100, 160, 255, 0.08);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .glow-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 85, 0, 0.15);
+            box-shadow: 0 0 25px rgba(255, 69, 0, 0.12);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .impact-site {
+            position: absolute;
+            top: 16%; left: 20%;
+            width: 110px; height: 110px;
+            transform: translateZ(25px);
+            z-index: 4;
+        }
+
+        .meteor-entry {
+            position: absolute;
+            top: -180px; left: -180px;
+            width: 240px; height: 5px;
+            background: linear-gradient(90deg, transparent 0%, var(--fire-yellow) 40%, #fff 100%);
+            transform: rotate(48deg);
+            transform-origin: right center;
+            box-shadow: 
+                0 0 15px var(--hell-orange),
+                0 0 30px var(--hell-red),
+                0 0 50px rgba(255, 17, 0, 0.4);
+            opacity: 0.9;
+        }
+
+        .impact-flash {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, var(--fire-yellow) 30%, var(--hell-red) 60%, transparent 100%);
+            box-shadow: 0 0 80px 30px rgba(255, 17, 0, 0.75);
+            animation: pulse-flash 1.8s infinite alternate ease-in-out;
+        }
+
+        .shockwave {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100px; height: 100px;
+            border: 2px solid rgba(255, 85, 0, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0.15);
+            animation: expand-wave 2.4s infinite linear;
+        }
+
+        .shockwave:nth-child(2) {
+            animation-delay: 0.8s;
+            border-color: rgba(255, 170, 0, 0.5);
+        }
+
+        .morse-ticker {
+            margin-top: 22px;
+            width: 100%;
+            max-width: 600px;
+            background: rgba(5, 5, 5, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 3px solid var(--hell-red);
+            border-right: 3px solid var(--hell-red);
+            padding: 9px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.9);
+            transform: translateZ(45px);
+            position: relative;
+        }
+
+        .morse-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollMorse 80s linear infinite;
+            color: #ffffff;
+            font-size: 11px;
+            letter-spacing: 1.8px;
+            font-weight: 500;
+        }
+
+        .morse-text .intel-tag {
+            color: #ff2222;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.6);
+        }
+
+        .morse-ticker::before,
+        .morse-ticker::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .morse-ticker::before {
+            left: 0;
+            background: linear-gradient(90deg, rgba(8, 2, 2, 0.95), transparent);
+        }
+
+        .morse-ticker::after {
+            right: 0;
+            background: linear-gradient(-90deg, rgba(8, 2, 2, 0.95), transparent);
+        }
+
+        .morse-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollMorse 80s linear infinite;
+            color: var(--fire-yellow);
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 6px rgba(255, 170, 0, 0.4);
+        }
+
+        /* ========== RIGHT PANEL ========== */
+        .right-panel {
+            width: 100%;
+            transform: translateZ(90px);
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .portal-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 18px;
+            background: rgba(18, 3, 3, 0.8);
+            border: 1px solid rgba(255, 85, 0, 0.7);
+            color: var(--fire-yellow);
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2.5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 17, 0, 0.25), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        /* Continuous sweeping shine animation for the beginner button */
+        @keyframes shineSweep {
+            0% { left: -120%; }
+            20% { left: 180%; }
+            100% { left: 180%; }
+        }
+
+        .portal-btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-btn-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -120%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                115deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.08) 30%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.08) 70%,
+                transparent 100%
+            );
+            transform: rotate(25deg);
+            pointer-events: none;
+            animation: shineSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .portal-btn:hover {
+            color: #fff;
+            border-color: var(--hell-red);
+            background: rgba(255, 17, 0, 0.85);
+            box-shadow: 0 0 28px rgba(255, 17, 0, 0.6);
+            transform: translateX(8px);
+        }
+
+        .portal-btn:hover::before {
+            left: 100%;
+        }
+
+        /* ========== KEYFRAMES ========== */
+        @keyframes pulse-flash {
+            0% { opacity: 0.75; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.05); }
+        }
+
+        @keyframes expand-wave {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
+        }
+
+        @keyframes scrollMorse {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* ========== CENTER ALIGNMENT FIX ========== */
+        .stage-grid {
+            position: relative;
+            width: 100%;
+            max-width: 1480px;
+            margin: 0 auto;
+            display: grid;
+            /* 1FR on sides ensures the middle column (1FR) sits dead-center on screen */
+            grid-template-columns: minmax(260px, 320px) 1fr minmax(260px, 320px);
+            align-items: center;
+            justify-items: center;
+            gap: 28px;
+            transform-style: preserve-3d;
+            opacity: 0;
+            transform: scale(0.15) translateZ(-200px);
+            transition: 
+                transform 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 2.2s ease;
+        }
+
+        .center-panel {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+        .planet-stage {
+            position: relative;
+            width: 420px;
+            height: 420px;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        #planet-vis-canvas {
+            position: absolute;
+            width: 660px;
+            height: 660px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 12;
+            margin: 0;
+            padding: 0;
+        }
+
+        @media (max-width: 800px) {
+            .stage-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 20px;
+                max-width: 95%;
+            }
+            .left-panel, .right-panel {
+                transform: translateZ(30px);
+            }
+            .planet-stage {
+                width: 280px;
+                height: 280px;
+            }
+            #planet-vis-canvas {
+                width: 440px;
+                height: 440px;
+            }
+            .right-panel {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .portal-btn {
+                width: auto;
+                flex: 1 1 140px;
+                text-align: center;
+                font-size: 10px;
+                padding: 12px 10px;
+            }
+        }
+
+        .audio-credit {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: var(--fire-yellow);
+            background: rgba(8, 2, 2, 0.7);
+            border: 1px dashed rgba(255, 17, 0, 0.4);
+            padding: 6px 10px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .credit-label {
+            color: var(--hell-red);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bg-audio" loop preload="auto" crossorigin="anonymous"></audio>
+
+    <div class="scanlines"></div>
+    <div class="crt-vignette"></div>
+    <div id="warp-flash"></div>
+
+    <!-- Top Command Bar Header -->
+    <div class="command-bar">
+        <div class="hud-group">
+            <span class="sector-tag">[ SECTOR: SOUTHERN LANDS ]</span>
+            <span id="hud-clock">SYS_TIME: --:--:-- UTC</span>
+        </div>
+        <div class="hud-group">
+            <span id="status-bar">STATUS: STANDBY</span>
+        </div>
+    </div>
+
+    <!-- Metallic Gates & Beacon Lights -->
+    <div class="gate-door gate-left" id="gate-left">
+        <div class="warning-beacon">
+            <div class="beacon-reflector"></div>
+            <div class="beacon-beam"></div>
+        </div>
+    </div>
+    <div class="gate-door gate-right" id="gate-right">
+        <div class="warning-beacon">
+            <div class="beacon-reflector"></div>
+            <div class="beacon-beam"></div>
+        </div>
+    </div>
+
+    <!-- Center Analog Entry Console -->
+    <div id="analog-console">
+        <div class="console-title">SECURITY OVERRIDE</div>
+        <div class="analog-button-housing">
+            <button id="analog-btn">OPEN</button>
+        </div>
+        <div class="console-status" id="console-status">GATE LOCKED</div>
+    </div>
+
+    <canvas id="space-canvas"></canvas>
+    <canvas id="visualizer-canvas"></canvas>
+
+    <!-- Main 3D Parallax Stage -->
+    <div class="scene-3d" id="scene">
+        <div class="stage-grid">
+
+            <!-- LEFT: Lore & TV -->
+            <div class="left-panel">
+                <div class="lore-title">Year 3005</div>
+                <div class="lore-sub">How will you survive...?</div>
+
+                <div class="tv-frame">
+                    <canvas id="static-canvas"></canvas>
+                    <div class="tv-screen" id="tv-screen"></div>
+                    <div class="tv-location-bar">
+                        <span id="tv-location-text">LOC: LOADING TELEMETRY...</span>
+                        <span class="tv-live">● LIVE</span>
+                    </div>
+                </div>
+
+                 <!-- Music Credit Tag -->
+                <div class="audio-credit">
+                    <span class="credit-label">AUDIO FREQ:</span> <span id="credit-text">Music by Antti Luode</span>
+                </div>
+            </div>
+
+            <!-- CENTER: Planet with Radial Visualizer -->
+            <div class="center-panel">
+                <div class="planet-stage">
+                    <canvas id="planet-vis-canvas" width="660" height="660"></canvas>
+
+                    <div class="earth">
+                        <div class="continents"></div>
+                        <div class="atmosphere"></div>
+                    </div>
+                    <div class="glow-ring"></div>
+
+                    <div class="impact-site">
+                        <div class="meteor-entry"></div>
+                        <div class="impact-flash"></div>
+                        <div class="shockwave"></div>
+                        <div class="shockwave"></div>
+                    </div>
+                </div>
+
+                <div class="morse-ticker">
+                    <div class="morse-text" id="news-ticker-text">
+                        FETCHING REGIONAL INTEL...
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Commands -->
+            <div class="right-panel">
+                <a href="creator.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="creator">NATION STAT CREATOR ↗</a>
+                <a href="stats.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="stats">NATION STAT DATABASE ↗</a>
+                <a href="battle.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="battle">BATTLE SYSTEM ↗</a>
+                <a href="map.html" target="_blank" rel="noopener noreferrer" class="portal-btn" data-cmd="map">AUTOMATED MAP ↗</a>
+                <a href="new.html" target="_blank" rel="noopener noreferrer" class="portal-btn portal-btn-shine" data-cmd="faq" style="border-color: var(--hell-red); color: #fff; text-shadow: 0 0 6px var(--hell-red);">NEW? START HERE! ↗</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ========== 1. MOUSE PARALLAX ==========
+        const scene = document.getElementById('scene');
+        let targetX = 0, targetY = 0;
+        let currentX = 0, currentY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            targetX = (e.clientX / window.innerWidth) * 2 - 1;
+            targetY = (e.clientY / window.innerHeight) * 2 - 1;
+        });
+
+        function updateParallax() {
+            currentX += (targetX - currentX) * 0.08;
+            currentY += (targetY - currentY) * 0.08;
+            scene.style.setProperty('--mouse-x', currentX.toFixed(3));
+            scene.style.setProperty('--mouse-y', currentY.toFixed(3));
+            requestAnimationFrame(updateParallax);
+        }
+        updateParallax();
+
+        // ========== 2. SYSTEM CLOCK ==========
+        function updateClock() {
+            const now = new Date();
+            const time = now.toUTCString().split(' ')[4];
+            document.getElementById('hud-clock').textContent = `SYS_TIME: ${time} UTC`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ========== 3. DISASTER FEED ==========
+        const disasterFeed = [
+            { location: "LOC: NEW YORK, US", image: "images/new-york.jpg" },
+            { location: "LOC: PARIS, FRANCE", image: "images/paris.jpg" },
+            { location: "LOC: LONDON, UK", image: "images/london.jpg" },
+            { location: "LOC: SYDNEY, AUSTRALIA", image: "images/sydney.jpg" },
+            { location: "LOC: TOKYO, JAPAN", image: "images/tokyo.jpg" },
+            { location: "LOC: JAKARTA, INDONESIA", image: "images/jakarta.jpg" }
+        ];  
+
+        let feedIndex = 0;
+        const tvScreen = document.getElementById('tv-screen');
+        const tvLocationText = document.getElementById('tv-location-text');
+        const staticCanvas = document.getElementById('static-canvas');
+        const sCtx = staticCanvas.getContext('2d', { alpha: true });
+
+        function resizeStaticCanvas() {
+            const frame = staticCanvas.parentElement;
+            staticCanvas.width = frame.offsetWidth || 300;
+            staticCanvas.height = frame.offsetHeight || 210;
+        }
+
+        function renderViolentStatic() {
+            const w = staticCanvas.width;
+            const h = staticCanvas.height;
+            if (w === 0 || h === 0) return;
+
+            const imgData = sCtx.createImageData(w, h);
+            const data = imgData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = Math.random();
+                if (r > 0.72) {
+                    data[i]     = 255;
+                    data[i + 1] = Math.random() * 40;
+                    data[i + 2] = 0;
+                    data[i + 3] = 220 + Math.random() * 35;
+                } else if (r > 0.45) {
+                    data[i]     = 255;
+                    data[i + 1] = 80 + Math.random() * 100;
+                    data[i + 2] = 0;
+                    data[i + 3] = 160 + Math.random() * 80;
+                } else {
+                    data[i] = data[i + 1] = data[i + 2] = 0;
+                    data[i + 3] = 80 + Math.random() * 100;
+                }
+            }
+            sCtx.putImageData(imgData, 0, 0);
+        }
+
+        function cycleTVFeed() {
+            resizeStaticCanvas();
+            staticCanvas.style.opacity = '1';
+            tvScreen.style.opacity = '0.2';
+            let frames = 0;
+
+            const interval = setInterval(() => {
+                renderViolentStatic();
+                frames++;
+
+                if (frames === 7) {
+                    feedIndex = (feedIndex + 1) % disasterFeed.length;
+                    tvScreen.style.backgroundImage = `url('${disasterFeed[feedIndex].image}')`;
+                    tvLocationText.textContent = disasterFeed[feedIndex].location;
+                }
+
+                if (frames > 14) {
+                    clearInterval(interval);
+                    tvScreen.style.opacity = '1';
+                    staticCanvas.style.opacity = '0';
+                }
+            }, 28);
+        }
+
+        tvScreen.style.backgroundImage = `url('${disasterFeed[0].image}')`;
+        tvLocationText.textContent = disasterFeed[0].location;
+        setInterval(cycleTVFeed, 4500);
+
+        // ========== 4. DEEP SPACE CANVAS ==========
+        const spaceCanvas = document.getElementById('space-canvas');
+        const ctx = spaceCanvas.getContext('2d');
+        let stars = [];
+        let shootingStars = [];
+        let warpMode = false;
+        let warpSpeed = 1;
+
+        function resizeSpaceCanvas() {
+            spaceCanvas.width = window.innerWidth;
+            spaceCanvas.height = window.innerHeight;
+            initStars();
+
+            const vCanvas = document.getElementById('visualizer-canvas');
+            if (vCanvas) {
+                vCanvas.width = window.innerWidth;
+                vCanvas.height = Math.floor(window.innerHeight * 0.32);
+            }
+            resizeStaticCanvas();
+        }
+
+        function initStars() {
+            stars = [];
+            const count = Math.min(380, Math.floor((spaceCanvas.width * spaceCanvas.height) / 3500));
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: (Math.random() - 0.5) * spaceCanvas.width * 2.2,
+                    y: (Math.random() - 0.5) * spaceCanvas.height * 2.2,
+                    z: Math.random() * spaceCanvas.width,
+                    pz: 0,
+                    size: Math.random() * 1.6 + 0.3,
+                    alpha: Math.random()
+                });
+                stars[i].pz = stars[i].z;
+            }
+        }
+
+        // Shooting Star Factory
+        function createShootingStar() {
+            if (warpMode) return; // Pause shooting stars during hyperdrive warp
+            const angle = (Math.random() * 25 + 25) * (Math.PI / 180); // Diagonal angle
+            const speed = Math.random() * 10 + 12;
+            
+            shootingStars.push({
+                x: Math.random() * spaceCanvas.width * 0.8,
+                y: Math.random() * (spaceCanvas.height * 0.4),
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed,
+                length: Math.random() * 80 + 60,
+                life: 1.0,
+                decay: Math.random() * 0.018 + 0.012
+            });
+        }
+
+        function renderSpace() {
+            ctx.fillStyle = "rgba(3, 1, 1, 0.38)";
+            ctx.fillRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+
+            const cx = spaceCanvas.width / 2;
+            const cy = spaceCanvas.height / 2;
+
+            // Render regular starfield / warp stars
+            for (let i = 0; i < stars.length; i++) {
+                const star = stars[i];
+                if (warpMode) {
+                    star.z -= warpSpeed;
+                    if (star.z <= 1) {
+                        star.z = spaceCanvas.width;
+                        star.x = (Math.random() - 0.5) * spaceCanvas.width * 2.2;
+                        star.y = (Math.random() - 0.5) * spaceCanvas.height * 2.2;
+                        star.pz = star.z;
+                    }
+                    const k = 140 / star.z;
+                    const px = star.x * k + cx;
+                    const py = star.y * k + cy;
+                    const pk = 140 / star.pz;
+                    const ppx = star.x * pk + cx;
+                    const ppy = star.y * pk + cy;
+
+                    if (px >= -50 && px <= spaceCanvas.width + 50 && py >= -50 && py <= spaceCanvas.height + 50) {
+                        const intensity = 1 - star.z / spaceCanvas.width;
+                        ctx.strokeStyle = `rgba(255, ${Math.floor(100 + intensity * 100)}, 40, ${0.5 + intensity * 0.5})`;
+                        ctx.lineWidth = Math.min(intensity * 3.5, 3.2);
+                        ctx.beginPath();
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(ppx, ppy);
+                        ctx.stroke();
+                    }
+                    star.pz = star.z;
+                } else {
+                    star.alpha += 0.008;
+                    if (star.alpha > Math.PI * 2) star.alpha = 0;
+                    const k = 140 / star.z;
+                    const px = star.x * k + cx;
+                    const py = star.y * k + cy;
+
+                    if (px >= 0 && px <= spaceCanvas.width && py >= 0 && py <= spaceCanvas.height) {
+                        const a = Math.abs(Math.sin(star.alpha));
+                        ctx.fillStyle = `rgba(255, 240, 220, ${a * 0.9})`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, star.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Render & Update Shooting Stars
+            if (!warpMode) {
+                // Random chance to spawn a new shooting star (~3-5 seconds average)
+                if (Math.random() < 0.008) {
+                    createShootingStar();
+                }
+
+                for (let i = shootingStars.length - 1; i >= 0; i--) {
+                    const ss = shootingStars[i];
+                    ss.x += ss.dx;
+                    ss.y += ss.dy;
+                    ss.life -= ss.decay;
+
+                    if (ss.life <= 0) {
+                        shootingStars.splice(i, 1);
+                        continue;
+                    }
+
+                    const tailX = ss.x - (ss.dx / Math.hypot(ss.dx, ss.dy)) * ss.length;
+                    const tailY = ss.y - (ss.dy / Math.hypot(ss.dx, ss.dy)) * ss.length;
+
+                    const grad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+                    grad.addColorStop(0, `rgba(255, 220, 180, ${ss.life})`);
+                    grad.addColorStop(0.3, `rgba(255, 85, 0, ${ss.life * 0.6})`);
+                    grad.addColorStop(1, 'rgba(255, 17, 0, 0)');
+
+                    ctx.save();
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    ctx.moveTo(ss.x, ss.y);
+                    ctx.lineTo(tailX, tailY);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            requestAnimationFrame(renderSpace);
+        }
+
+        window.addEventListener('resize', resizeSpaceCanvas);
+        resizeSpaceCanvas();
+        renderSpace();
+
+        // ========== 5. AUDIO ENGINE & VISUALIZERS ==========
+        let audioCtx = null;
+        let analyser = null;
+        let dataArray = null;
+
+        // List your top 3 audio track options
+        // Define tracks with custom weights (total 100) and HUD display titles
+        const playlist = [
+            { 
+                src: 'Blood_Guts_and_Pain_(Antti_Luode).ogg', 
+                title: 'Blood Guts and Pain — Antti Luode',
+                weight: 80 // 80% chance (Main Track)
+            },
+            { 
+                src: 'Blue_Whale_(Antti_Luode).ogg', 
+                title: 'Blue Whale — Antti Luode',
+                weight: 10 // 10% chance (Easter Egg)
+            },
+            { 
+                src: 'Canon_in_A_(Antti_Luode).ogg', 
+                title: 'Canon in A — Antti Luode',
+                weight: 10 // 10% chance (Easter Egg)
+            }
+        ];
+
+        // Helper function to pick based on weight
+        function getWeightedTrack(tracks) {
+            const totalWeight = tracks.reduce((sum, item) => sum + item.weight, 0);
+            let randomNum = Math.random() * totalWeight;
+
+            for (let track of tracks) {
+                if (randomNum < track.weight) {
+                    return track;
+                }
+                randomNum -= track.weight;
+            }
+            return tracks[0];
+        }
+
+        function setupAudioVisualizer() {
+            const audioElement = document.getElementById('bg-audio');
+
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                if (!analyser) {
+                    // Pick a weighted track dynamically
+                    const selectedTrack = getWeightedTrack(playlist);
+                    audioElement.src = selectedTrack.src;
+
+                    // Update the HUD credit text dynamically
+                    const creditElement = document.getElementById('credit-text');
+                    if (creditElement) {
+                        creditElement.textContent = selectedTrack.title;
+                    }
+
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 256;
+                    analyser.smoothingTimeConstant = 0.72;
+                    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                    audioElement.volume = 0.25; 
+                    const source = audioCtx.createMediaElementSource(audioElement);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    
+                    audioElement.play().catch(() => {});
+                }
+            } catch (err) {
+                console.warn('Audio setup skipped:', err.message);
+            }
+
+            renderVisualizers();
+        }
+
+        function renderVisualizers() {
+            renderPerspectiveVisualizer();
+            renderPlanetRadialVisualizer();
+            requestAnimationFrame(renderVisualizers);
+        }
+
+        function renderPerspectiveVisualizer() {
+            const vCanvas = document.getElementById('visualizer-canvas');
+            const vCtx = vCanvas.getContext('2d');
+            vCtx.clearRect(0, 0, vCanvas.width, vCanvas.height);
+
+            const centerX = vCanvas.width / 2;
+            const bottomY = vCanvas.height;
+            const horizonY = vCanvas.height * 0.08;
+
+            if (!analyser || !dataArray) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            const numBars = Math.min(64, dataArray.length);
+
+            for (let i = 0; i < numBars; i++) {
+                const value = dataArray[i] / 255;
+                const progress = i / numBars;
+
+                const currentY = bottomY - progress * (bottomY - horizonY);
+                const roadWidthAtY = (1 - progress * 0.8) * (vCanvas.width * 0.4);
+                const heightScale = (1 - progress * 0.55) * 75;
+
+                const barHeight = Math.max(2, value * heightScale);
+                const leftX = centerX - roadWidthAtY;
+                const rightX = centerX + roadWidthAtY;
+
+                vCtx.fillStyle = `rgba(255, ${Math.floor(50 + value * 180)}, 0, ${0.85 - progress * 0.45})`;
+                vCtx.fillRect(leftX - 5, currentY - barHeight, 4, barHeight);
+                vCtx.fillRect(rightX + 1, currentY - barHeight, 4, barHeight);
+            }
+        }
+
+        function renderPlanetRadialVisualizer() {
+            const pCanvas = document.getElementById('planet-vis-canvas');
+            if (!pCanvas) return;
+            const pCtx = pCanvas.getContext('2d');
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+
+            const cx = pCanvas.width / 2;
+            const cy = pCanvas.height / 2;
+            const baseRadius = 215;
+            const numBars = 54;
+            const hasData = analyser && dataArray;
+
+            if (hasData) analyser.getByteFrequencyData(dataArray);
+
+            const totalBins = hasData ? Math.floor(dataArray.length * 0.75) : 54;
+
+            for (let i = 0; i < numBars; i++) {
+                const progress = i / (numBars - 1);
+                const angleRight = -Math.PI / 2 + progress * Math.PI;
+                const angleLeft = -Math.PI / 2 - progress * Math.PI;
+
+                let valRight = 0, valLeft = 0;
+
+                if (hasData) {
+                    valRight = dataArray[Math.floor(progress * (totalBins - 1))] / 255;
+                    valLeft = dataArray[Math.floor((1 - progress) * (totalBins - 1))] / 255;
+                } else {
+                    const pulse = Date.now() * 0.003;
+                    valRight = 0.12 + Math.sin(pulse + i * 0.18) * 0.08;
+                    valLeft = 0.12 + Math.cos(pulse + i * 0.18) * 0.08;
+                }
+
+                const boostedRight = Math.pow(valRight, 1.25);
+                const boostedLeft = Math.pow(valLeft, 1.25);
+
+                drawRadialBar(pCtx, cx, cy, baseRadius, angleRight, Math.max(3, boostedRight * 95), boostedRight);
+                drawRadialBar(pCtx, cx, cy, baseRadius, angleLeft, Math.max(3, boostedLeft * 95), boostedLeft);
+            }
+        }
+
+        function drawRadialBar(pCtx, cx, cy, radius, angle, length, intensity) {
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const xStart = cx + cos * radius;
+            const yStart = cy + sin * radius;
+            const xEnd = cx + cos * (radius + length);
+            const yEnd = cy + sin * (radius + length);
+
+            const grad = pCtx.createLinearGradient(xStart, yStart, xEnd, yEnd);
+            grad.addColorStop(0, 'rgba(180, 10, 0, 0.7)');
+            grad.addColorStop(0.6, 'rgba(255, 85, 0, 0.8)');
+            grad.addColorStop(1, 'rgba(255, 170, 0, 0.9)');
+
+            pCtx.save();
+            pCtx.strokeStyle = grad;
+            pCtx.lineWidth = Math.min(3.8, 2.0 + intensity * 2.2);
+            pCtx.lineCap = 'round';
+            pCtx.beginPath();
+            pCtx.moveTo(xStart, yStart);
+            pCtx.lineTo(xEnd, yEnd);
+            pCtx.stroke();
+            pCtx.restore();
+        }
+
+        // ========== 6. UNLOCK SEQUENCE ==========
+        const analogBtn = document.getElementById('analog-btn');
+        const consoleStatus = document.getElementById('console-status');
+        const analogConsole = document.getElementById('analog-console');
+        const flash = document.getElementById('warp-flash');
+        const statusBar = document.getElementById('status-bar');
+
+        function runUnlockSequence() {
+            setupAudioVisualizer();
+            analogBtn.classList.add('pressed');
+            document.body.classList.add('beacon-active');
+            consoleStatus.textContent = "OVERRIDDEN";
+            consoleStatus.style.color = "#ff1100";
+            statusBar.textContent = 'STATUS: UNLATCHING BLAST DOORS';
+
+            // Mechanical Recoil Phase
+            setTimeout(() => {
+                document.body.classList.add('gate-recoil');
+            }, 300);
+
+            // Gate Sliding & Hyperdrive Warp Phase
+            setTimeout(() => {
+                analogConsole.style.opacity = '0';
+                analogConsole.style.pointerEvents = 'none';
+                document.body.classList.remove('gate-recoil');
+                document.body.classList.add('gate-open');
+                statusBar.textContent = 'STATUS: WARPING';
+
+                warpMode = true;
+                let accel = setInterval(() => {
+                    if (warpSpeed < 48) warpSpeed += 2.4;
+                    else clearInterval(accel);
+                }, 45);
+            }, 1000);
+
+            // Warp Flash & Settle Stage
+            setTimeout(() => {
+                flash.style.opacity = '0.95';
+                setTimeout(() => { flash.style.opacity = '0'; }, 600);
+
+                let decel = setInterval(() => {
+                    if (warpSpeed > 1.5) warpSpeed -= 3.5;
+                    else {
+                        warpSpeed = 1;
+                        warpMode = false;
+                        clearInterval(decel);
+                    }
+                }, 38);
+
+                document.body.classList.add('settled');
+                statusBar.textContent = 'STATUS: ONLINE';
+                statusBar.style.color = '#ffaa00';
+            }, 2800);
+        }
+
+        analogBtn.addEventListener('click', runUnlockSequence);
+        
+        // Secret typed sequence listener (Easter Egg)
+        (function() {
+            const targetSequence = 'tsl';
+            let inputBuffer = '';
+            let resetTimer = null;
+
+            window.addEventListener('keydown', (e) => {
+                // Prevent capturing typing inside input fields or textareas if any exist
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+                // Append lowercase character
+                inputBuffer += e.key.toLowerCase();
+
+                // Keep buffer only as long as target string length
+                if (inputBuffer.length > targetSequence.length) {
+                    inputBuffer = inputBuffer.slice(-targetSequence.length);
+                }
+
+                // Trigger redirect on match
+                if (inputBuffer === targetSequence) {
+                    window.location.href = 'terminal.html';
+                }
+
+                // Reset buffer after 1.5 seconds of inactivity
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => {
+                    inputBuffer = '';
+                }, 1500);
+            });
+        })();
+    </script>
+    <script>
+    // ========== NATIONSTATES BREAKING NEWS TICKER ==========
+    async function fetchRegionNews() {
+        const tickerText = document.getElementById('news-ticker-text');
+        const region = 'the_southern_lands';
+        const apiUrl = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=happenings;limit=10`;
+
+        try {
+            // Fetch XML feed via CORS proxy or standard CORS-enabled endpoint
+            const response = await fetch(apiUrl, {
+                headers: { 'User-Agent': 'The Southern Lands Command Dashboard' }
+            });
+            
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+            
+            const xmlText = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            const events = xmlDoc.getElementsByTagName('EVENT');
+
+            if (events.length === 0) {
+                tickerText.textContent = "NO RECENT REGIONAL EVENTS REPORTED.";
+                return;
+            }
+
+            const newsItems = [];
+                for (let i = 0; i < events.length; i++) {
+                    const textNode = events[i].getElementsByTagName('TEXT')[0];
+                    if (textNode) {
+                        let cleanText = textNode.textContent
+                            .replace(/@@(.*?)@@/g, '$1')
+                            .replace(/%%(.*?)%%/g, '$1')
+                            .replace(/%%.*?%%/g, '')
+                            .toUpperCase();
+                        newsItems.push(`<span class="intel-tag">[INTEL]</span> ${cleanText}`);
+                    }
+                }
+
+                // Use innerHTML instead of textContent so HTML tags render properly
+                tickerText.innerHTML = newsItems.join(' &nbsp;&nbsp;—&nbsp;&nbsp; ');
+        } catch (err) {
+            console.warn('Failed to fetch NationStates regional events:', err);
+            tickerText.textContent = "SIGNAL LOST: UNABLE TO RETRIEVE REGIONAL NEWS FEED.";
+        }
+    }
+
+    fetchRegionNews();
+    setInterval(fetchRegionNews, 120000); // Refresh feed every 2 minutes
+    </script>
+</body>
+</html>

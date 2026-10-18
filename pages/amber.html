@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Southern Lands — Tactical Radar & Command</title>
+    <style>
+        :root {
+            --amber-bright: #ffb000;
+            --amber-dim: #885e00;
+            --amber-dark: #1f1400;
+            --panel-bg: #120d05;
+            --panel-border: #3d2a0a;
+            --crt-glow: rgba(255, 176, 0, 0.4);
+            --red-alert: #ff3333;
+            --green-active: #33ff33;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050300;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber-bright);
+            user-select: none;
+        }
+
+        /* ========== MAIN VIEWPORT ========== */
+        .viewport {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            z-index: 1;
+        }
+
+        /* CRT Overlay with Scanlines & Glow */
+        .crt-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10;
+            background: 
+                linear-gradient(rgba(18, 12, 0, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                radial-gradient(circle at center, transparent 45%, rgba(5, 3, 0, 0.9) 100%);
+            background-size: 100% 4px, 100% 100%;
+            transition: opacity 0.05s ease;
+        }
+
+        .crt-overlay::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 0%, rgba(255, 176, 0, 0.03) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.6;
+            pointer-events: none;
+            animation: swipe 8s linear infinite;
+        }
+
+        @keyframes swipe {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* ========== UI OVERLAY LAYOUT ========== */
+        .ui-layer {
+            position: relative;
+            z-index: 5;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            pointer-events: none;
+        }
+
+        /* Top Header HUD */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(18, 13, 5, 0.92);
+            border: 2px solid var(--panel-border);
+            padding: 8px 12px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 4px var(--amber-bright);
+            backdrop-filter: blur(2px);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        .hud-status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-tag { color: var(--amber-dim); }
+        .status-val { color: var(--amber-bright); font-weight: bold; }
+
+        /* Middle Space with TV Monitor & Radar Display */
+        .middle-space {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 8px;
+            pointer-events: none;
+        }
+
+        /* CRT Monitor Display */
+        .tv-monitor {
+            pointer-events: auto;
+            position: relative;
+            width: 220px;
+            height: 140px;
+            background: #000;
+            border: 3px solid var(--panel-border);
+            border-top-color: var(--amber-dim);
+            box-shadow: 0 0 20px rgba(0,0,0,0.9), inset 0 0 15px rgba(255, 176, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .tv-screen {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: sepia(1) hue-rotate(320deg) saturate(3) contrast(1.2) brightness(0.8);
+            transition: opacity 0.15s ease;
+        }
+
+        #tv-static-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            image-rendering: pixelated;
+        }
+
+        .tv-banner {
+            position: relative;
+            z-index: 3;
+            background: rgba(10, 6, 0, 0.88);
+            border-top: 1px solid var(--amber-dim);
+            padding: 4px 6px;
+            font-size: 9px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 1px;
+        }
+
+        .tv-live {
+            color: var(--red-alert);
+            font-weight: bold;
+            animation: blink 1.2s step-end infinite;
+        }
+
+        .tv-tune-btn {
+            background: var(--panel-bg);
+            border: 1px solid var(--amber-dim);
+            color: var(--amber-bright);
+            font-family: inherit;
+            font-size: 8px;
+            padding: 1px 4px;
+            cursor: pointer;
+        }
+        .tv-tune-btn:hover {
+            background: var(--amber-dim);
+            color: #000;
+        }
+
+        /* Radar Panel */
+        .radar-panel {
+            pointer-events: auto;
+            position: relative;
+            width: 140px;
+            height: 140px;
+            background: rgba(10, 6, 0, 0.85);
+            border: 2px solid var(--panel-border);
+            box-shadow: 0 0 15px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .radar-title {
+            font-size: 8px;
+            color: var(--amber-dim);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            text-align: center;
+        }
+
+        #radar-canvas {
+            width: 110px;
+            height: 110px;
+            background: #050300;
+            border: 1px solid var(--amber-dim);
+            border-radius: 50%;
+            image-rendering: pixelated;
+        }
+
+        /* Bottom Command Console */
+        .command-console {
+            pointer-events: auto;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            border-top: 3px solid var(--amber-bright);
+            padding: 10px;
+            box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.9);
+        }
+
+        .ticker-box {
+            background: var(--amber-dark);
+            border: 1px solid var(--panel-border);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .box-title {
+            font-size: 8px;
+            color: var(--amber-dim);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .ticker-container {
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 10px;
+            background: #000;
+            border: 1px solid var(--panel-border);
+            padding: 4px;
+        }
+
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollTicker 30s linear infinite;
+            color: var(--amber-bright);
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .retro-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 6px 12px;
+            background: #241703;
+            border: 2px solid #54390b;
+            border-bottom-color: #0f0900;
+            border-right-color: #0f0900;
+            color: var(--amber-bright);
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-shadow: 0 0 3px var(--amber-bright);
+            text-align: center;
+        }
+
+        .retro-btn:hover {
+            background: #3d2703;
+            border-color: var(--amber-bright);
+            box-shadow: 0 0 8px var(--crt-glow);
+        }
+
+        .retro-btn:active {
+            background: #0f0900;
+            border-color: #0f0900;
+            border-bottom-color: #54390b;
+            border-right-color: #54390b;
+            transform: translateY(2px);
+        }
+
+        .btn-highlight {
+            color: #fff;
+            border-color: #ffcc00;
+            background: #4a3200;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes scrollTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        @media (max-width: 768px) {
+            .hud-header { font-size: 9px; padding: 6px 8px; }
+            .hud-status { display: none; }
+            .middle-space { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .tv-monitor { width: 170px; height: 110px; }
+            .radar-panel { width: 110px; height: 110px; }
+            #radar-canvas { width: 80px; height: 80px; }
+            .command-console { grid-template-columns: 1fr; }
+            .button-grid { grid-template-columns: repeat(2, 1fr); }
+            .retro-btn { min-height: 44px; font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="viewport">
+        <!-- Dynamic Background Renderer Canvas -->
+        <canvas id="game-canvas" width="480" height="270"></canvas>
+        <div class="crt-overlay" id="crt-overlay"></div>
+
+        <!-- UI Interactive Overlays -->
+        <div class="ui-layer">
+            <!-- Header HUD -->
+            <div class="hud-header">
+                <div>[ OUTPOST 09 // SOUTHERN LANDS ]</div>
+                <div class="hud-status" id="hud-status">
+                    <div><span class="status-tag">THEME:</span> <span class="status-val" id="hud-theme">WAR</span></div>
+                    <div><span class="status-tag">TRACK:</span> <span class="status-val" id="hud-track">INITIALIZING</span></div>
+                </div>
+                <div id="utc-clock">SYS_TIME: --:--:-- UTC</div>
+            </div>
+
+            <!-- Middle Space with TV Monitor & Radar Display -->
+            <div class="middle-space">
+                <div class="tv-monitor">
+                    <canvas id="tv-static-canvas" width="110" height="70"></canvas>
+                    <div class="tv-screen" id="tv-screen"></div>
+                    <div class="tv-banner">
+                        <span class="tv-live" id="tv-status-tag">● LIVE</span>
+                        <span id="tv-location-text">LOC: INTEL FEED</span>
+                        <button class="tv-tune-btn" id="tv-tune-btn">TUNE ↗</button>
+                    </div>
+                </div>
+
+                <div class="radar-panel">
+                    <div class="radar-title">SECTOR 04 SWEEP</div>
+                    <canvas id="radar-canvas" width="100" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- Bottom Command Panel -->
+            <div class="command-console">
+                <div class="ticker-box">
+                    <div class="box-title">TELETEX DISPATCH</div>
+                    <div class="ticker-container">
+                        <div class="ticker-text" id="news-ticker-text">
+                            INITIALIZING LINK... FETCHING REGIONAL INTEL... PATROLS REPORT HEAVY WEATHER ACROSS SECTOR 4...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-grid">
+                    <button class="retro-btn btn-highlight" id="next-track-btn">NEXT TRACK ↗</button>
+                    <a href="creator.html" target="_blank" rel="noopener noreferrer" class="retro-btn">NATION CREATOR</a>
+                    <a href="stats.html" target="_blank" rel="noopener noreferrer" class="retro-btn">STAT DATABASE</a>
+                    <a href="battle.html" target="_blank" rel="noopener noreferrer" class="retro-btn">BATTLE SYSTEM</a>
+                    <a href="map.html" target="_blank" rel="noopener noreferrer" class="retro-btn">TACTICAL MAP</a>
+                    <a href="new.html" target="_blank" rel="noopener noreferrer" class="retro-btn">START HERE ↗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 1. UTC CLOCK ==========
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toUTCString().split(' ')[4];
+            document.getElementById('utc-clock').textContent = `${dateStr} // ${timeStr} UTC`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ========== 2. WEIGHTED AUDIO & THEME CONTROLLER ==========
+        const playlist = [
+            { 
+                src: 'Blood_Guts_and_Pain_(Antti_Luode).ogg', 
+                title: 'Blood Guts and Pain',
+                theme: 'war',
+                weight: 33.3
+            },
+            { 
+                src: 'Blue_Whale_(Antti_Luode).ogg', 
+                title: 'Blue Whale',
+                theme: 'flood',
+                weight: 33.3
+            },
+            { 
+                src: 'Canon_in_A_(Antti_Luode).ogg', 
+                title: 'Canon in A',
+                theme: 'aftermath',
+                weight: 33.4
+            }
+        ];
+
+        let activeTheme = 'war';
+        let currentTrackIndex = -1;
+        const trackAudio = new Audio();
+
+        function selectWeightedTrack() {
+            const totalWeight = playlist.reduce((sum, item) => sum + item.weight, 0);
+            let random = Math.random() * totalWeight;
+            for (let i = 0; i < playlist.length; i++) {
+                if (random < playlist[i].weight) return i;
+                random -= playlist[i].weight;
+            }
+            return 0;
+        }
+
+        function loadTrack(index) {
+            currentTrackIndex = index;
+            const track = playlist[index];
+            activeTheme = track.theme;
+            trackAudio.src = track.src;
+
+            document.getElementById('hud-theme').textContent = track.theme.toUpperCase();
+            document.getElementById('hud-track').textContent = track.title;
+
+            trackAudio.play().catch(() => console.log('Awaiting user interaction for audio start'));
+        }
+
+        document.getElementById('next-track-btn').addEventListener('click', () => {
+            audioEngine.playClick();
+            loadTrack(selectWeightedTrack());
+        });
+
+        trackAudio.addEventListener('ended', () => {
+            loadTrack(selectWeightedTrack());
+        });
+
+        // ========== 3. WEB AUDIO SYNTHESIZER ENGINE ==========
+        class TerminalAudioEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playClick() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.03);
+
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.03);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.03);
+            }
+
+            playStatic() {
+                if (!this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.12;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const whiteNoise = this.ctx.createBufferSource();
+                whiteNoise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+
+                whiteNoise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                whiteNoise.start();
+            }
+        }
+
+        const audioEngine = new TerminalAudioEngine();
+        window.addEventListener('click', () => {
+            audioEngine.init();
+            if (currentTrackIndex === -1) loadTrack(selectWeightedTrack());
+        }, { once: true });
+
+        // ========== 4. COMPLEX DETAILED CANVAS ARCHITECTURE ENGINE ==========
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        const W = canvas.width;  // 480
+        const H = canvas.height; // 270
+
+        let frame = 0;
+        let tracers = [];
+        let rainDrops = [];
+        let debris = [];
+        let smokeParticles = [];
+
+        // Particles Initializers
+        for (let i = 0; i < 90; i++) {
+            rainDrops.push({
+                x: Math.random() * (W + 80) - 40,
+                y: Math.random() * H,
+                len: 10 + Math.random() * 8,
+                speed: 7 + Math.random() * 5
+            });
+        }
+
+        for (let i = 0; i < 20; i++) {
+            debris.push({
+                x: Math.random() * W,
+                y: 160 + Math.random() * 70,
+                w: Math.random() * 12 + 4,
+                h: Math.random() * 6 + 3,
+                speed: Math.random() * 0.3 + 0.08,
+                offset: Math.random() * Math.PI * 2
+            });
+        }
+
+        for (let i = 0; i < 15; i++) {
+            smokeParticles.push({
+                x: 80 + Math.random() * 300,
+                y: 100 + Math.random() * 80,
+                r: Math.random() * 12 + 6,
+                dx: (Math.random() - 0.2) * 0.5,
+                dy: -(Math.random() * 0.4 + 0.2),
+                alpha: Math.random() * 0.3 + 0.1
+            });
+        }
+
+        // Detailed Procedural Building Data Generator
+        const complexBuildings = [
+            { x: 10, w: 42, h: 180, layers: 12, style: 'ruin_grid', accent: 'rebar' },
+            { x: 48, w: 28, h: 130, layers: 9,  style: 'goth_spire', accent: 'holes' },
+            { x: 72, w: 55, h: 210, layers: 15, style: 'modern_shattered', accent: 'collapsed_top' },
+            { x: 122, w: 32, h: 100, layers: 7,  style: 'ruin_grid', accent: 'hollow' },
+            { x: 150, w: 62, h: 230, layers: 16, style: 'brutalist_complex', accent: 'rebar' },
+            { x: 208, w: 38, h: 140, layers: 10, style: 'goth_spire', accent: 'collapsed_top' },
+            { x: 242, w: 58, h: 195, layers: 13, style: 'modern_shattered', accent: 'holes' },
+            { x: 296, w: 34, h: 120, layers: 8,  style: 'ruin_grid', accent: 'hollow' },
+            { x: 326, w: 65, h: 220, layers: 15, style: 'brutalist_complex', accent: 'rebar' },
+            { x: 388, w: 45, h: 160, layers: 11, style: 'modern_shattered', accent: 'holes' },
+            { x: 430, w: 48, h: 135, layers: 9,  style: 'ruin_grid', accent: 'collapsed_top' }
+        ];
+
+        function renderScene() {
+            frame++;
+            ctx.clearRect(0, 0, W, H);
+
+            if (activeTheme === 'war') {
+                renderWarTheme();
+            } else if (activeTheme === 'flood') {
+                renderFloodTheme();
+            } else if (activeTheme === 'aftermath') {
+                renderAftermathTheme();
+            }
+
+            updateTVState();
+            requestAnimationFrame(renderScene);
+        }
+
+        // --- COMPLEX BUILDING ARCHITECTURE DRAWING ENGINE ---
+        function drawDetailedCity(baseColor, windowColor, rebarColor, isFlooded = false, isOvergrown = false) {
+            complexBuildings.forEach(b => {
+                const bY = H - b.h;
+                
+                // Base Solid Structure Wall
+                ctx.fillStyle = baseColor;
+                ctx.fillRect(b.x, bY, b.w, b.h);
+
+                // Internal Window Grid & Destroyed Fractures
+                const cols = Math.floor((b.w - 8) / 7);
+                const rows = b.layers;
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const wx = b.x + 5 + (c * 6);
+                        const wy = bY + 8 + (r * 11);
+                        
+                        // Don't render windows underwater if flooded
+                        if (isFlooded && wy > 165) continue;
+
+                        // Shattered destruction logic
+                        const isDestroyed = ((b.x + r * 7 + c * 13) % 5 === 0) || (b.accent === 'collapsed_top' && r < 3);
+
+                        if (!isDestroyed) {
+                            ctx.fillStyle = windowColor;
+                            ctx.fillRect(wx, wy, 3, 5);
+                        } else if (rebarColor && (r + c) % 3 === 0) {
+                            // Dark shattered hole interior
+                            ctx.fillStyle = '#020100';
+                            ctx.fillRect(wx - 1, wy - 1, 5, 7);
+                        }
+                    }
+                }
+
+                // Exposed Rebar Steel Frames on Damaged Tops
+                if (b.accent === 'rebar' && rebarColor) {
+                    ctx.strokeStyle = rebarColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for (let i = 0; i < b.w; i += 6) {
+                        ctx.moveTo(b.x + i, bY);
+                        ctx.lineTo(b.x + i + (i % 4 - 2), bY - (8 + (i % 7)));
+                    }
+                    ctx.stroke();
+                }
+
+                // Overgrown Vines / Moss Growth for Aftermath
+                if (isOvergrown) {
+                    ctx.fillStyle = '#1c4217';
+                    ctx.fillRect(b.x, bY + 40, 6, b.h - 40);
+                    ctx.fillRect(b.x + b.w - 8, bY + 20, 8, b.h - 20);
+                    ctx.fillStyle = '#2d5e26';
+                    ctx.fillRect(b.x + 2, bY + 60, 4, b.h - 60);
+                }
+            });
+        }
+
+        // --- WAR THEME RENDERER ---
+        function renderWarTheme() {
+            // Dark Atmospheric Sky Gradient
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#040200');
+            skyGrad.addColorStop(0.7, '#140a00');
+            skyGrad.addColorStop(1, '#241100');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Explosive Flash Backdrop
+            if (frame % 280 < 6 && Math.random() > 0.4) {
+                ctx.fillStyle = 'rgba(255, 140, 0, 0.25)';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // Atmospheric Rising Smoke
+            smokeParticles.forEach(p => {
+                ctx.fillStyle = `rgba(30, 20, 10, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.y < 30) {
+                    p.y = H - 40;
+                    p.x = 80 + Math.random() * 300;
+                }
+            });
+
+            // Draw Complex Detailed Skyline (War Palette)
+            drawDetailedCity('#140c02', 'rgba(255, 176, 0, 0.35)', '#4a2c06');
+
+            // High-Velocity Anti-Aircraft Tracers
+            if (frame % 8 === 0 && Math.random() > 0.2) {
+                tracers.push({
+                    x: Math.random() * W,
+                    y: H,
+                    dx: (Math.random() - 0.35) * 5,
+                    dy: -(Math.random() * 6 + 9),
+                    life: 35
+                });
+            }
+
+            ctx.lineWidth = 1.8;
+            for (let i = tracers.length - 1; i >= 0; i--) {
+                let t = tracers[i];
+                ctx.strokeStyle = `rgba(255, 80, 30, ${t.life / 35})`;
+                ctx.beginPath();
+                ctx.moveTo(t.x, t.y);
+                ctx.lineTo(t.x + t.dx * 2.5, t.y + t.dy * 2.5);
+                ctx.stroke();
+
+                t.x += t.dx;
+                t.y += t.dy;
+                t.life--;
+                if (t.life <= 0) tracers.splice(i, 1);
+            }
+
+            // Heavy Rain Effect
+            ctx.strokeStyle = 'rgba(255, 176, 0, 0.35)';
+            ctx.lineWidth = 1;
+            rainDrops.forEach(r => {
+                ctx.beginPath();
+                ctx.moveTo(r.x, r.y);
+                ctx.lineTo(r.x - 2, r.y + r.len);
+                ctx.stroke();
+
+                r.y += r.speed;
+                r.x -= 0.6;
+                if (r.y > H) {
+                    r.y = -r.len;
+                    r.x = Math.random() * (W + 80) - 40;
+                }
+            });
+        }
+
+        // --- FLOOD THEME RENDERER ---
+        function renderFloodTheme() {
+            // Deep Submerged Ocean Atmosphere
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#010a12');
+            skyGrad.addColorStop(0.6, '#031a28');
+            skyGrad.addColorStop(1, '#062d42');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Draw Submerged Buildings (Underwater palette)
+            drawDetailedCity('#031521', 'rgba(0, 210, 255, 0.25)', '#08334a', true);
+
+            // Water Body Line Overlay
+            ctx.fillStyle = 'rgba(5, 35, 55, 0.78)';
+            ctx.fillRect(0, 165, W, H - 165);
+
+            // Reflected City Shadow in Water
+            ctx.fillStyle = 'rgba(1, 10, 18, 0.5)';
+            ctx.fillRect(0, 165, W, 25);
+
+            // Floating Urban Debris
+            ctx.fillStyle = '#020d14';
+            debris.forEach(item => {
+                let waveY = item.y + Math.sin((frame * 0.04) + item.offset) * 2.5;
+                ctx.fillRect(item.x, waveY, item.w, item.h);
+                item.x += item.speed;
+                if (item.x > W) item.x = -item.w;
+            });
+
+            // Waves Surface Ripples
+            ctx.strokeStyle = 'rgba(60, 170, 220, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let x = 0; x <= W; x += 12) {
+                let y = 165 + Math.sin((x * 0.04) + (frame * 0.035)) * 3;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        // --- AFTERMATH THEME RENDERER ---
+        function renderAftermathTheme() {
+            // Serene Clear Daylight Sky
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#3a7bd5');
+            skyGrad.addColorStop(0.5, '#5691e6');
+            skyGrad.addColorStop(1, '#93c5fd');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Sun Disc
+            ctx.fillStyle = 'rgba(255, 255, 230, 0.9)';
+            ctx.beginPath();
+            ctx.arc(390, 45, 22, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw Overgrown Ruined City (Rebirth Palette)
+            drawDetailedCity('#1a2e19', 'rgba(255, 255, 255, 0.45)', '#2d4d2b', false, true);
+
+            // Layered Grass Rolling Hills
+            ctx.fillStyle = '#224a20';
+            ctx.beginPath();
+            ctx.ellipse(140, 245, 240, 75, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#2e632b';
+            ctx.beginPath();
+            ctx.ellipse(370, 255, 210, 70, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Foreground Detailing: Abandoned Vehicle & Playing Children
+            renderRebirthPixelArt();
+        }
+
+        function renderRebirthPixelArt() {
+            // Rusted Overgrown Vehicle
+            ctx.fillStyle = '#4a3b32';
+            ctx.fillRect(90, 208, 48, 16);
+            ctx.fillRect(100, 198, 26, 10);
+            ctx.fillStyle = '#111';
+            ctx.fillRect(98, 222, 10, 6);
+            ctx.fillRect(122, 222, 10, 6);
+            ctx.fillStyle = '#2d5e26'; // Overgrown Vines on Car
+            ctx.fillRect(88, 210, 12, 14);
+            ctx.fillRect(116, 196, 8, 8);
+
+            // Pixel Children Playing
+            let bounce = Math.sin(frame * 0.12) * 2.5;
+            ctx.fillStyle = '#d32f2f'; // Child 1 Red Shirt
+            ctx.fillRect(172, 203 + bounce, 5, 8);
+            ctx.fillStyle = '#ffcc80'; // Head
+            ctx.fillRect(172, 197 + bounce, 5, 5);
+
+            ctx.fillStyle = '#1976d2'; // Child 2 Blue Shirt
+            ctx.fillRect(185, 205 - bounce, 5, 8);
+            ctx.fillStyle = '#ffcc80'; // Head
+            ctx.fillRect(185, 199 - bounce, 5, 5);
+        }
+
+        // ========== 5. TV MONITOR THEME CONTROLLER ==========
+        const disasterFeed = [
+            { location: "LOC: NEW YORK, US", image: "images/new-york.jpg" },
+            { location: "LOC: PARIS, FRANCE", image: "images/paris.jpg" },
+            { location: "LOC: LONDON, UK", image: "images/london.jpg" },
+            { location: "LOC: TOKYO, JAPAN", image: "images/tokyo.jpg" }
+        ];
+
+        let feedIndex = 0;
+        const tvScreen = document.getElementById('tv-screen');
+        const tvLocationText = document.getElementById('tv-location-text');
+        const tvStatusTag = document.getElementById('tv-status-tag');
+        const tvTuneBtn = document.getElementById('tv-tune-btn');
+        const staticCanvas = document.getElementById('tv-static-canvas');
+        const sCtx = staticCanvas.getContext('2d');
+
+        function renderStatic() {
+            const imgData = sCtx.createImageData(staticCanvas.width, staticCanvas.height);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const v = Math.random() * 255;
+                data[i]     = v;
+                data[i + 1] = v * 0.7;
+                data[i + 2] = 0;
+                data[i + 3] = 200;
+            }
+            sCtx.putImageData(imgData, 0, 0);
+        }
+
+        function cycleTVFeed() {
+            audioEngine.playStatic();
+            staticCanvas.style.opacity = '1';
+            tvScreen.style.opacity = '0.2';
+            let frames = 0;
+
+            const interval = setInterval(() => {
+                renderStatic();
+                frames++;
+                if (frames === 5) {
+                    feedIndex = (feedIndex + 1) % disasterFeed.length;
+                    tvScreen.style.backgroundImage = `url('${disasterFeed[feedIndex].image}')`;
+                    tvLocationText.textContent = disasterFeed[feedIndex].location;
+                }
+                if (frames > 10) {
+                    clearInterval(interval);
+                    tvScreen.style.opacity = '1';
+                    staticCanvas.style.opacity = '0';
+                }
+            }, 30);
+        }
+
+        tvTuneBtn.addEventListener('click', cycleTVFeed);
+
+        function updateTVState() {
+            if (activeTheme === 'war') {
+                tvStatusTag.textContent = '● ALERT';
+                tvStatusTag.style.color = 'var(--red-alert)';
+                tvLocationText.textContent = 'EAS NATIONAL ALERT';
+                tvScreen.style.backgroundImage = 'none';
+                tvScreen.style.backgroundColor = (frame % 40 < 20) ? '#880000' : '#440000';
+            } else if (activeTheme === 'flood') {
+                tvStatusTag.textContent = '● LIVE';
+                tvStatusTag.style.color = 'var(--red-alert)';
+                if (frame % 180 === 0) cycleTVFeed();
+            } else if (activeTheme === 'aftermath') {
+                tvStatusTag.textContent = 'OFFLINE';
+                tvStatusTag.style.color = 'var(--amber-dim)';
+                tvLocationText.textContent = 'NO SIGNAL / BROKEN';
+                tvScreen.style.backgroundImage = 'none';
+                tvScreen.style.backgroundColor = '#050505';
+            }
+        }
+
+        // ========== 6. TACTICAL RADAR CANVAS ENGINE ==========
+        const radarCanvas = document.getElementById('radar-canvas');
+        const rCtx = radarCanvas.getContext('2d');
+        let radarAngle = 0;
+
+        const blips = [
+            { r: 25, angle: 0.8 },
+            { r: 38, angle: 2.4 },
+            { r: 15, angle: 4.1 }
+        ];
+
+        function renderRadar() {
+            const rw = radarCanvas.width;
+            const rh = radarCanvas.height;
+            const cx = rw / 2;
+            const cy = rh / 2;
+
+            rCtx.fillStyle = 'rgba(5, 3, 0, 0.15)';
+            rCtx.fillRect(0, 0, rw, rh);
+
+            rCtx.strokeStyle = 'rgba(136, 94, 0, 0.4)';
+            rCtx.lineWidth = 1;
+            [15, 30, 45].forEach(radius => {
+                rCtx.beginPath();
+                rCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                rCtx.stroke();
+            });
+
+            rCtx.beginPath();
+            rCtx.moveTo(cx, 0); rCtx.lineTo(cx, rh);
+            rCtx.moveTo(0, cy); rCtx.lineTo(rw, cy);
+            rCtx.stroke();
+
+            radarAngle += 0.04;
+            if (radarAngle > Math.PI * 2) radarAngle = 0;
+
+            const sweepX = cx + Math.cos(radarAngle) * 46;
+            const sweepY = cy + Math.sin(radarAngle) * 46;
+
+            rCtx.strokeStyle = '#ffb000';
+            rCtx.lineWidth = 1.5;
+            rCtx.beginPath();
+            rCtx.moveTo(cx, cy);
+            rCtx.lineTo(sweepX, sweepY);
+            rCtx.stroke();
+
+            blips.forEach(b => {
+                const bx = cx + Math.cos(b.angle) * b.r;
+                const by = cy + Math.sin(b.angle) * b.r;
+                const diff = Math.abs(radarAngle - b.angle);
+
+                if (diff < 0.1) {
+                    rCtx.fillStyle = '#ff3333';
+                    rCtx.fillRect(bx - 2, by - 2, 4, 4);
+                } else {
+                    rCtx.fillStyle = 'rgba(255, 176, 0, 0.6)';
+                    rCtx.fillRect(bx - 1, by - 1, 2, 2);
+                }
+            });
+
+            requestAnimationFrame(renderRadar);
+        }
+
+        // ========== 7. NATIONSTATES RSS INTEL TICKER ==========
+        async function fetchRegionNews() {
+            const tickerText = document.getElementById('news-ticker-text');
+            const region = 'the_southern_lands';
+            const apiUrl = `https://www.nationstates.net/cgi-bin/api.cgi?region=${region}&q=happenings;limit=10`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: { 'User-Agent': 'The Southern Lands Command Dashboard' }
+                });
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                const events = xmlDoc.getElementsByTagName('EVENT');
+
+                if (events.length === 0) {
+                    tickerText.textContent = "NO RECENT REGIONAL EVENTS REPORTED.";
+                    return;
+                }
+
+                const newsItems = [];
+                for (let i = 0; i < events.length; i++) {
+                    const textNode = events[i].getElementsByTagName('TEXT')[0];
+                    if (textNode) {
+                        let cleanText = textNode.textContent
+                            .replace(/@@(.*?)@@/g, '$1')
+                            .replace(/%%(.*?)%%/g, '$1')
+                            .toUpperCase();
+                        newsItems.push(`[INTEL] ${cleanText}`);
+                    }
+                }
+                tickerText.textContent = newsItems.join(' — ');
+            } catch (err) {
+                tickerText.textContent = "SIGNAL LOST: UNABLE TO RETRIEVE REGIONAL NEWS FEED.";
+            }
+        }
+
+        // Button Click Audio FX Triggers
+        document.querySelectorAll('.retro-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => audioEngine.playClick());
+        });
+
+        // Kick off animations & feeds
+        renderScene();
+        renderRadar();
+        fetchRegionNews();
+        setInterval(fetchRegionNews, 120000);
+    </script>
+</body>
+</html>

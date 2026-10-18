@@ -3,161 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSL Global Strategic Mapping System v2.8</title>
+    <title>TSL Global Strategic Mapping System v3.0</title>
     <style>
+        :root {
+            --bg: #08080a;
+            --panel: #0e0e12;
+            --amber: #ffaa00;
+            --amber-dim: #8a6010;
+            --amber-glow: rgba(255, 170, 0, 0.35);
+            --cyan: #00e8f0;
+            --text: #e8e8e0;
+            --muted: #8a8a80;
+            --border: #3a2a10;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #0c0c0c;
-            color: #00ff00;
-            margin: 0;
+            background: var(--bg);
+            color: var(--text);
             overflow: hidden;
             user-select: none;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
+
+        /* ========== NAV ========== */
         #nav-header {
-            height: 45px;
-            background: #111;
-            border-bottom: 2px solid #ffaa00;
+            height: 48px;
+            background: #0a0a0c;
+            border-bottom: 1px solid var(--amber);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            justify-content: space-between;
+            padding: 0 18px;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            box-shadow: 0 2px 16px rgba(0,0,0,0.85), 0 0 20px rgba(255,170,0,0.12);
             flex-shrink: 0;
         }
-        .nav-links-left {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+
+        .nav-links-left { display: flex; gap: 8px; align-items: center; }
+
         .nav-link {
-            color: #ffaa00;
+            color: var(--text);
             text-decoration: none;
             font-weight: bold;
-            border: 1px solid #ffaa00;
-            padding: 5px 15px;
-            background: #1a1a1a;
-            font-size: 13px;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            background: #14120a;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.15s;
         }
-        .nav-link:hover { background: #ffaa00; color: #0c0c0c; }
-        .title { margin-left: 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; color: #fff; }
 
-        /* Workspace flex alignment */
-        #main-workspace { 
-            display: flex; 
-            flex-direction: row;
-            flex: 1; 
-            width: 100vw; 
-            height: calc(100vh - 45px); 
-            position: relative; 
+        .nav-link:hover {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+            box-shadow: 0 0 12px var(--amber-glow);
+        }
+
+        .nav-link.active {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: var(--amber);
+            text-shadow: 0 0 10px var(--amber-glow);
+            text-transform: uppercase;
+        }
+
+        /* ========== WORKSPACE — full bleed ========== */
+        #main-workspace {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            position: relative;
             overflow: hidden;
         }
-        
-        #map-container { 
-            flex: 1 1 auto; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            overflow: hidden; 
-            position: relative; 
-            height: 100%; 
-        }
-        
-        #world-map-wrapper { 
-            position: relative; 
-            width: min(1200px, 95vw);
-            height: min(650px, calc(100vh - 80px));
-            border: 1px dashed #ffaa00; 
-            background: #040812; 
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.9); 
-            overflow: hidden; 
-            cursor: grab;
-        }
-        #world-map-wrapper:active {
-            cursor: grabbing;
+
+        #map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #04060c;
+            min-width: 0;
         }
 
-        /* Scanline Overlay */
-        #world-map-wrapper::before { 
-            content: " "; 
-            display: block; 
-            position: absolute; 
-            top: 0; left: 0; bottom: 0; right: 0; 
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03)); 
-            z-index: 10; 
-            background-size: 100% 4px, 6px 100%; 
-            pointer-events: none; 
+        /* Full-bleed map surface */
+        #world-map-wrapper {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            cursor: grab;
+            background:
+                radial-gradient(ellipse at 50% 45%, #0a1220 0%, #04060c 70%);
         }
+
+        #world-map-wrapper:active { cursor: grabbing; }
 
         #map-viewport-transform {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 2271px;
             height: 1133px;
             transform-origin: 0 0;
-            will-change: transform;
+            /* will-change removed — can force early rasterization & blur when scaled */
         }
 
+        /* Inline SVG map — true vectors, sharp at any CSS scale */
         #vector-map {
             width: 2271px;
             height: 1133px;
             display: block;
             pointer-events: none;
-            filter: hue-rotate(180deg) contrast(1.2) brightness(0.9);
+            overflow: hidden;
+            shape-rendering: geometricPrecision;
         }
-        
-        #audio-popup-container {
-            position: absolute;
-            bottom: 20px;
-            right: 80px;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        #audio-toggle-btn {
-            background: #111;
-            border: 1px solid #ffaa00;
-            color: #ffaa00;
-            padding: 8px 12px;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-        #audio-toggle-btn:hover { background: #ffaa00; color: #0c0c0c; }
-        #soundcloud-audio-dock {
-            width: 320px;
-            height: 180px;
-            background: #000;
-            border: 1px solid #ffaa00;
-            margin-top: 5px;
-            display: none;
-            box-shadow: 0 0 15px rgba(0,0,0,0.9);
-            box-sizing: border-box;
-        }
-        #soundcloud-audio-dock.active { display: block; }
-        #soundcloud-audio-dock iframe { width: 100%; height: 100%; border: none; }
 
-        #help-hint {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-size: 11px;
-            color: #ffaa00;
-            opacity: 0.7;
-            z-index: 50;
+        #vector-map svg {
+            width: 2271px;
+            height: 1133px;
+            display: block;
             pointer-events: none;
+            shape-rendering: geometricPrecision;
         }
 
-        /* SVG Event Passthrough Rules */
-        #map-overlay {
-            pointer-events: none !important;
+        /* Tactical grid — lives in map space, pans/zooms with map */
+        #tactical-grid {
+            position: absolute;
+            top: 0; left: 0;
+            width: 2271px;
+            height: 1133px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.45;
         }
+
+        #tactical-grid.hidden { display: none; }
+
+        #map-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 2271px;
+            height: 1133px;
+            pointer-events: none !important;
+            z-index: 6;
+        }
+
         #borders-layer path,
         #borders-layer polygon,
         #capitals-layer circle,
@@ -168,94 +169,402 @@
         }
 
         .nation-border {
-            transition: fill-opacity 0.2s ease, stroke-width 0.2s ease;
+            transition: fill-opacity 0.2s ease, stroke-width 0.2s ease, filter 0.2s ease;
         }
+
         .nation-border:hover {
-            fill-opacity: 0.8 !important;
+            fill-opacity: 0.85 !important;
+            stroke-width: 3px !important;
+            stroke-opacity: 1;
+        }
+
+        .nation-border.selected {
+            fill-opacity: 0.88 !important;
             stroke-width: 3.5px !important;
-            filter: drop-shadow(0 0 8px currentColor);
+            stroke-opacity: 1;
         }
 
-        /* Floating Tactical Tooltip Card */
-        #map-tooltip {
-            position: fixed;
-            display: none;
-            pointer-events: none;
-            z-index: 10000;
-            background: rgba(10, 10, 10, 0.95);
-            border: 1px solid #ffaa00;
-            color: #00ff00;
-            padding: 10px 14px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 0 5px rgba(255, 170, 0, 0.4);
-            min-width: 180px;
-            border-radius: 2px;
+        /* Constant *screen* size markers (divide by zoom so they don't balloon) */
+        .map-marker-dot,
+        .site-marker,
+        .capital-marker-dot {
+            vector-effect: non-scaling-stroke;
         }
-        #map-tooltip .tooltip-header {
-            color: #ffaa00;
+
+        .nation-border { vector-effect: non-scaling-stroke; }
+        #draft-layer polygon { vector-effect: non-scaling-stroke; }
+
+        /* Golden gleam for established capitals */
+        .capital-marker-dot {
+            fill: #ffd700;
+            stroke: #5a4000;
+            stroke-width: 1.5;
+            filter: url(#capital-gleam);
+            animation: capitalGleam 3.5s ease-in-out infinite;
+        }
+
+        @keyframes capitalGleam {
+            0%, 100% { opacity: 0.85; }
+            40% { opacity: 1; }
+            55% { opacity: 0.9; }
+            70% { opacity: 1; }
+        }
+
+        .site-city { fill: #ffe08a; stroke: #3a3010; }
+        .site-base { fill: #ff5555; stroke: #400000; }
+        .site-port { fill: #4ecdc4; stroke: #0a3030; }
+        .site-draft-cap { fill: #ffd700; stroke: #000; }
+
+        .type-chips {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .type-chip {
+            font-family: inherit;
+            font-size: 10px;
             font-weight: bold;
-            font-size: 13px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 4px;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-        #map-tooltip .tooltip-row {
-            margin: 3px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        #map-tooltip .tooltip-label {
-            color: #aaa;
+            letter-spacing: 0.4px;
+            padding: 7px 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: #16140e;
+            color: var(--amber);
+            text-align: center;
+            transition: all 0.15s;
         }
 
-        /* Holographic Nation Dossier Panel */
-        #nation-dossier-panel {
+        .type-chip:hover {
+            border-color: var(--amber);
+            background: #1e1a10;
+        }
+
+        .type-chip.active {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+            box-shadow: 0 0 10px rgba(255,170,0,0.35);
+        }
+
+        .type-chip .key {
+            opacity: 0.55;
+            font-size: 9px;
+            margin-right: 3px;
+        }
+
+        .type-chip.active .key { opacity: 0.8; }
+
+        .sites-list {
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #2a2210;
+            background: #080808;
+            font-size: 10px;
+        }
+
+        .sites-list:empty::after {
+            content: "No sites placed yet.";
+            display: block;
+            padding: 8px;
+            color: #555;
+        }
+
+        .site-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-bottom: 1px solid #1a1810;
+            color: #ccc;
+        }
+
+        .site-row:last-child { border-bottom: none; }
+
+        .site-row .kind {
+            font-weight: bold;
+            min-width: 42px;
+            color: var(--amber);
+        }
+
+        .site-row .kind.cap { color: #ffd700; }
+        .site-row .kind.city { color: #ffe08a; }
+        .site-row .kind.base { color: #ff6a6a; }
+        .site-row .kind.port { color: #4ecdc4; }
+
+        .site-row input {
+            flex: 1;
+            min-width: 0;
+            background: #0c0c0e;
+            border: 1px solid #2a2210;
+            color: #eee;
+            font-family: inherit;
+            font-size: 10px;
+            padding: 3px 5px;
+        }
+
+        .site-row input:focus {
+            outline: none;
+            border-color: var(--amber);
+        }
+
+        .site-row .del {
+            background: transparent;
+            border: 1px solid #5a2020;
+            color: #ff6644;
+            font-family: inherit;
+            font-size: 9px;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+
+        .site-row .del:hover { background: #ff3300; color: #000; }
+
+        .draw-section-label {
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: #666;
+            text-transform: uppercase;
+            margin: 8px 0 6px;
+            border-bottom: 1px dashed #2a2210;
+            padding-bottom: 3px;
+        }
+
+        /* HUD corners */
+        .hud-corner {
             position: absolute;
-            top: 14px;
-            left: -380px;
-            width: 350px;
-            height: calc(100% - 28px);
-            background: rgba(8, 20, 30, 0.92);
-            border: 1px solid #00f0ff;
-            border-left: 3px solid #00f0ff;
-            border-radius: 4px;
-            z-index: 250;
-            transition: transform 0.35s ease;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), 0 10px 30px rgba(0, 0, 0, 0.8);
+            width: 28px;
+            height: 28px;
+            z-index: 40;
+            pointer-events: none;
+            border-color: var(--amber);
+            opacity: 0.55;
+        }
+        .hud-corner.tl { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
+        .hud-corner.tr { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
+        .hud-corner.bl { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
+        .hud-corner.br { bottom: 12px; right: 78px; border-bottom: 2px solid; border-right: 2px solid; }
+
+        #help-hint {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--amber);
+            opacity: 0.55;
+            z-index: 45;
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 4px #000;
+            white-space: nowrap;
+        }
+
+        /* ========== VHS OVERLAY ========== */
+        .vhs-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .vhs-scanlines {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 3px,
+                rgba(0,0,0,0.1) 3px,
+                rgba(0,0,0,0.1) 4px
+            );
+            opacity: 0.4;
+        }
+
+        /* Static grain only — no continuous animation (perf) */
+        .vhs-grain {
+            position: absolute;
+            inset: 0;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+            background-size: 180px 180px;
+            pointer-events: none;
+        }
+
+        .vhs-track { display: none; }
+
+        .vhs-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,0.45) 100%),
+                linear-gradient(90deg, rgba(255,80,20,0.025) 0%, transparent 10%, transparent 90%, rgba(40,100,255,0.03) 100%);
+        }
+
+        /* ========== SIDE TOOLBAR ========== */
+        #map-side-controls {
+            width: 56px;
+            height: 100%;
+            background: linear-gradient(180deg, #12100c 0%, #0c0c0e 100%);
+            border-left: 1px solid var(--amber);
             display: flex;
             flex-direction: column;
-            font-family: 'Courier New', Courier, monospace;
-            box-sizing: border-box;
-            padding: 16px;
-            overflow: hidden;
+            align-items: center;
+            padding: 14px 0;
+            gap: 8px;
+            z-index: 200;
+            flex-shrink: 0;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .side-btn {
+            width: 40px;
+            height: 40px;
+            background: #16140e;
+            border: 1px solid var(--border);
+            color: var(--amber);
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+            position: relative;
+            border-radius: 3px;
+        }
+
+        .side-btn:hover {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+            box-shadow: 0 0 14px var(--amber-glow);
+        }
+
+        .side-btn.active {
+            background: var(--amber);
+            color: #111;
+            border-color: var(--amber);
+            box-shadow: 0 0 12px var(--amber-glow), inset 0 0 8px rgba(0,0,0,0.2);
+        }
+
+        .side-btn::after {
+            content: attr(data-tip);
+            position: absolute;
+            right: calc(100% + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #0a0a0c;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            white-space: nowrap;
             opacity: 0;
             pointer-events: none;
+            transition: opacity 0.15s;
+            z-index: 300;
+        }
+
+        .side-btn:hover::after { opacity: 1; }
+
+        .side-btn-divider {
+            width: 28px;
+            height: 1px;
+            background: var(--amber);
+            opacity: 0.25;
+            margin: 4px 0;
+        }
+
+        .side-coord-panel {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--amber);
+            text-align: center;
+            padding: 8px 4px 0;
+            border-top: 1px dashed rgba(255,170,0,0.3);
+            width: 100%;
+            align-items: center;
+        }
+
+        .side-coord-panel.open { display: flex; }
+
+        .side-coord-panel label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+            gap: 2px;
+        }
+
+        .side-coord-panel input {
+            width: 44px;
+            background: #000;
+            border: 1px solid var(--border);
+            color: #fff;
+            font-size: 10px;
+            text-align: center;
+            padding: 3px;
+            font-family: inherit;
+        }
+
+        .side-coord-panel input:focus {
+            outline: none;
+            border-color: var(--amber);
+        }
+
+        /* ========== DOSSIER ========== */
+        #nation-dossier-panel {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 340px;
+            max-height: calc(100% - 24px);
+            background: rgba(8, 14, 22, 0.94);
+            border: 1px solid var(--cyan);
+            border-left: 3px solid var(--cyan);
+            border-radius: 3px;
+            z-index: 250;
+            box-shadow: 0 0 24px rgba(0, 232, 240, 0.18), 0 12px 40px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(-24px) scale(0.98);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            /* backdrop-filter removed for perf */
         }
 
         #nation-dossier-panel.open {
-            transform: translateX(394px);
-            opacity: 0.96;
+            opacity: 0.97;
+            transform: translateX(0) scale(1);
             pointer-events: auto;
         }
 
         #nation-dossier-panel::before {
             content: "";
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(rgba(0, 240, 255, 0.05) 50%, rgba(0, 0, 0, 0.35) 50%);
+            inset: 0;
+            background: linear-gradient(rgba(0, 232, 240, 0.04) 50%, rgba(0,0,0,0.25) 50%);
             background-size: 100% 4px;
             pointer-events: none;
-            z-index: 2;
-            opacity: 0.6;
+            z-index: 1;
+            opacity: 0.5;
         }
 
         .dossier-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 2px solid #00f0ff;
+            border-bottom: 2px solid var(--cyan);
             padding-bottom: 10px;
             margin-bottom: 12px;
             position: relative;
@@ -264,20 +573,25 @@
 
         .dossier-title-block { flex: 1; min-width: 0; }
         .dossier-title {
-            color: #00f0ff;
-            font-size: 16px;
+            color: var(--cyan);
+            font-size: 15px;
             font-weight: bold;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            text-shadow: 0 0 6px rgba(0, 240, 255, 0.6);
+            text-shadow: 0 0 8px rgba(0, 232, 240, 0.5);
             line-height: 1.25;
             word-break: break-word;
         }
 
-        .dossier-subtitle { color: #ffaa00; font-size: 10px; margin-top: 4px; letter-spacing: 1px; }
+        .dossier-subtitle {
+            color: var(--amber);
+            font-size: 10px;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
 
         .dossier-close {
-            background: rgba(255, 51, 0, 0.15);
+            background: rgba(255, 51, 0, 0.12);
             border: 1px solid #ff3300;
             color: #ff3300;
             font-family: inherit;
@@ -288,7 +602,7 @@
             flex-shrink: 0;
             margin-left: 10px;
             border-radius: 2px;
-            transition: background 0.15s ease;
+            transition: background 0.15s;
         }
 
         .dossier-close:hover { background: #ff3300; color: #000; }
@@ -296,7 +610,6 @@
         .dossier-scroll {
             overflow-y: auto;
             overscroll-behavior: contain;
-            pointer-events: auto;
             flex-grow: 1;
             padding-right: 6px;
             position: relative;
@@ -304,28 +617,25 @@
         }
 
         .dossier-scroll::-webkit-scrollbar { width: 4px; }
-        .dossier-scroll::-webkit-scrollbar-track { background: rgba(0, 20, 30, 0.6); }
-        .dossier-scroll::-webkit-scrollbar-thumb { background: #00f0ff; border-radius: 2px; }
+        .dossier-scroll::-webkit-scrollbar-track { background: rgba(0,20,30,0.5); }
+        .dossier-scroll::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 2px; }
 
         .dossier-section {
-            margin-bottom: 12px;
-            background: rgba(0, 240, 255, 0.05);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            margin-bottom: 10px;
+            background: rgba(0, 232, 240, 0.04);
+            border: 1px solid rgba(0, 232, 240, 0.22);
             padding: 10px 12px;
             border-radius: 3px;
         }
 
         .dossier-section-title {
-            font-size: 11px;
-            color: #00f0ff;
+            font-size: 10px;
+            color: var(--cyan);
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed rgba(0, 240, 255, 0.3);
+            margin-bottom: 8px;
+            border-bottom: 1px dashed rgba(0, 232, 240, 0.25);
             padding-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .dossier-row {
@@ -333,7 +643,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 12px;
-            margin: 7px 0;
+            margin: 6px 0;
             gap: 8px;
         }
 
@@ -347,49 +657,52 @@
             font-weight: bold;
             border-radius: 2px;
             border: 1px solid currentColor;
-            letter-spacing: 0.5px;
             min-width: 28px;
             text-align: center;
         }
 
-        .grade-S { color: #00ffcc; background: rgba(0, 255, 204, 0.15); border-color: #00ffcc; }
-        .grade-A { color: #00ff66; background: rgba(0, 255, 102, 0.12); border-color: #00ff66; }
-        .grade-B { color: #ffaa00; background: rgba(255, 170, 0, 0.12); border-color: #ffaa00; }
-        .grade-C { color: #ffff55; background: rgba(255, 255, 85, 0.1); border-color: #ffff55; }
-        .grade-D { color: #ff6644; background: rgba(255, 102, 68, 0.12); border-color: #ff6644; }
-        .grade-F { color: #ff2255; background: rgba(255, 34, 85, 0.15); border-color: #ff2255; }
+        .grade-S { color: #00ffcc; background: rgba(0,255,204,0.12); }
+        .grade-A { color: #00ff66; background: rgba(0,255,102,0.1); }
+        .grade-B { color: #ffaa00; background: rgba(255,170,0,0.1); }
+        .grade-C { color: #ffff55; background: rgba(255,255,85,0.08); }
+        .grade-D { color: #ff6644; background: rgba(255,102,68,0.1); }
+        .grade-F { color: #ff2255; background: rgba(255,34,85,0.12); }
 
         .dossier-power-track {
             width: 100%;
             height: 8px;
-            background: rgba(0, 15, 25, 0.9);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            margin-top: 8px;
+            background: rgba(0,15,25,0.9);
+            border: 1px solid rgba(0,232,240,0.25);
+            margin-top: 6px;
             border-radius: 2px;
             overflow: hidden;
         }
 
-        .dossier-power-fill { height: 100%; width: 0%; background: #00f0ff; transition: width 0.3s ease; }
+        .dossier-power-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--cyan);
+            transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
 
         .dossier-power-meta {
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            margin-top: 6px;
+            margin-top: 5px;
             color: #8ab4f8;
         }
 
-        .dossier-power-meta .pts { font-weight: bold; color: #00f0ff; }
+        .dossier-power-meta .pts { font-weight: bold; color: var(--cyan); }
         .dossier-power-meta .pts.over { color: #ff3300; }
 
         .dossier-hash {
             font-size: 10px;
             word-break: break-all;
-            color: #00f0ff;
-            font-family: monospace;
-            background: rgba(0, 15, 25, 0.8);
+            color: var(--cyan);
+            background: rgba(0,15,25,0.8);
             padding: 6px 8px;
-            border: 1px dashed rgba(0, 240, 255, 0.3);
+            border: 1px dashed rgba(0,232,240,0.25);
             margin-top: 4px;
             border-radius: 2px;
         }
@@ -400,306 +713,530 @@
             padding: 2px 8px;
             border-radius: 2px;
             font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
-        .status-valid { color: #00ffaa; border: 1px solid #00ffaa; background: rgba(0, 255, 170, 0.1); }
-        .status-invalid { color: #ff3300; border: 1px solid #ff3300; background: rgba(255, 51, 0, 0.15); }
+        .status-valid { color: #00ffaa; border: 1px solid #00ffaa; background: rgba(0,255,170,0.08); }
+        .status-invalid { color: #ff3300; border: 1px solid #ff3300; background: rgba(255,51,0,0.12); }
 
-        .stat-row-with-bar { margin: 8px 0; }
+        .stat-row-with-bar { margin: 7px 0; }
         .stat-row-with-bar .dossier-row { margin-bottom: 3px; }
 
         .mini-grade-bar {
             height: 4px;
-            background: rgba(0, 15, 25, 0.9);
-            border: 1px solid rgba(0, 240, 255, 0.2);
+            background: rgba(0,15,25,0.9);
+            border: 1px solid rgba(0,232,240,0.15);
             border-radius: 1px;
             overflow: hidden;
         }
 
-        .mini-grade-fill { height: 100%; transition: width 0.3s ease; }
-
-        .nation-border, #draft-layer polygon { vector-effect: non-scaling-stroke; }
-
-        .map-marker-dot {
-            r: calc(4px / var(--map-zoom, 1));
-            stroke-width: calc(1px / var(--map-zoom, 1));
-        }
-
-        .capital-marker-dot {
-            r: calc(6px / var(--map-zoom, 1));
-            stroke-width: calc(1.5px / var(--map-zoom, 1));
-        }
-        
-        /* Right Side Controls Panel Fix */
-        #map-side-controls {
-            position: relative;
-            width: 65px;
+        .mini-grade-fill {
             height: 100%;
-            background: #111111;
-            border-left: 2px solid #ffaa00;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 5px;
-            gap: 10px;
-            z-index: 200;
-            box-sizing: border-box;
-            flex-shrink: 0;
+            width: 0;
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        .side-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #1a1a1a;
-            border: 1px solid #ffaa00;
-            color: #ffaa00;
-            font-size: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+        /* Tooltip */
+        #map-tooltip {
+            position: fixed;
+            display: none;
+            pointer-events: none;
+            z-index: 10000;
+            background: rgba(10, 10, 12, 0.96);
+            border: 1px solid var(--amber);
+            color: #00ff88;
+            padding: 10px 14px;
+            font-size: 11px;
+            box-shadow: 0 0 18px rgba(0,0,0,0.85), 0 0 8px var(--amber-glow);
+            min-width: 180px;
+            border-radius: 2px;
         }
 
-        .side-btn:hover { background: #ffaa00; color: #0c0c0c; box-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
-        .side-btn.active { background: #ffaa00; color: #111; }
+        #map-tooltip .tooltip-header {
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 12px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
 
-        .side-btn-divider { width: 30px; height: 1px; background: #ffaa00; opacity: 0.3; }
-
-        .side-coord-panel {
+        #map-tooltip .tooltip-row {
+            margin: 3px 0;
             display: flex;
-            flex-direction: column;
-            gap: 5px;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        #map-tooltip .tooltip-label { color: #aaa; }
+
+        /* Drawer panel — border creator */
+        #drawer-panel {
+            display: none;
+            position: absolute;
+            top: 12px;
+            right: 68px;
+            z-index: 300;
+            background: rgba(10, 10, 12, 0.97);
+            border: 1px solid var(--amber);
+            padding: 0;
+            width: 320px;
+            color: #e0e0d8;
+            box-shadow: 0 0 28px rgba(0,0,0,0.9), 0 0 12px rgba(255,170,0,0.12);
             font-family: 'Courier New', Courier, monospace;
-            font-size: 10px;
-            color: #ffaa00;
-            text-align: center;
-            padding-top: 5px;
-            border-top: 1px dashed rgba(255, 170, 0, 0.4);
-            width: 100%;
+            overflow: hidden;
         }
 
-        .side-coord-panel label { display: flex; flex-direction: column; align-items: center; font-weight: bold; }
-        .side-coord-panel input {
-            width: 42px;
-            background: #000;
-            border: 1px solid #ffaa00;
-            color: #fff;
-            font-size: 10px;
-            text-align: center;
-            margin-top: 2px;
-        }
-        
-        header, #nav-header {
-            height: 45px;
-            background: #0c0c0c;
-            border-bottom: 2px solid var(--border-color, #ffaa00);
+        #drawer-panel.open { display: block; }
+
+        .draw-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 170, 0, 0.2);
-            flex-shrink: 0;
-            box-sizing: border-box;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            background: #14120c;
         }
 
-        .nav-links-left, .header-nav {
+        .draw-head h4 {
+            margin: 0;
+            color: var(--amber);
+            font-size: 12px;
+            letter-spacing: 1.2px;
+        }
+
+        .draw-close {
+            background: transparent;
+            border: 1px solid #5a2020;
+            color: #ff6644;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            cursor: pointer;
+        }
+
+        .draw-close:hover { background: #ff3300; color: #000; border-color: #ff3300; }
+
+        .draw-body { padding: 12px 14px 14px; }
+
+        .draw-steps {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            gap: 4px;
+            margin-bottom: 12px;
         }
 
-        .nav-link {
-            color: var(--highlight-text, #ffffff);
-            text-decoration: none;
+        .draw-step {
+            flex: 1;
+            text-align: center;
+            font-size: 9px;
             font-weight: bold;
-            border: 1px solid var(--border-color, #ffaa00);
-            padding: 5px 15px;
-            background: #1a0f00;
-            font-size: 13px;
-            transition: all 0.2s ease-in-out;
+            letter-spacing: 0.5px;
+            padding: 6px 4px;
+            border: 1px solid #2a2210;
+            color: #666;
+            background: #0c0c0e;
         }
 
-        .nav-link:hover {
-            background: var(--accent-color, #ffaa00);
-            color: #000000;
-            box-shadow: 0 0 10px var(--accent-color, #ffaa00);
+        .draw-step.on {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(255,170,0,0.08);
         }
 
-        .nav-link.active {
-            background: var(--border-color, #ffaa00);
-            color: #000000;
+        .draw-step.done {
+            border-color: #1a4a30;
+            color: #3dd68c;
+            background: rgba(0,80,40,0.15);
         }
 
-        .title, .title-bar {
+        .draw-status {
+            font-size: 11px;
+            color: #00e8a0;
+            background: #080a08;
+            border: 1px solid #1a3020;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            line-height: 1.45;
+            min-height: 40px;
+        }
+
+        .draw-status .dim { color: #666; }
+        .draw-status strong { color: var(--amber); }
+
+        #cursor-coords {
+            font-size: 10px;
+            color: #8ab4f8;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .draw-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .draw-actions button {
+            font-family: inherit;
+            font-size: 10px;
             font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            color: var(--highlight-text, #ffffff);
-            text-shadow: 0 0 8px var(--accent-color, #ffaa00);
-            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: #16140e;
+            color: var(--amber);
+            transition: all 0.15s;
         }
+
+        .draw-actions button:hover {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+        }
+
+        .draw-actions button.active {
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+            box-shadow: 0 0 10px rgba(255,170,0,0.35);
+        }
+
+        .draw-actions button.danger {
+            border-color: #5a2020;
+            color: #ff6644;
+            background: #140a0a;
+        }
+
+        .draw-actions button.danger:hover {
+            background: #ff3300;
+            color: #000;
+            border-color: #ff3300;
+        }
+
+        .draw-actions button.primary {
+            grid-column: 1 / -1;
+            background: var(--amber);
+            color: #000;
+            border-color: var(--amber);
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        .draw-actions button.primary:hover {
+            box-shadow: 0 0 14px rgba(255,170,0,0.4);
+        }
+
+        .draw-actions button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .draw-actions button:disabled:hover {
+            background: #16140e;
+            color: var(--amber);
+            border-color: var(--border);
+            box-shadow: none;
+        }
+
+        .draw-hints {
+            font-size: 10px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            border-top: 1px dashed #2a2210;
+            padding-top: 8px;
+        }
+
+        .draw-hints kbd {
+            display: inline-block;
+            border: 1px solid #3a3020;
+            background: #12100c;
+            color: var(--amber);
+            padding: 0 4px;
+            font-size: 9px;
+            border-radius: 2px;
+        }
+
+        #output-json {
+            width: 100%;
+            background: #050508;
+            color: #00e8a0;
+            border: 1px solid #2a2210;
+            font-size: 10px;
+            box-sizing: border-box;
+            font-family: monospace;
+            padding: 8px;
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .draw-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #12100c;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px 18px;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .draw-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .draw-toast.ok { border-color: #3dd68c; color: #3dd68c; }
+        .draw-toast.err { border-color: #ff6644; color: #ff6644; }
+
+        /* Audio */
+        #audio-popup-container {
+            position: absolute;
+            bottom: 16px;
+            right: 68px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        #audio-toggle-btn {
+            background: #12100c;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 7px 12px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.15s;
+        }
+
+        #audio-toggle-btn:hover {
+            background: var(--amber);
+            color: #000;
+            box-shadow: 0 0 12px var(--amber-glow);
+        }
+
+        #soundcloud-audio-dock {
+            width: 320px;
+            height: 180px;
+            background: #000;
+            border: 1px solid var(--amber);
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 0 16px rgba(0,0,0,0.9);
+        }
+
+        #soundcloud-audio-dock.active { display: block; }
+        #soundcloud-audio-dock iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <header id="nav-header">
-        <div class="nav-links-left">
-            <a href="creator.html" class="nav-link">CREATE NATION</a>
-            <a href="stats.html" class="nav-link">STATS VIEWER</a>
-            <a href="battle.html" class="nav-link">BATTLE</a>
-            <a href="map.html" class="nav-link active">MAP</a>
-        </div>
-        <div class="title">// TSL_TACTICAL_MAP_VECTOR_GRID_v2.8</div>
-    </header>
+<header id="nav-header">
+    <div class="nav-links-left">
+        <a href="creator.html" class="nav-link">CREATE NATION</a>
+        <a href="stats.html" class="nav-link">STATS VIEWER</a>
+        <a href="battle.html" class="nav-link">BATTLE</a>
+        <a href="map.html" class="nav-link active">MAP</a>
+    </div>
+    <div class="title">// TSL_TACTICAL_MAP_v3.0</div>
+</header>
 
-    <div id="main-workspace">
-        <!-- Holographic Dossier Panel -->
-        <div id="nation-dossier-panel">
-            <div class="dossier-header">
-                <div class="dossier-title-block">
-                    <div class="dossier-title" id="dos-title">NATION NAME</div>
-                    <div class="dossier-subtitle" id="dos-subtitle">TACTICAL PROFILE</div>
-                </div>
-                <button class="dossier-close" onclick="closeDossier()">✖</button>
+<div id="main-workspace">
+    <!-- Dossier -->
+    <div id="nation-dossier-panel">
+        <div class="dossier-header">
+            <div class="dossier-title-block">
+                <div class="dossier-title" id="dos-title">NATION NAME</div>
+                <div class="dossier-subtitle" id="dos-subtitle">TACTICAL PROFILE</div>
             </div>
-
-            <div class="dossier-scroll">
-                <div class="dossier-section">
-                    <div class="dossier-section-title"><span class="sec-icon">🏛️</span> GOVERNANCE & DEMOGRAPHICS</div>
-                    <div class="dossier-row"><span class="dossier-label">CAPITAL:</span> <span class="dossier-value" id="dos-capital">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">GOVERNMENT:</span> <span class="dossier-value" id="dos-gov">-</span></div>
-                    <div class="dossier-row"><span class="dossier-label">POPULATION:</span> <span class="dossier-value" id="dos-pop">-</span></div>
-                    <div class="dossier-row">
-                        <span class="dossier-label">NS PROFILE:</span> 
-                        <a id="dos-ns-link" href="#" target="_blank" style="color: #00f0ff; text-decoration: underline; font-size: 11px; font-weight: bold;">VIEW ON NATIONSTATES ↗</a>
-                    </div>
-                </div>
-
-                <div class="dossier-section">
-                    <div class="dossier-section-title"><span class="sec-icon">📊</span> STRATEGIC METRICS</div>
-                    
-                    <div class="stat-row-with-bar">
-                        <div class="dossier-row"><span class="dossier-label">ECONOMY:</span> <span id="dos-econ" class="stat-badge">-</span></div>
-                        <div class="mini-grade-bar"><div id="dos-econ-bar" class="mini-grade-fill"></div></div>
-                    </div>
-
-                    <div class="stat-row-with-bar">
-                        <div class="dossier-row"><span class="dossier-label">RESOURCES:</span> <span id="dos-res" class="stat-badge">-</span></div>
-                        <div class="mini-grade-bar"><div id="dos-res-bar" class="mini-grade-fill"></div></div>
-                    </div>
-
-                    <div class="stat-row-with-bar">
-                        <div class="dossier-row"><span class="dossier-label">INFRASTRUCTURE:</span> <span id="dos-infra" class="stat-badge">-</span></div>
-                        <div class="mini-grade-bar"><div id="dos-infra-bar" class="mini-grade-fill"></div></div>
-                    </div>
-
-                    <div class="stat-row-with-bar">
-                        <div class="dossier-row"><span class="dossier-label">TECH TIER:</span> <span id="dos-tech" class="stat-badge">-</span></div>
-                        <div class="mini-grade-bar"><div id="dos-tech-bar" class="mini-grade-fill"></div></div>
-                    </div>
-
-                    <div class="stat-row-with-bar">
-                        <div class="dossier-row"><span class="dossier-label">DEFENSE STANCE:</span> <span id="dos-def" class="stat-badge">-</span></div>
-                        <div class="mini-grade-bar"><div id="dos-def-bar" class="mini-grade-fill"></div></div>
-                    </div>
-                </div>
-
-                <div class="dossier-section">
-                    <div class="dossier-section-title"><span class="sec-icon">⚡</span> POWER SCORE & INTEGRITY</div>
-                    <div class="dossier-power-track">
-                        <div id="dos-power-bar" class="dossier-power-fill"></div>
-                    </div>
-                    <div class="dossier-power-meta">
-                        <span>POWER ALLOCATION:</span>
-                        <span id="dos-total-power" class="pts">0 / 7</span>
-                    </div>
-                    <div class="dossier-row" style="margin-top:10px;">
-                        <span class="dossier-label">SYSTEM AUDIT:</span>
-                        <span id="dos-audit-status" class="dossier-status-pill status-valid">VALID</span>
-                    </div>
-                    <div class="dossier-row">
-                        <span class="dossier-label">DISPATCH ID:</span>
-                        <span class="dossier-value" id="dos-dispatch">N/A</span>
-                    </div>
-                    <div id="dos-hash" class="dossier-hash">UNVERIFIED — NO DISPATCH LINKED</div>
+            <button class="dossier-close" onclick="closeDossier()">✖</button>
+        </div>
+        <div class="dossier-scroll">
+            <div class="dossier-section">
+                <div class="dossier-section-title">GOVERNANCE &amp; DEMOGRAPHICS</div>
+                <div class="dossier-row"><span class="dossier-label">CAPITAL:</span> <span class="dossier-value" id="dos-capital">-</span></div>
+                <div class="dossier-row"><span class="dossier-label">GOVERNMENT:</span> <span class="dossier-value" id="dos-gov">-</span></div>
+                <div class="dossier-row"><span class="dossier-label">POPULATION:</span> <span class="dossier-value" id="dos-pop">-</span></div>
+                <div class="dossier-row">
+                    <span class="dossier-label">NS PROFILE:</span>
+                    <a id="dos-ns-link" href="#" target="_blank" style="color:var(--cyan);text-decoration:underline;font-size:11px;font-weight:bold;">VIEW ON NATIONSTATES ↗</a>
                 </div>
             </div>
-        </div>
-        <div id="map-container">
-            <div id="world-map-wrapper">
-
-                <div id="map-viewport-transform">
-                    <img id="vector-map" src="map.svg" alt="World Map" draggable="false">
-                    <svg id="map-overlay" viewBox="0 0 2271 1133" style="position: absolute; top: 0; left: 0; width: 2271px; height: 1133px; pointer-events: none;">
-                        <g id="borders-layer" style="pointer-events: none;"></g>
-                        <g id="capitals-layer" style="pointer-events: none;"></g>
-                    </svg>
+            <div class="dossier-section">
+                <div class="dossier-section-title">STRATEGIC METRICS</div>
+                <div class="stat-row-with-bar">
+                    <div class="dossier-row"><span class="dossier-label">ECONOMY:</span> <span id="dos-econ" class="stat-badge">-</span></div>
+                    <div class="mini-grade-bar"><div id="dos-econ-bar" class="mini-grade-fill"></div></div>
                 </div>
-
-                <div id="help-hint">DRAG to pan • SCROLL to zoom (centered on cursor) • CLICK nation for full dossier</div>
+                <div class="stat-row-with-bar">
+                    <div class="dossier-row"><span class="dossier-label">RESOURCES:</span> <span id="dos-res" class="stat-badge">-</span></div>
+                    <div class="mini-grade-bar"><div id="dos-res-bar" class="mini-grade-fill"></div></div>
+                </div>
+                <div class="stat-row-with-bar">
+                    <div class="dossier-row"><span class="dossier-label">INFRASTRUCTURE:</span> <span id="dos-infra" class="stat-badge">-</span></div>
+                    <div class="mini-grade-bar"><div id="dos-infra-bar" class="mini-grade-fill"></div></div>
+                </div>
+                <div class="stat-row-with-bar">
+                    <div class="dossier-row"><span class="dossier-label">TECH TIER:</span> <span id="dos-tech" class="stat-badge">-</span></div>
+                    <div class="mini-grade-bar"><div id="dos-tech-bar" class="mini-grade-fill"></div></div>
+                </div>
+                <div class="stat-row-with-bar">
+                    <div class="dossier-row"><span class="dossier-label">DEFENSE STANCE:</span> <span id="dos-def" class="stat-badge">-</span></div>
+                    <div class="mini-grade-bar"><div id="dos-def-bar" class="mini-grade-fill"></div></div>
+                </div>
             </div>
-        </div>
-
-        <!-- RIGHT SIDE CONTROL TOOLBAR -->
-        <div id="map-side-controls">
-            <button class="side-btn draw-btn" id="btn-draw-mode" onclick="toggleDrawMode()" title="Toggle Draw Mode">✏️</button>
-            <div class="side-btn-divider"></div>
-            <button class="side-btn" id="btn-toggle-nations" onclick="toggleNationsLayer()" title="Toggle Nations Layer">👁️</button>
-            <button class="side-btn" onclick="resetMap()" title="Reset View">🎯</button>
-            
-            <div class="side-btn-divider"></div>
-
-            <button class="side-btn" onclick="toggleCoordPanel()" title="Toggle Coordinates Panel">📐</button>
-            
-            <div id="side-coord-panel" class="side-coord-panel" style="display: none;">
-                <label>X <input type="number" id="ctrl-map-x" value="0" step="25" oninput="setMapX(this.value)"></label>
-                <label>Y <input type="number" id="ctrl-map-y" value="0" step="25" oninput="setMapY(this.value)"></label>
-                <label>Z <input type="number" id="ctrl-map-zoom" value="1.0" step="0.1" min="0.1" oninput="setMapZoom(this.value)"></label>
+            <div class="dossier-section">
+                <div class="dossier-section-title">POWER SCORE &amp; INTEGRITY</div>
+                <div class="dossier-power-track"><div id="dos-power-bar" class="dossier-power-fill"></div></div>
+                <div class="dossier-power-meta">
+                    <span>POWER ALLOCATION:</span>
+                    <span id="dos-total-power" class="pts">0 / 7</span>
+                </div>
+                <div class="dossier-row" style="margin-top:10px;">
+                    <span class="dossier-label">SYSTEM AUDIT:</span>
+                    <span id="dos-audit-status" class="dossier-status-pill status-valid">VALID</span>
+                </div>
+                <div class="dossier-row">
+                    <span class="dossier-label">DISPATCH ID:</span>
+                    <span class="dossier-value" id="dos-dispatch">N/A</span>
+                </div>
+                <div id="dos-hash" class="dossier-hash">UNVERIFIED — NO DISPATCH LINKED</div>
             </div>
         </div>
     </div>
 
-    <!-- BORDER DRAWING CONTROL PANEL -->
-    <div id="drawer-panel" style="display:none; position:absolute; top:15px; right:85px; z-index:300; background:#111; border:2px solid #ffaa00; padding:15px; width:300px; color:#00ff00; font-family:monospace; box-shadow: 0 0 15px rgba(0,0,0,0.9);">
-        <h4 style="margin:0 0 8px 0; color:#ffaa00; font-size:13px;">✏️ NATION BORDER CREATOR</h4>
-        <div id="cursor-coords" style="font-size:11px; color:#00ff00; margin-bottom:8px; font-weight:bold;">MAP COORDS: [X: --, Y: --]</div>
+    <div id="map-container">
+        <div id="world-map-wrapper">
+            <div id="map-viewport-transform">
+                <div id="vector-map" aria-label="World Map"></div>
+                <!-- Tactical grid (map-space) -->
+                <svg id="tactical-grid" viewBox="0 0 2271 1133" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid-maj" width="120" height="120" patternUnits="userSpaceOnUse">
+                            <path d="M 120 0 L 0 0 0 120" fill="none" stroke="rgba(255,170,0,0.14)" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="2271" height="1133" fill="url(#grid-maj)"/>
+                </svg>
+                <svg id="map-overlay" viewBox="0 0 2271 1133">
+                    <g id="borders-layer"></g>
+                    <g id="capitals-layer"></g>
+                </svg>
+            </div>
 
-        <p style="font-size:10px; color:#aaa; margin-bottom:10px; line-height:1.3;">
-            1. Click 'SET CAPITAL' to click capital location.<br>
-            2. Click on map to add border points.<br>
-            3. Click 'FINISH ISLAND' to start another island.<br>
-            4. Click 'COPY JSON' when done.
-        </p>
+            <div class="hud-corner tl"></div>
+            <div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div>
+            <div class="hud-corner br"></div>
+            <div id="help-hint">DRAG pan · SCROLL zoom · CLICK nation · G grid</div>
 
-        <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
-            <button id="btn-cap-mode" onclick="toggleCapitalMode()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">📍 SET CAPITAL</button>
-            <button onclick="finishIsland()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">➕ FINISH ISLAND</button>
-            <button onclick="undoLastPoint()" style="background:#222; color:#ffaa00; border:1px solid #ffaa00; font-size:10px; padding:3px 5px; cursor:pointer;">Undo</button>
-            <button onclick="clearDrawing()" style="background:#222; color:#ff3300; border:1px solid #ff3300; font-size:10px; padding:3px 5px; cursor:pointer;">Clear</button>
-            <button onclick="generateDispatchJSON()" style="background:#ffaa00; color:#000; border:none; font-weight:bold; font-size:10px; padding:3px 5px; cursor:pointer;">COPY JSON</button>
+            <!-- VHS -->
+            <div class="vhs-overlay" aria-hidden="true">
+                <div class="vhs-scanlines"></div>
+                <div class="vhs-grain"></div>
+                <div class="vhs-track"></div>
+                <div class="vhs-vignette"></div>
+            </div>
         </div>
-
-        <textarea id="output-json" rows="8" style="width:100%; background:#000; color:#00ff00; border:1px solid #333; font-size:10px; box-sizing:border-box;" readonly placeholder="Your generated code will appear here..."></textarea>
     </div>
 
-    <div id="audio-popup-container">
-        <button id="audio-toggle-btn" onclick="toggleAudioDock()">AUDIO PLAYER [TOGGLE]</button>
-        <div id="soundcloud-audio-dock">
-            <iframe src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/zero-official-production/dawn-of-a-new-chapter&color=%23ffaa00&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
-        </div>
-        <div id="map-tooltip">
-            <div class="tooltip-header" id="tt-nation">NATION NAME</div>
-            <div class="tooltip-row"><span class="tooltip-label">CAPITAL:</span> <span id="tt-capital">-</span></div>
-            <div class="tooltip-row"><span class="tooltip-label">GOVERNMENT:</span> <span id="tt-gov">-</span></div>
-            <div class="tooltip-row"><span class="tooltip-label">POPULATION:</span> <span id="tt-pop">-</span></div>
+    <!-- Side toolbar -->
+    <div id="map-side-controls">
+        <button class="side-btn draw-btn" id="btn-draw-mode" onclick="toggleDrawMode()" data-tip="DRAW BORDERS">✏️</button>
+        <div class="side-btn-divider"></div>
+        <button class="side-btn" id="btn-toggle-nations" onclick="toggleNationsLayer()" data-tip="TOGGLE NATIONS">👁️</button>
+        <button class="side-btn active" id="btn-toggle-grid" onclick="toggleGrid()" data-tip="TOGGLE GRID">▦</button>
+        <button class="side-btn" onclick="resetMap()" data-tip="RESET VIEW">⌖</button>
+        <div class="side-btn-divider"></div>
+        <button class="side-btn" id="btn-coords" onclick="toggleCoordPanel()" data-tip="COORDINATES">📐</button>
+        <div id="side-coord-panel" class="side-coord-panel">
+            <label>X <input type="number" id="ctrl-map-x" value="0" step="25" oninput="setMapX(this.value)"></label>
+            <label>Y <input type="number" id="ctrl-map-y" value="0" step="25" oninput="setMapY(this.value)"></label>
+            <label>Z <input type="number" id="ctrl-map-zoom" value="1.0" step="0.1" min="0.1" oninput="setMapZoom(this.value)"></label>
         </div>
     </div>
+</div>
 
-    <script src="utils/integrity.js"></script>
+<!-- Border + sites creator panel -->
+<div id="drawer-panel">
+    <div class="draw-head">
+        <h4>NATION BUILDER</h4>
+        <button type="button" class="draw-close" onclick="toggleDrawMode()" title="Close">✕</button>
+    </div>
+    <div class="draw-body">
+        <div class="draw-steps">
+            <div class="draw-step" id="step-cap">1 SITES</div>
+            <div class="draw-step" id="step-border">2 BORDER</div>
+            <div class="draw-step" id="step-export">3 EXPORT</div>
+        </div>
+
+        <div class="draw-status" id="draw-status">
+            <strong>Ready.</strong> Choose a site type, click the map, or trace borders.
+        </div>
+
+        <div id="cursor-coords">CURSOR  X: --  Y: --</div>
+
+        <div class="draw-section-label">Place sites · keys 1–4</div>
+        <div class="type-chips" id="type-chips">
+            <button type="button" class="type-chip" data-type="capital" onclick="setPlaceType('capital')"><span class="key">1</span>★ CAPITAL</button>
+            <button type="button" class="type-chip" data-type="city" onclick="setPlaceType('city')"><span class="key">2</span>● CITY</button>
+            <button type="button" class="type-chip" data-type="base" onclick="setPlaceType('base')"><span class="key">3</span>◆ BASE</button>
+            <button type="button" class="type-chip" data-type="port" onclick="setPlaceType('port')"><span class="key">4</span>■ PORT</button>
+        </div>
+
+        <div class="draw-section-label">Placed sites</div>
+        <div class="sites-list" id="sites-list"></div>
+
+        <div class="draw-section-label">Borders</div>
+        <div class="draw-actions">
+            <button type="button" id="btn-border-mode" class="active" onclick="setPlaceType('border')">✎ BORDER POINTS</button>
+            <button type="button" id="btn-finish-island" onclick="finishIsland()">➕ NEW ISLAND</button>
+            <button type="button" id="btn-undo" onclick="undoLastPoint()">↩ UNDO POINT</button>
+            <button type="button" class="danger" id="btn-clear" onclick="clearDrawing()">CLEAR ALL</button>
+            <button type="button" class="primary" id="btn-export" onclick="generateDispatchJSON()">📋 COPY SECURE CODE</button>
+        </div>
+
+        <div class="draw-hints">
+            <kbd>1</kbd>–<kbd>4</kbd> site type · <kbd>B</kbd> border · click map to place<br>
+            <kbd>Z</kbd> undo point · <kbd>Enter</kbd> new island · <kbd>Esc</kbd> close<br>
+            Borders need ≥3 points per island. Old capital-only data still loads.
+        </div>
+
+        <textarea id="output-json" rows="5" readonly placeholder="Secure dispatch code appears here after export..."></textarea>
+    </div>
+</div>
+<div class="draw-toast" id="draw-toast"></div>
+
+<div id="audio-popup-container">
+    <button id="audio-toggle-btn" onclick="toggleAudioDock()">AUDIO [TOGGLE]</button>
+    <div id="soundcloud-audio-dock">
+        <iframe src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/zero-official-production/dawn-of-a-new-chapter&color=%23ffaa00&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
+    </div>
+</div>
+
+<div id="map-tooltip">
+    <div class="tooltip-header" id="tt-nation">NATION NAME</div>
+    <div class="tooltip-row"><span class="tooltip-label">CAPITAL:</span> <span id="tt-capital">-</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">GOVERNMENT:</span> <span id="tt-gov">-</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">POPULATION:</span> <span id="tt-pop">-</span></div>
+</div>
+
+<script src="utils/integrity.js"></script>
     
     <script>
         const MAP_W = 2271;
@@ -717,9 +1254,10 @@
         const inputZoom = document.getElementById("ctrl-map-zoom");
 
         function applyTransform() {
-            viewport.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.zoom})`;
+            // Pure CSS transform: sharp when map is inline SVG (vectors), not <img> raster
+            viewport.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) scale(${state.zoom})`;
             viewport.style.setProperty('--map-zoom', state.zoom);
-            
+
             if (inputX) inputX.value = Math.round(state.x);
             if (inputY) inputY.value = Math.round(state.y);
             if (inputZoom) inputZoom.value = state.zoom.toFixed(1);
@@ -761,11 +1299,17 @@
             e.preventDefault();
         });
 
+        let _dragRaf = 0;
         window.addEventListener("mousemove", (e) => {
             if (!isDragging) return;
             state.x = e.clientX - startX;
             state.y = e.clientY - startY;
-            applyTransform();
+            if (!_dragRaf) {
+                _dragRaf = requestAnimationFrame(() => {
+                    applyTransform();
+                    _dragRaf = 0;
+                });
+            }
         });
 
         window.addEventListener("mouseup", () => { isDragging = false; });
@@ -799,7 +1343,47 @@
             document.getElementById('soundcloud-audio-dock').classList.toggle('active');
         }
 
-        window.addEventListener("load", resetMap);
+        
+        async function loadInlineMapSvg() {
+            const host = document.getElementById('vector-map');
+            if (!host) return;
+            try {
+                const res = await fetch('map.svg?t=' + Date.now());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const svgText = await res.text();
+                // Parse and inject so zoom uses real vectors (no img raster blur)
+                const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+                const svg = doc.documentElement;
+                if (!svg || svg.tagName.toLowerCase() !== 'svg') throw new Error('Invalid SVG');
+                svg.setAttribute('width', '2271');
+                svg.setAttribute('height', '1133');
+                svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                svg.style.display = 'block';
+                svg.style.pointerEvents = 'none';
+                svg.setAttribute('shape-rendering', 'geometricPrecision');
+                // Strip scripts if any
+                svg.querySelectorAll('script').forEach(s => s.remove());
+                host.innerHTML = '';
+                host.appendChild(document.importNode(svg, true));
+            } catch (err) {
+                console.warn('Inline SVG load failed, falling back to <img>:', err);
+                host.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = 'map.svg';
+                img.alt = 'World Map';
+                img.draggable = false;
+                img.style.width = '2271px';
+                img.style.height = '1133px';
+                img.style.display = 'block';
+                img.style.pointerEvents = 'none';
+                host.appendChild(img);
+            }
+        }
+
+        window.addEventListener("load", async () => {
+            await loadInlineMapSvg();
+            resetMap();
+        });
 
         const tooltip = document.getElementById('map-tooltip');
 
@@ -818,7 +1402,7 @@
             const ttPop = document.getElementById('tt-pop');
 
             if (ttNation) ttNation.textContent = nation.nation || 'Unknown State';
-            if (ttCapital) ttCapital.textContent = nation.capital?.name || 'N/A';
+            if (ttCapital) ttCapital.textContent = (nation.capital && (nation.capital.name || nation.stats?.capital)) || (typeof nation.capital === 'object' ? 'Capital' : 'N/A');
             if (ttGov) ttGov.textContent = nation.government || 'N/A';
             if (ttPop) ttPop.textContent = nation.population || 'N/A';
             
@@ -949,9 +1533,43 @@
 
         function closeDossier() {
             document.getElementById('nation-dossier-panel').classList.remove('open');
+            document.querySelectorAll('.nation-border.selected').forEach(el => el.classList.remove('selected'));
         }
 
-        async function loadRegionMap() {
+        
+        function resizeMapMarkers() {
+            const z = Math.max(0.05, state.zoom || 1);
+            document.querySelectorAll('#capitals-layer circle.capital-marker-dot').forEach(el => {
+                const isHalo = (el.getAttribute('fill') || '').startsWith('rgba');
+                el.setAttribute('r', (isHalo ? 11 : 6.5) / z);
+                el.setAttribute('stroke-width', 1.5 / z);
+            });
+            document.querySelectorAll('#capitals-layer circle.site-city').forEach(el => {
+                el.setAttribute('r', 4.5 / z);
+                el.setAttribute('stroke-width', 1.2 / z);
+            });
+            document.querySelectorAll('#capitals-layer rect.site-port').forEach(el => {
+                const cx = parseFloat(el.dataset.cx);
+                const cy = parseFloat(el.dataset.cy);
+                if (Number.isNaN(cx)) return;
+                const r = 4.5 / z;
+                el.setAttribute('x', cx - r);
+                el.setAttribute('y', cy - r);
+                el.setAttribute('width', r * 2);
+                el.setAttribute('height', r * 2);
+                el.setAttribute('stroke-width', 1.2 / z);
+            });
+            document.querySelectorAll('#capitals-layer polygon.site-base').forEach(el => {
+                const cx = parseFloat(el.dataset.cx);
+                const cy = parseFloat(el.dataset.cy);
+                if (Number.isNaN(cx)) return;
+                const r = 5 / z;
+                el.setAttribute('points', `${cx},${cy-r} ${cx+r},${cy} ${cx},${cy+r} ${cx-r},${cy}`);
+                el.setAttribute('stroke-width', 1.2 / z);
+            });
+        }
+
+async function loadRegionMap() {
             try {
                 const [mapRes, statsRes] = await Promise.all([
                     fetch('region-map-data.json?t=' + Date.now()),
@@ -1010,6 +1628,8 @@
                                 polygon.addEventListener('mouseleave', hideNationTooltip);
                                 polygon.addEventListener('click', (e) => {
                                     e.stopPropagation();
+                                    document.querySelectorAll('.nation-border.selected').forEach(el => el.classList.remove('selected'));
+                                    polygon.classList.add('selected');
                                     openNationDossier(nation);
                                 });
 
@@ -1018,28 +1638,97 @@
                         });
                     }
 
-                    if (nation.capital && nation.capital.x && nation.capital.y) {
+                    // Capital — backward compatible: {x,y} or {x,y,name}
+                    if (nation.capital && nation.capital.x != null && nation.capital.y != null) {
+                        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        g.style.pointerEvents = 'all';
+                        g.style.cursor = 'pointer';
+                        g.classList.add('capital-group');
+
+                        const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        halo.setAttribute('cx', nation.capital.x);
+                        halo.setAttribute('cy', nation.capital.y);
+                        halo.setAttribute('r', '10');
+                        halo.setAttribute('fill', 'rgba(255,215,0,0.18)');
+                        halo.setAttribute('class', 'capital-marker-dot');
+                        halo.style.pointerEvents = 'none';
+
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', nation.capital.x);
                         circle.setAttribute('cy', nation.capital.y);
                         circle.setAttribute('class', 'capital-marker-dot');
                         circle.setAttribute('r', '6');
-                        circle.setAttribute('fill', '#ffaa00');
-                        circle.setAttribute('stroke', '#000');
+                        circle.setAttribute('fill', '#ffd700');
+                        circle.setAttribute('stroke', '#5a4000');
                         circle.setAttribute('stroke-width', '1.5');
-                        circle.style.pointerEvents = 'all';
-                        circle.style.cursor = 'pointer';
 
-                        circle.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
-                        circle.addEventListener('mouseleave', hideNationTooltip);
-                        circle.addEventListener('click', (e) => {
+                        const bind = (el) => {
+                            el.addEventListener('mouseenter', (e) => showNationTooltip(e, nation));
+                            el.addEventListener('mouseleave', hideNationTooltip);
+                            el.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                document.querySelectorAll('.nation-border.selected').forEach(n => n.classList.remove('selected'));
+                                openNationDossier(nation);
+                            });
+                        };
+                        bind(g);
+                        g.appendChild(halo);
+                        g.appendChild(circle);
+                        capitalsLayer.appendChild(g);
+                    }
+
+                    // Optional sites[] (cities, bases, ports) — ignore if missing (old data)
+                    const nationSites = Array.isArray(nation.sites) ? nation.sites : [];
+                    nationSites.forEach(site => {
+                        if (site == null || site.x == null || site.y == null) return;
+                        const t = site.type || 'city';
+                        let el;
+                        if (t === 'base') {
+                            el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                            const r = 5;
+                            el.setAttribute('points', `${site.x},${site.y-r} ${site.x+r},${site.y} ${site.x},${site.y+r} ${site.x-r},${site.y}`);
+                            el.setAttribute('class', 'site-marker site-base');
+                            el.dataset.cx = site.x;
+                            el.dataset.cy = site.y;
+                        } else if (t === 'port') {
+                            el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                            const r = 4.5;
+                            el.setAttribute('x', site.x - r);
+                            el.setAttribute('y', site.y - r);
+                            el.setAttribute('width', r * 2);
+                            el.setAttribute('height', r * 2);
+                            el.setAttribute('class', 'site-marker site-port');
+                            el.dataset.cx = site.x;
+                            el.dataset.cy = site.y;
+                        } else {
+                            el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                            el.setAttribute('cx', site.x);
+                            el.setAttribute('cy', site.y);
+                            el.setAttribute('r', '4.5');
+                            el.setAttribute('class', 'site-marker site-city');
+                        }
+                        el.setAttribute('stroke-width', '1.2');
+                        el.style.pointerEvents = 'all';
+                        el.style.cursor = 'pointer';
+                        el.addEventListener('mouseenter', (e) => {
+                            if (!tooltip) return;
+                            document.getElementById('tt-nation').textContent = nation.nation || 'Unknown';
+                            document.getElementById('tt-capital').textContent = site.name || t;
+                            document.getElementById('tt-gov').textContent = t.toUpperCase();
+                            document.getElementById('tt-pop').textContent = '—';
+                            tooltip.style.display = 'block';
+                            tooltip.style.left = (e.clientX + 15) + 'px';
+                            tooltip.style.top = (e.clientY + 15) + 'px';
+                        });
+                        el.addEventListener('mouseleave', hideNationTooltip);
+                        el.addEventListener('click', (e) => {
                             e.stopPropagation();
                             openNationDossier(nation);
                         });
-
-                        capitalsLayer.appendChild(circle);
-                    }
+                        capitalsLayer.appendChild(el);
+                    });
                 });
+                resizeMapMarkers();
             } catch (err) {
                 console.warn("Could not load region map or stats data files:", err);
             }
@@ -1050,53 +1739,153 @@
 
     <script>
         let isDrawMode = false;
-        let isCapitalMode = false;
+        let placeType = 'border'; // capital | city | base | port | border
         let islands = [[]];
-        let selectedCapital = null;
+        // sites: { id, type, x, y, name }
+        let sites = [];
+        let siteIdSeq = 1;
+
+        const SITE_DEFAULTS = {
+            capital: 'Capital',
+            city: 'City',
+            base: 'Base',
+            port: 'Port'
+        };
+
+        function showToast(msg, kind) {
+            const t = document.getElementById('draw-toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.className = 'draw-toast show' + (kind ? ' ' + kind : '');
+            clearTimeout(showToast._tm);
+            showToast._tm = setTimeout(() => { t.className = 'draw-toast'; }, 2200);
+        }
+
+        function getCapital() {
+            return sites.find(s => s.type === 'capital') || null;
+        }
+
+        function setPlaceType(type) {
+            placeType = type;
+            document.querySelectorAll('.type-chip').forEach(c => {
+                c.classList.toggle('active', c.dataset.type === type);
+            });
+            const borderBtn = document.getElementById('btn-border-mode');
+            if (borderBtn) borderBtn.classList.toggle('active', type === 'border');
+            updateDrawUI();
+        }
+
+        function updateDrawUI() {
+            const pts = islands.reduce((n, isl) => n + isl.length, 0);
+            const cur = islands[islands.length - 1] || [];
+            const validIslands = islands.filter(i => i.length >= 3).length;
+            const cap = getCapital();
+
+            const status = document.getElementById('draw-status');
+            if (status) {
+                if (placeType === 'border') {
+                    if (cur.length > 0 && cur.length < 3) {
+                        status.innerHTML = `Border island <strong>${islands.length}</strong> — <strong>${cur.length}</strong> pt${cur.length===1?'':'s'} <span class="dim">(need ${3-cur.length} more)</span>`;
+                    } else if (cur.length >= 3) {
+                        status.innerHTML = `Island <strong>${islands.length}</strong> ready (<strong>${cur.length}</strong> pts). Export or start a new island.`;
+                    } else {
+                        status.innerHTML = `<strong>Border mode.</strong> Click map to add points. Sites: <strong>${sites.length}</strong>.`;
+                    }
+                } else {
+                    const label = placeType.toUpperCase();
+                    status.innerHTML = `Placing <strong>${label}</strong> — click the map.${cap && placeType==='capital' ? ' <span class="dim">(will replace current capital)</span>' : ''}`;
+                }
+            }
+
+            const stepCap = document.getElementById('step-cap');
+            const stepBorder = document.getElementById('step-border');
+            const stepExport = document.getElementById('step-export');
+            if (stepCap) stepCap.className = 'draw-step' + (sites.length ? ' done' : (placeType !== 'border' ? ' on' : ''));
+            if (stepBorder) stepBorder.className = 'draw-step' + (validIslands > 0 ? ' done' : (pts > 0 ? ' on' : ''));
+            if (stepExport) stepExport.className = 'draw-step' + (validIslands > 0 ? ' on' : '');
+
+            const btnFin = document.getElementById('btn-finish-island');
+            if (btnFin) btnFin.disabled = cur.length < 3;
+
+            const btnExp = document.getElementById('btn-export');
+            if (btnExp) btnExp.disabled = validIslands === 0;
+
+            renderSitesList();
+        }
+
+        function renderSitesList() {
+            const box = document.getElementById('sites-list');
+            if (!box) return;
+            if (!sites.length) {
+                box.innerHTML = '';
+                return;
+            }
+            box.innerHTML = sites.map(s => `
+                <div class="site-row" data-id="${s.id}">
+                    <span class="kind ${s.type}">${s.type === 'capital' ? '★ CAP' : s.type === 'city' ? '● CITY' : s.type === 'base' ? '◆ BASE' : '■ PORT'}</span>
+                    <input type="text" value="${String(s.name).replace(/"/g, '&quot;')}" onchange="renameSite(${s.id}, this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+                    <button type="button" class="del" onclick="removeSite(${s.id})" title="Remove">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function renameSite(id, name) {
+            const s = sites.find(x => x.id === id);
+            if (s) s.name = (name || '').trim() || SITE_DEFAULTS[s.type] || 'Site';
+            renderDraftBorder();
+        }
+
+        function removeSite(id) {
+            sites = sites.filter(x => x.id !== id);
+            renderDraftBorder();
+            updateDrawUI();
+            showToast('Site removed', 'ok');
+        }
+
+        function addSite(type, x, y) {
+            if (type === 'capital') {
+                sites = sites.filter(s => s.type !== 'capital');
+            }
+            const count = sites.filter(s => s.type === type).length + 1;
+            const name = type === 'capital' ? SITE_DEFAULTS.capital : `${SITE_DEFAULTS[type] || 'Site'} ${count}`;
+            sites.push({ id: siteIdSeq++, type, x, y, name });
+            showToast(`${type.toUpperCase()} placed — rename in the list if you want`, 'ok');
+        }
 
         function toggleDrawMode() {
             isDrawMode = !isDrawMode;
             const btn = document.getElementById('btn-draw-mode');
             const panel = document.getElementById('drawer-panel');
-            
+
             if (isDrawMode) {
-                btn.style.background = '#ffaa00';
-                btn.style.color = '#0c0c0c';
+                if (btn) btn.classList.add('active');
                 panel.style.display = 'block';
+                panel.classList.add('open');
+                updateDrawUI();
+                showToast('Builder open — 1–4 sites, B border', 'ok');
             } else {
-                btn.style.background = '#1a1a1a';
-                btn.style.color = '#ffaa00';
+                if (btn) btn.classList.remove('active');
                 panel.style.display = 'none';
-                isCapitalMode = false;
+                panel.classList.remove('open');
             }
         }
 
-        function toggleCapitalMode() {
-            isCapitalMode = !isCapitalMode;
-            const btn = document.getElementById('btn-cap-mode');
-            if (isCapitalMode) {
-                btn.style.background = '#ffaa00';
-                btn.style.color = '#000';
-            } else {
-                btn.style.background = '#222';
-                btn.style.color = '#ffaa00';
-            }
-        }
+        // backward-compat alias
+        function toggleCapitalMode() { setPlaceType('capital'); }
 
         wrapper.addEventListener('mousemove', (e) => {
+            if (!isDrawMode) return;
             const rect = wrapper.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
-
             const svgX = Math.round((mouseX - state.x) / state.zoom);
             const svgY = Math.round((mouseY - state.y) / state.zoom);
-
             const coordsDisplay = document.getElementById('cursor-coords');
-
+            if (!coordsDisplay) return;
             if (svgX >= 0 && svgX <= MAP_W && svgY >= 0 && svgY <= MAP_H) {
-                coordsDisplay.textContent = `MAP COORDS: [X: ${svgX}, Y: ${svgY}]`;
+                coordsDisplay.textContent = `CURSOR  X: ${svgX}  Y: ${svgY}`;
             } else {
-                coordsDisplay.textContent = `MAP COORDS: [X: --, Y: --]`;
+                coordsDisplay.textContent = `CURSOR  X: --  Y: --`;
             }
         });
 
@@ -1106,63 +1895,80 @@
             const rect = wrapper.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
-
             const svgX = Math.round((mouseX - state.x) / state.zoom);
             const svgY = Math.round((mouseY - state.y) / state.zoom);
 
             if (svgX < 0 || svgX > MAP_W || svgY < 0 || svgY > MAP_H) return;
 
-            if (isCapitalMode) {
-                selectedCapital = { x: svgX, y: svgY };
-                isCapitalMode = false;
-                toggleCapitalMode();
+            if (placeType !== 'border') {
+                addSite(placeType, svgX, svgY);
                 renderDraftBorder();
+                updateDrawUI();
                 return;
             }
 
             const currentIsland = islands[islands.length - 1];
             currentIsland.push([svgX, svgY]);
             renderDraftBorder();
+            updateDrawUI();
         });
 
         function finishIsland() {
             const currentIsland = islands[islands.length - 1];
             if (currentIsland.length < 3) {
-                alert("The current island needs at least 3 points before starting a new one!");
+                showToast('Need at least 3 points on this island', 'err');
                 return;
             }
             islands.push([]);
             renderDraftBorder();
+            updateDrawUI();
+            showToast('Island locked — start the next', 'ok');
         }
 
         function undoLastPoint() {
+            if (placeType !== 'border') {
+                if (sites.length) {
+                    sites.pop();
+                    renderDraftBorder();
+                    updateDrawUI();
+                    showToast('Last site removed', 'ok');
+                }
+                return;
+            }
             const currentIsland = islands[islands.length - 1];
-            
             if (currentIsland.length > 0) {
                 currentIsland.pop();
             } else if (islands.length > 1) {
                 islands.pop();
-                islands[islands.length - 1].pop();
-            } else if (selectedCapital) {
-                selectedCapital = null;
+                if (islands[islands.length - 1].length > 0) {
+                    islands[islands.length - 1].pop();
+                }
             }
-
             renderDraftBorder();
+            updateDrawUI();
         }
 
         function clearDrawing() {
+            if (!sites.length && islands.every(i => i.length === 0)) return;
+            if (!confirm('Clear all sites, border points, and export code?')) return;
             islands = [[]];
-            selectedCapital = null;
-            
+            sites = [];
+            placeType = 'border';
+            setPlaceType('border');
+
             const draftLayer = document.getElementById('draft-layer');
-            if (draftLayer) {
-                draftLayer.innerHTML = '';
-            }
+            if (draftLayer) draftLayer.innerHTML = '';
 
             const textarea = document.getElementById('output-json');
-            if (textarea) {
-                textarea.value = '';
-            }
+            if (textarea) textarea.value = '';
+
+            updateDrawUI();
+            showToast('Drawing cleared', 'ok');
+        }
+
+        function screenR(base) {
+            // constant screen-pixel radius in SVG user units
+            return Math.max(0.5, base / (state.zoom || 1));
         }
 
         function renderDraftBorder() {
@@ -1174,82 +1980,176 @@
             }
             draftLayer.innerHTML = '';
 
-            islands.forEach(islandPoints => {
+            islands.forEach((islandPoints) => {
                 if (islandPoints.length > 0) {
                     const pointsString = islandPoints.map(pt => pt.join(',')).join(' ');
-                    
                     const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
                     poly.setAttribute('points', pointsString);
-                    poly.setAttribute('fill', 'rgba(255, 170, 0, 0.3)');
+                    poly.setAttribute('fill', 'rgba(255, 170, 0, 0.28)');
                     poly.setAttribute('stroke', '#ffaa00');
                     poly.setAttribute('stroke-width', '2');
-                    poly.setAttribute('stroke-dasharray', '4');
+                    poly.setAttribute('stroke-dasharray', islandPoints.length >= 3 ? '0' : '6 5');
+                    poly.setAttribute('stroke-linejoin', 'round');
                     draftLayer.appendChild(poly);
 
-                    islandPoints.forEach(pt => {
+                    islandPoints.forEach((pt, i) => {
                         const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         dot.setAttribute('cx', pt[0]);
                         dot.setAttribute('cy', pt[1]);
                         dot.setAttribute('class', 'map-marker-dot');
-                        dot.setAttribute('fill', '#ffaa00');
+                        dot.setAttribute('r', screenR(i === 0 ? 5 : 4));
+                        dot.setAttribute('stroke', '#000');
+                        dot.setAttribute('stroke-width', '1.2');
+                        dot.setAttribute('fill', i === 0 ? '#ffea00' : '#ffcc44');
                         draftLayer.appendChild(dot);
                     });
                 }
             });
 
-            if (selectedCapital) {
-                const capMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                capMarker.setAttribute('cx', selectedCapital.x);
-                capMarker.setAttribute('cy', selectedCapital.y);
-                capMarker.setAttribute('class', 'capital-marker-dot');
-                capMarker.setAttribute('fill', '#ffea00');
-                capMarker.setAttribute('stroke', '#000');
-                draftLayer.appendChild(capMarker);
-            }
+            sites.forEach(s => {
+                if (s.type === 'capital') {
+                    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    halo.setAttribute('cx', s.x);
+                    halo.setAttribute('cy', s.y);
+                    halo.setAttribute('r', screenR(10));
+                    halo.setAttribute('fill', 'rgba(255,215,0,0.2)');
+                    halo.setAttribute('class', 'capital-marker-dot');
+                    const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    core.setAttribute('cx', s.x);
+                    core.setAttribute('cy', s.y);
+                    core.setAttribute('r', screenR(6));
+                    core.setAttribute('class', 'capital-marker-dot site-draft-cap');
+                    g.appendChild(halo);
+                    g.appendChild(core);
+                    draftLayer.appendChild(g);
+                } else if (s.type === 'base') {
+                    const r = screenR(5);
+                    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    poly.setAttribute('points', `${s.x},${s.y-r} ${s.x+r},${s.y} ${s.x},${s.y+r} ${s.x-r},${s.y}`);
+                    poly.setAttribute('class', 'site-marker site-base');
+                    poly.setAttribute('stroke-width', '1.2');
+                    draftLayer.appendChild(poly);
+                } else if (s.type === 'port') {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    const r = screenR(4.5);
+                    rect.setAttribute('x', s.x - r);
+                    rect.setAttribute('y', s.y - r);
+                    rect.setAttribute('width', r * 2);
+                    rect.setAttribute('height', r * 2);
+                    rect.setAttribute('class', 'site-marker site-port');
+                    rect.setAttribute('stroke-width', '1.2');
+                    draftLayer.appendChild(rect);
+                } else {
+                    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    dot.setAttribute('cx', s.x);
+                    dot.setAttribute('cy', s.y);
+                    dot.setAttribute('r', screenR(4.5));
+                    dot.setAttribute('class', 'site-marker site-city');
+                    dot.setAttribute('stroke-width', '1.2');
+                    draftLayer.appendChild(dot);
+                }
+            });
         }
+
+        // Re-size draft markers when zoom changes
+        const _origApply = applyTransform;
+        applyTransform = function () {
+            _origApply();
+            resizeMapMarkers();
+            if (isDrawMode) renderDraftBorder();
+        };
 
         function generateDispatchJSON() {
             const validIslands = islands.filter(i => i.length >= 3);
 
             if (validIslands.length === 0) {
-                alert("Please click at least 3 points to define a landmass!");
+                showToast('Need at least 3 border points to form a landmass', 'err');
                 return;
             }
 
-            let capitalX, capitalY;
-            if (selectedCapital) {
-                capitalX = selectedCapital.x;
-                capitalY = selectedCapital.y;
+            const cap = getCapital();
+            let capitalX, capitalY, capitalName;
+            if (cap) {
+                capitalX = cap.x;
+                capitalY = cap.y;
+                capitalName = cap.name || 'Capital';
             } else {
                 const firstIsland = validIslands[0];
                 capitalX = Math.round(firstIsland.reduce((sum, p) => sum + p[0], 0) / firstIsland.length);
                 capitalY = Math.round(firstIsland.reduce((sum, p) => sum + p[1], 0) / firstIsland.length);
+                capitalName = 'Capital';
             }
 
             const borderOutput = validIslands.length === 1 ? validIslands[0] : validIslands;
 
+            // Backward-compatible capital + optional sites array
             const spatialPayload = {
-                capital: { x: capitalX, y: capitalY },
+                capital: { x: capitalX, y: capitalY, name: capitalName },
                 border: borderOutput
             };
 
-            const secureData = window.TSL_Integrity.generateCode(spatialPayload);
+            const extra = sites.filter(s => s.type !== 'capital');
+            if (extra.length) {
+                spatialPayload.sites = extra.map(s => ({
+                    type: s.type,
+                    x: s.x,
+                    y: s.y,
+                    name: s.name
+                }));
+            }
+
+            let secureData;
+            try {
+                if (window.TSL_Integrity && typeof window.TSL_Integrity.generateCode === 'function') {
+                    secureData = window.TSL_Integrity.generateCode(spatialPayload);
+                } else {
+                    secureData = btoa(JSON.stringify(spatialPayload));
+                }
+            } catch (err) {
+                secureData = btoa(JSON.stringify(spatialPayload));
+            }
 
             const formattedOutput = `[code]
 Nation: Your Nation
-Capital: Your Capital
+Capital: ${capitalName}
 Government: Your Government
 Population: XX Million
 Data: ${secureData}
 [/code]`;
-            
+
             const textarea = document.getElementById('output-json');
             textarea.value = formattedOutput;
             textarea.select();
-            
-            navigator.clipboard.writeText(formattedOutput);
-            alert("Copied secured map code to clipboard!");
+
+            navigator.clipboard.writeText(formattedOutput).then(() => {
+                showToast('Secure code copied to clipboard', 'ok');
+            }).catch(() => {
+                showToast('Code ready — copy from the box below', 'ok');
+            });
+
+            updateDrawUI();
+            const stepExport = document.getElementById('step-export');
+            if (stepExport) stepExport.className = 'draw-step done';
         }
+
+        document.addEventListener('keydown', (e) => {
+            if (!isDrawMode) return;
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+            if (e.key === '1') { e.preventDefault(); setPlaceType('capital'); }
+            if (e.key === '2') { e.preventDefault(); setPlaceType('city'); }
+            if (e.key === '3') { e.preventDefault(); setPlaceType('base'); }
+            if (e.key === '4') { e.preventDefault(); setPlaceType('port'); }
+            if (e.key === 'b' || e.key === 'B') { e.preventDefault(); setPlaceType('border'); }
+            if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); undoLastPoint(); }
+            if (e.key === 'Enter') { e.preventDefault(); finishIsland(); }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                toggleDrawMode();
+            }
+        });
+
+
     </script>
     <script>
         let nationsVisible = true;
@@ -1282,5 +2182,50 @@ Data: ${secureData}
             dossierPanel.addEventListener('touchstart', (e) => e.stopPropagation());
         }
     </script>
+<script>
+/* Grid toggle + selected border highlight */
+let gridVisible = true;
+
+function toggleGrid() {
+    gridVisible = !gridVisible;
+    const grid = document.getElementById('tactical-grid');
+    const btn = document.getElementById('btn-toggle-grid');
+    if (grid) grid.classList.toggle('hidden', !gridVisible);
+    if (btn) btn.classList.toggle('active', gridVisible);
+}
+
+document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+    if (e.key === 'g' || e.key === 'G') toggleGrid();
+    if (e.key === 'Escape') closeDossier();
+});
+
+/* Patch toggleCoordPanel for new class API */
+(function () {
+    const orig = window.toggleCoordPanel;
+    window.toggleCoordPanel = function () {
+        const panel = document.getElementById('side-coord-panel');
+        const btn = document.getElementById('btn-coords');
+        if (!panel) return;
+        const open = panel.classList.toggle('open');
+        if (btn) btn.classList.toggle('active', open);
+        // also set display for any code that checks style
+        panel.style.display = open ? 'flex' : 'none';
+    };
+})();
+
+/* Highlight selected nation when dossier opens */
+(function () {
+    const origOpen = window.openNationDossier;
+    if (!origOpen) return;
+    window.openNationDossier = function (nation) {
+        document.querySelectorAll('.nation-border.selected').forEach(el => el.classList.remove('selected'));
+        origOpen(nation);
+        // mark matching borders by listening wasn't stored — re-query via fill isn't reliable
+        // store last clicked via event path: handled in loadRegionMap click already if we patch there
+    };
+})();
+</script>
 </body>
 </html>
+

@@ -702,7 +702,7 @@
     <div id="workspace">
         <div class="terminal-card">
             <div class="card-header">
-                <h2>📑 Nation Character Sheet Generator</h2>
+                <h2>[ Nation Character Sheet Generator ]</h2>
                 <p>Build the broad identity, capabilities and RP hooks of your nation. <strong>Hard Restrictions:</strong> Max 100M Population, Max 2 S-Tiers, and Max 7 Total Power Budget Points.</p>
             </div>
 
@@ -757,7 +757,7 @@
                         
                         <!-- 1. GENERAL IDENTIFICATION -->
                         <div class="form-section">
-                            <div class="section-title">🏛️ 1. General Identification</div>
+                            <div class="section-title">1. General Identification</div>
                             <div class="section-help">
                                 <div class="eyebrow">// WHO_ARE_YOU?</div>
                                 <p>The basic facts other players need before they start asking why your country has three capitals and a suspiciously large navy.</p>
@@ -787,7 +787,7 @@
 
                         <!-- 2. ECONOMIC PROFILE -->
                         <div class="form-section">
-                            <div class="section-title">📦 2. Economic & Resource Dynamics</div>
+                            <div class="section-title">2. Economic & Resource Dynamics</div>
                             <div class="section-help">
                                 <div class="eyebrow">// WHAT_PAYS_THE_BILLS?</div>
                                 <p>These values describe your economic foundation and natural-resource position. Higher grades cost Power Points; lower grades can free some up.</p>
@@ -830,7 +830,7 @@
 
                         <!-- 3. STRATEGIC & TECH PROFILE -->
                         <div class="form-section">
-                            <div class="section-title">🛡️ 3. Strategic & Tech Posture</div>
+                            <div class="section-title">3. Strategic & Tech Posture</div>
                             <div class="section-help">
                                 <div class="eyebrow">// HOW_CAPABLE_ARE_YOU?</div>
                                 <p>Technology, infrastructure, defense, education and influence shape what your nation can realistically accomplish.</p>
@@ -912,7 +912,7 @@
 
                         <!-- 4. ROLEPLAY HOOKS -->
                         <div class="form-section">
-                            <div class="section-title">🎯 4. Roleplay & Diplomacy Hooks</div>
+                            <div class="section-title">4. Roleplay & Diplomacy Hooks</div>
                             <div class="section-help">
                                 <div class="eyebrow">// GIVE_PEOPLE_SOMETHING_TO_WORK_WITH</div>
                                 <p>These fields don't spend Power Points. They're here to turn statistics into an actual country with goals, relationships and potential trouble.</p>
@@ -940,7 +940,7 @@
                 <div class="wizard-controls">
                     <button type="button" id="prev-btn" class="btn-nav" onclick="changeStep(-1)" disabled>&lt; BACK</button>
                     <button type="button" id="next-btn" class="btn-nav" onclick="changeStep(1)">NEXT &gt;</button>
-                    <button type="button" id="submit-btn" class="btn-submit" style="display: none;" onclick="generateBBCode()">⚡ COMPILE BBCODE</button>
+                    <button type="button" id="submit-btn" class="btn-submit" style="display: none;" onclick="generateBBCode()">COMPILE BBCODE</button>
                 </div>
             </form>
         </div>
@@ -950,7 +950,7 @@
     <div class="modal-overlay" id="code-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚡ DISPATCH BBCODE GENERATED</h3>
+                <h3>DISPATCH BBCODE GENERATED</h3>
             </div>
             <div class="modal-subtitle">Your nation profile is compiled below. Give it a quick sanity check before publishing the <span class="dispatch-tag">STATS</span> dispatch.</div>
             <textarea id="dispatch-output" readonly></textarea>
@@ -1052,7 +1052,7 @@
             if (isOp) {
                 document.body.classList.add('overpowered');
                 statusDisp.className = "meter-status invalid";
-                statusDisp.textContent = "⚠️ ALARM: OVERPOWERED (" + errors.join(" | ") + ")";
+                statusDisp.textContent = "ERR: OVERPOWERED (" + errors.join(" | ") + ")";
                 submitBtn.disabled = true;
                 if (advice) {
                     advice.innerHTML = "<b>COMMAND WARNING //</b> Your nation is currently exceeding the allowed limits. Reduce one or more high-end selections before compilation.";
