@@ -3,7 +3,7 @@
     "nation_id": "union_of_silver_states_union",
     "nation_canonical_name": "union_of_silver_states_union",
     "dispatch_id": "2808233",
-    "last_updated": "2026-10-19T08:14:01.640Z",
+    "last_updated": "2026-10-26T08:14:18.908Z",
     "stats": {
       "nation": "Test Nation",
       "capital": "Bleh",
@@ -34,7 +34,7 @@
     "nation_id": "the_ypres_front",
     "nation_canonical_name": "the_ypres_front",
     "dispatch_id": "2810109",
-    "last_updated": "2026-10-19T08:14:03.205Z",
+    "last_updated": "2026-10-26T08:14:20.424Z",
     "stats": {
       "nation": "The Ypres Front",
       "capital": "Ypres",
@@ -65,7 +65,7 @@
     "nation_id": "kyrek",
     "nation_canonical_name": "kyrek",
     "dispatch_id": "2815056",
-    "last_updated": "2026-10-19T08:14:06.378Z",
+    "last_updated": "2026-10-26T08:14:23.455Z",
     "stats": {
       "nation": "Empire of Kyrek",
       "capital": "Odeka",
@@ -96,7 +96,7 @@
     "nation_id": "the_dragon_empire_of_united_states",
     "nation_canonical_name": "the_dragon_empire_of_united_states",
     "dispatch_id": "2811042",
-    "last_updated": "2026-10-19T08:14:08.645Z",
+    "last_updated": "2026-10-26T08:14:25.727Z",
     "stats": {
       "nation": "The Dragon Empire of United States",
       "capital": "Deyp Hayven",
@@ -127,7 +127,7 @@
     "nation_id": "jwlismon_ii",
     "nation_canonical_name": "jwlismon_ii",
     "dispatch_id": "2813949",
-    "last_updated": "2026-10-19T08:14:19.563Z",
+    "last_updated": "2026-10-26T08:14:30.381Z",
     "stats": {
       "nation": "Jwlismon II",
       "capital": "Maes",
@@ -155,41 +155,10 @@
     }
   },
   {
-    "nation_id": "avstraliys",
-    "nation_canonical_name": "avstraliys",
-    "dispatch_id": "2811732",
-    "last_updated": "2026-10-19T08:14:22.919Z",
-    "stats": {
-      "nation": "Avstraliys",
-      "capital": "Basdrien",
-      "government": "Proto-Internationalist Free Territory",
-      "population": "63.5 Million",
-      "economy_grade": "B",
-      "resource_wealth": "A",
-      "top_exports": "Bulk Armaments, Music, Construction Materials",
-      "top_imports": "Crude Oil, Microchips, Luxury Goods",
-      "tech_tier": "Near-Future",
-      "infrastructure": "B",
-      "defense_stance": "Demilitarized",
-      "internal_stability": "High",
-      "culture_influence": "D",
-      "education_r_d": "A",
-      "regional_alignment": "Independent Socialist",
-      "national_focus": "Economic Scaling, Military Structuring",
-      "current_regional_stance": "Mildly Hostile Isolationism, Opening Up while Maintaining Assertiveness"
-    },
-    "audit": {
-      "powerScore": 5,
-      "sTierCount": 0,
-      "isValid": true,
-      "violations": []
-    }
-  },
-  {
     "nation_id": "silver_republicz",
     "nation_canonical_name": "silver_republicz",
     "dispatch_id": "2812072",
-    "last_updated": "2026-10-19T08:14:25.341Z",
+    "last_updated": "2026-10-26T08:14:33.409Z",
     "stats": {
       "nation": "Federation of Silver Republics",
       "capital": "Silberstadt",
