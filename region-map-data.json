@@ -199,7 +199,7 @@
     "nation": "The Ypres Front",
     "government": "Social Democracy",
     "population": "12 Million",
-    "color": "#00ff00"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -373,7 +373,7 @@
     "nation": "Holy Karenland",
     "government": "Absolute Monarchy",
     "population": "56.2 Million",
-    "color": "#00e5ff"
+    "color": "#00ff99"
   },
   {
     "capital": {
@@ -415,7 +415,7 @@
     "nation": "Kyrek",
     "government": "Empire",
     "population": "7.3 Million",
-    "color": "#ffea00"
+    "color": "#b500ff"
   },
   {
     "capital": {
@@ -1487,7 +1487,7 @@
     "nation": "The Dragon Empire of United States (D.E.U.S.)",
     "government": "Trade Federation",
     "population": "50 Million",
-    "color": "#00ff00"
+    "color": "#ffaa00"
   },
   {
     "capital": {
@@ -1587,6 +1587,178 @@
   },
   {
     "capital": {
+      "x": 2078,
+      "y": 744,
+      "name": "Basdrien"
+    },
+    "border": [
+      [
+        [
+          2035,
+          651
+        ],
+        [
+          2044,
+          651
+        ],
+        [
+          2048,
+          666
+        ],
+        [
+          2044,
+          684
+        ],
+        [
+          2035,
+          685
+        ],
+        [
+          2030,
+          676
+        ],
+        [
+          2036,
+          661
+        ],
+        [
+          2034,
+          657
+        ]
+      ],
+      [
+        [
+          2050,
+          695
+        ],
+        [
+          2058,
+          703
+        ],
+        [
+          2060,
+          711
+        ],
+        [
+          2052,
+          722
+        ],
+        [
+          2048,
+          720
+        ],
+        [
+          2047,
+          699
+        ]
+      ],
+      [
+        [
+          2082,
+          716
+        ],
+        [
+          2087,
+          728
+        ],
+        [
+          2083,
+          735
+        ],
+        [
+          2087,
+          744
+        ],
+        [
+          2084,
+          754
+        ],
+        [
+          2077,
+          760
+        ],
+        [
+          2073,
+          770
+        ],
+        [
+          2074,
+          778
+        ],
+        [
+          2070,
+          792
+        ],
+        [
+          2063,
+          796
+        ],
+        [
+          2044,
+          800
+        ],
+        [
+          2038,
+          793
+        ],
+        [
+          2044,
+          787
+        ],
+        [
+          2053,
+          787
+        ],
+        [
+          2053,
+          781
+        ],
+        [
+          2061,
+          773
+        ],
+        [
+          2060,
+          762
+        ],
+        [
+          2065,
+          752
+        ],
+        [
+          2070,
+          749
+        ],
+        [
+          2070,
+          744
+        ],
+        [
+          2070,
+          736
+        ],
+        [
+          2074,
+          729
+        ],
+        [
+          2070,
+          724
+        ],
+        [
+          2073,
+          718
+        ]
+      ]
+    ],
+    "nation_id": "avstraliys",
+    "nation": "The Renewed Internationale of Avstraliys",
+    "government": "Proto-Internationalist Free Territory",
+    "population": "63.5 Million",
+    "color": "#00e5ff"
+  },
+  {
+    "capital": {
       "x": 1378,
       "y": 354,
       "name": "New Pynnacle"
@@ -1625,7 +1797,7 @@
     "nation": "Styrlightia",
     "government": "(Still Forming)",
     "population": "20 Million",
-    "color": "#ff3300"
+    "color": "#00ff00"
   },
   {
     "capital": {
